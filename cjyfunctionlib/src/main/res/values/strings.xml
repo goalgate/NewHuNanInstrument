@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">CJYFunctionLib</string>
+    
+    
+    <string name="startIC">开始读取IC卡</string>
+    <string name="stopIC">停止读取IC卡</string>
+    <string name="startID">开始读取ID卡</string>
+    <string name="stopID">停止读取ID卡</string>
+    <string name="getSAM">获取读卡器SAM值</string>
+
+
+    <string name="Alarm_12V">12V报警器</string>
+    <string name="beep">蜂鸣</string>
+    <string name="ElectricLock">门控锁</string>
+    <string name="redBlink">红灯闪</string>
+    <string name="greenBlink">绿灯闪</string>
+    <string name="whiteLight">白灯开关</string>
+    <string name="doorState">门状态</string>
+    <string name="humtem">温湿度数据</string>
+    
+    <string name="fp_open">开启</string>
+    <string name="fp_close">关闭</string>
+    <string name="fp_enroll">登记</string>
+    <string name="fp_verify">验证</string>
+    <string name="fp_identify">识别</string>
+    <string name="fp_cancel">取消</string>
+    <string name="fp_getEnrollCount">获取登记数</string>
+    <string name="fp_getEmptyID">获取空ID</string>
+    <string name="fp_captureImage">截取指纹图片</string>
+    <string name="fp_removeTemp">移除指纹模板</string>
+    <string name="fp_removeAll">移除全部模板</string>
+    <string name="fp_upTemp">上传指纹模板</string>
+    <string name="fp_downTemp">下载指纹模板</string>
+    <string name="fp_initText">请先开启指纹</string>
+
+    <string name="internetStatus">网络连接状态</string>
+    <string name="serverStatus">服务器连接状态</string>
+
+
+    <string name="btn_faceReg">双目协作录入</string>
+    <string name="btn_faceBmpReg">人脸照录入</string>
+    <string name="btn_faceDelete">删除人脸</string>
+    <string name="btn_faceCount">人脸数</string>
+    <string name="btn_faceVerify">校验人脸</string>
+    <string name="btn_faceIdentifyModel">人脸识别模式</string>
+    <string name="btn_faceIdentify">人脸单次识别</string>
+    <string name="btn_faceNormal">正常模式</string>
+
+    <string name="func_identify">身份证功能模块</string>
+    <string name="func_fingerPrint">指纹功能模块</string>
+    <string name="func_face">人脸识别功能模块</string>
+    <string name="func_collectionbox">网络采集盒功能模块</string>
+    <string name="func_switch">开关量功能模块</string>
+    <string name="func_cjyextens">采集器硬件功能模块</string>
+
+
+</resources>

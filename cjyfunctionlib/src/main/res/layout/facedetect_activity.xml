@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Func_Activity.FaceDetectActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center">
+
+
+        <Button
+            android:id="@+id/btn_faceReg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:text="@string/btn_faceReg"></Button>
+
+
+        <Button
+            android:id="@+id/btn_faceBmpReg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_faceBmpReg"></Button>
+
+
+        <Button
+            android:id="@+id/btn_faceDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_faceDelete"></Button>
+        <Button
+            android:id="@+id/btn_faceCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:text="@string/btn_faceCount"></Button>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="70dp"
+        android:gravity="center">
+
+
+        <Button
+            android:id="@+id/btn_faceVerify"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:text="@string/btn_faceVerify"></Button>
+
+        <Button
+            android:id="@+id/btn_faceIdentifyModel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:text="@string/btn_faceIdentifyModel"></Button>
+
+        <Button
+            android:id="@+id/btn_faceIdentify"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:text="@string/btn_faceIdentify"></Button>
+
+        <Button
+            android:id="@+id/btn_faceNormal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:text="@string/btn_faceNormal"></Button>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="@dimen/y252"
+        android:layout_height="@dimen/x193"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="@dimen/x25"
+        android:layout_marginRight="@dimen/y18"
+        android:layout_marginBottom="@dimen/x13">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.baidu.idl.main.facesdk.camera.AutoTexturePreviewView
+                android:id="@+id/preview_view1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="4dp" />
+
+            <com.baidu.idl.main.facesdk.camera.AutoTexturePreviewView
+                android:id="@+id/preview_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="4dp" />
+
+            <TextureView
+                android:id="@+id/texture_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_info"
+        android:text="信息展示"
+        android:textSize="10pt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="60dp"
+        android:layout_centerInParent="true"
+        android:layout_alignParentBottom="true">
+
+    </TextView>
+
+    <ImageView
+        android:id="@+id/iv_headphotoRGB"
+        android:layout_width="360dp"
+        android:layout_height="270dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"></ImageView>
+
+
+    <ImageView
+        android:id="@+id/iv_headphotoIR"
+        android:layout_width="360dp"
+        android:layout_height="270dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"></ImageView>
+</RelativeLayout>
+

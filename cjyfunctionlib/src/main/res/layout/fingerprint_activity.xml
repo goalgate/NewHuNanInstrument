@@ -1,0 +1,170 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="1">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="1">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:weightSum="0.2">
+
+            <Button
+                android:id="@+id/btnOpenDevice"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_open"
+                android:textSize="15sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="1">
+
+                <TextView
+                    android:id="@+id/textTemplateNo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.2"
+                    android:text="ID :"
+                    android:textSize="20sp" />
+
+                <EditText
+                    android:id="@+id/editUserID"
+                    android:layout_width="100dp"
+                    android:layout_height="35dp"
+                    android:layout_weight="0.8"
+                    android:background="#63a7ff"
+                    android:editable="true"
+                    android:inputType="number"
+                    android:text="0" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnEnroll"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_enroll"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnIdentify"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_identify"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnGetEmptyID"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_getEmptyID"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnRemoveTemplate"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_removeTemp"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnGetTemplate"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_upTemp"
+                android:textSize="15sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="1"></LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btnCloseDevice"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_close"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnCancel"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_cancel"
+                android:textSize="15sp" />
+
+
+            <Button
+                android:id="@+id/btnVerify"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_verify"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnGetEnrollCount"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_getEnrollCount"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnCaptureImage"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_captureImage"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnRemoveAll"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_removeAll"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnSetTemplate"
+                android:layout_width="150dp"
+                android:layout_height="35dp"
+                android:text="@string/fp_downTemp"
+                android:textSize="15sp" />
+
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtStatus"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:text="@string/fp_initText"
+        android:textSize="15sp" />
+
+    <ImageView
+        android:id="@+id/ivImageViewer"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="4dp"
+        android:adjustViewBounds="false"
+        android:background="#ff99aa" />
+
+
+
+</LinearLayout>
