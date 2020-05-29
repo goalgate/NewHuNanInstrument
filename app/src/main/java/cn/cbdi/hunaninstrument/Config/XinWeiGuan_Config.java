@@ -1,12 +1,13 @@
 package cn.cbdi.hunaninstrument.Config;
 
-
-import cn.cbdi.hunaninstrument.Project_HuNan.HuNanService;
+import cn.cbdi.hunaninstrument.Project_XinWeiGuan.XinWeiGuanService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
 
-public class HuNanConfig extends BaseConfig {
+
+public class XinWeiGuan_Config extends BaseConfig {
+
     @Override
     public boolean isFace() {
         return true;
@@ -37,10 +38,10 @@ public class HuNanConfig extends BaseConfig {
         return "";
     }
 
-
     @Override
     public String getServerId() {
-        return "http://129.204.110.143:8031/";
+//        return "http://116.239.32.71:8160/";
+        return "http://116.239.32.71:8152/";
     }
 
     @Override
@@ -50,17 +51,17 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public String getModel() {
-        return "CBDI-DA-01";
+        return "CBDI-P-IC";
     }
 
     @Override
     public String getName() {
-        return "防爆采集器";
+        return "库房采集器";
     }
 
     @Override
     public String getProject() {
-        return "HNMBY";        //湖南民爆云
+        return "XinWeiGuan";        //新危管
     }
 
     @Override
@@ -95,14 +96,11 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public void readCard() {
-        IDCardPresenter.getInstance().ReadID();
         IDCardPresenter.getInstance().ReadIC();
-
     }
 
     @Override
     public void stopReadCard() {
-        IDCardPresenter.getInstance().StopReadID();
         IDCardPresenter.getInstance().StopReadIC();
     }
 
@@ -113,17 +111,17 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public Class getServiceName() {
-        return HuNanService.class;
+        return XinWeiGuanService.class;
     }
 
     @Override
     public String getMainActivity() {
-        return ".Project_HuNan.HuNanMainActivity";
+        return ".Project_XinWeiGuan.XinWeiGuanMainActivity";
     }
 
     @Override
     public String getAddActivity() {
-        return ".Project_HuNan.HuNanRegActivity";
+        return ".Project_XinWeiGuan.XinWeiGuanAddActivity";
     }
 
     @Override
@@ -146,9 +144,10 @@ public class HuNanConfig extends BaseConfig {
         return true;
     }
 
+
     @Override
     public boolean DoorMonitorChosen() {
-        return false;
+        return true;
     }
 
     @Override
@@ -158,6 +157,7 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public void setHongWai(boolean hongWai) {
-        this.hongWai= hongWai;
+        this.hongWai = hongWai;
+
     }
 }

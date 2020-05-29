@@ -20,6 +20,11 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".StartActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme">
+        </activity>
+
         <activity
             android:name=".Project_HuNan.HuNanMainActivity"
             android:launchMode="standard"
@@ -30,7 +35,34 @@
             android:launchMode="standard"
             android:theme="@style/ImageTranslucentTheme"></activity>
 
+
+        <activity
+            android:name=".Project_XinWeiGuan.XinWeiGuanMainActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+
+        <activity
+            android:name=".Project_XinWeiGuan.XinWeiGuanAddActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+
+        <activity
+            android:name=".Project_XinWeiGuan.XinWeiGuanFaceDetectActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+        <activity
+            android:name=".Project_Hebei.HebeiMainActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+
+        <activity
+            android:name=".Project_Hebei.HeBeiRegActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+
         <service android:name=".Project_HuNan.HuNanService"></service>
+        <service android:name=".Project_Hebei.HeBeiService"></service>
+        <service android:name=".Project_XinWeiGuan.XinWeiGuanService"></service>
 
         <service android:name=".Service.UpdateService"></service>
 

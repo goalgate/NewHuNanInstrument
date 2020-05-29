@@ -1,9 +1,10 @@
-package cn.cbdi.hunaninstrument.Project_HuNan;
+package cn.cbdi.hunaninstrument.Project_XinWeiGuan;
 
 import android.app.Service;
 import android.content.Intent;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
@@ -11,9 +12,12 @@ import android.util.Log;
 
 import com.baidu.idl.main.facesdk.manager.UserInfoManager;
 import com.baidu.idl.main.facesdk.model.User;
+import com.blankj.utilcode.util.AppUtils;
+import com.blankj.utilcode.util.FileIOUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.TimeUtils;
 import com.blankj.utilcode.util.ToastUtils;
+import com.cundong.utils.PatchUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -21,6 +25,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -36,24 +41,23 @@ import cn.cbdi.hunaninstrument.AppInit;
 import cn.cbdi.hunaninstrument.Bean.Employer;
 import cn.cbdi.hunaninstrument.Bean.Keeper;
 import cn.cbdi.hunaninstrument.Bean.ReUploadBean;
+
 import cn.cbdi.hunaninstrument.EventBus.AlarmEvent;
 import cn.cbdi.hunaninstrument.EventBus.LockUpEvent;
 import cn.cbdi.hunaninstrument.EventBus.NetworkEvent;
 import cn.cbdi.hunaninstrument.EventBus.PassEvent;
-import cn.cbdi.hunaninstrument.EventBus.RebootEvent;
 import cn.cbdi.hunaninstrument.EventBus.TemHumEvent;
+
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
 import cn.cbdi.hunaninstrument.State.DoorState.WarehouseDoor;
 import cn.cbdi.hunaninstrument.State.LockState.Lock;
 import cn.cbdi.hunaninstrument.Tool.ServerConnectionUtil;
-import cn.cbdi.hunaninstrument.Tool.UDPRun;
-import cn.cbdi.hunaninstrument.Tool.UDPState;
 import cn.cbdi.hunaninstrument.greendao.DaoSession;
 import cn.cbdi.hunaninstrument.greendao.ReUploadBeanDao;
-import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Machine.CJYHelper;
+import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.ApkUtils;
 import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.SignUtils;
+import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
-
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
@@ -67,10 +71,14 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 
+import static cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant.MANUAL_PATH;
+import static cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant.NEW_APK_PATH;
+import static cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant.SIGN_MD5;
+import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Close;
+import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Open;
 
-public class HuNanService extends Service implements IOutputControlView {
-
-    private String TAG = HuNanService.class.getSimpleName();
+public class XinWeiGuanService extends Service implements IOutputControlView {
+    private String TAG = XinWeiGuanService.class.getSimpleName();
 
     OutputControlPresenter sp = OutputControlPresenter.getInstance();
 
@@ -89,34 +97,30 @@ public class HuNanService extends Service implements IOutputControlView {
     Disposable unlock_noOpen;
 
     @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
     public void onCreate() {
         super.onCreate();
         Log.e("Md5", SignUtils.getSignMd5Str(AppInit.getInstance()));
         sp.SwitchPresenterSetView(this);
         EventBus.getDefault().register(this);
-        Observable.timer(10, TimeUnit.SECONDS).subscribeOn(Schedulers.io())
+        Observable.timer(20, TimeUnit.SECONDS).subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe((l) -> syncData());
         reUpload();
-        sp.readHum(5, true);
-        Observable.interval(40, 600, TimeUnit.SECONDS).observeOn(Schedulers.io())
+
+        Observable.interval(0, 30, TimeUnit.SECONDS).observeOn(Schedulers.io())
                 .subscribe((l) -> testNet());
-        Observable.interval(10, 600, TimeUnit.SECONDS).observeOn(Schedulers.io())
-                .subscribe((l) -> StateRecord());
-        Observable.interval(10, 60, TimeUnit.SECONDS).observeOn(Schedulers.io())
-                .subscribe((l) -> {
-                    UDPState udp = new UDPState();
-                    //设置通用参数：服务器地址，端口，设备ID，接口URL
-                    udp.setPar("124.172.232.89", 8059, config.getString("daid"), "http://129.204.110.143:8031/");
-                    if (WarehouseDoor.getInstance().getMdoorState().equals(Door.DoorState.State_Open)) {
-                        udp.setState(0, (float) last_mTemperature, (float) last_mHumidity);
-                    } else {
-                        udp.setState(1, (float) last_mTemperature, (float) last_mHumidity);
-                    }
-                    Thread server = new Thread(new UDPRun(udp));
-                    server.start();
-                });
+
+        if (AppInit.getInstrumentConfig().isTemHum()) {
+            sp.readHum(5, true);
+            Observable.interval(10, 3600, TimeUnit.SECONDS).observeOn(Schedulers.io())
+                    .subscribe((l) -> StateRecord());
+        }
     }
 
 
@@ -126,71 +130,41 @@ public class HuNanService extends Service implements IOutputControlView {
         EventBus.getDefault().unregister(this);
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGetPassEvent(PassEvent event) {
+        Lock.getInstance().setState(Lock.LockState.STATE_Unlock);
+        Lock.getInstance().doNext();
+        if (!AppInit.getInstrumentConfig().isHongWai()) {
+            Observable.timer(120, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
+                    .subscribe(new Observer<Long>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+                            unlock_noOpen = d;
+                        }
 
-    @Override
-    public void onDoorState(Door.DoorState state) {
-        if (!WarehouseDoor.getInstance().getMdoorState().equals(state)) {
-            if (state.equals(Door.DoorState.State_Open)) {
-                WarehouseDoor.getInstance().setMdoorState(state);
-                WarehouseDoor.getInstance().doNext();
-                if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Lockup)) {
-                    alarmRecord();
-                }
-                if (unlock_noOpen != null) {
-                    unlock_noOpen.dispose();
-                }
-                if (rx_delay != null) {
-                    rx_delay.dispose();
-                }
-            } else {
-                WarehouseDoor.getInstance().setMdoorState(state);
-                WarehouseDoor.getInstance().doNext();
-                if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Unlock)) {
-                    final String closeDoorTime = TimeUtils.getNowString();
-                    Observable.timer(10, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
-                            .subscribe(new Observer<Long>() {
-                                @Override
-                                public void onSubscribe(Disposable d) {
-                                    rx_delay = d;
-                                }
+                        @Override
+                        public void onNext(Long aLong) {
+                            Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
+                            sp.buzz(IOutputControl.Hex.H0);
+                            EventBus.getDefault().post(new LockUpEvent());
+                        }
 
-                                @Override
-                                public void onNext(Long aLong) {
-                                    Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
-                                    sp.buzz(IOutputControl.Hex.H0);
-                                    if (unlock_noOpen != null) {
-                                        unlock_noOpen.dispose();
-                                    }
-                                    CloseDoorRecord(closeDoorTime);
-                                    EventBus.getDefault().post(new LockUpEvent());
-                                }
+                        @Override
+                        public void onError(Throwable e) {
 
-                                @Override
-                                public void onError(Throwable e) {
+                        }
 
-                                }
-
-                                @Override
-                                public void onComplete() {
-
-                                }
-                            });
-                } else {
-                    WarehouseDoor.getInstance().setMdoorState(state);
-                }
-            }
+                        @Override
+                        public void onComplete() {
+                        }
+                    });
         }
-
     }
+
 
     @Override
     public void onTemHum(int temperature, int humidity, String THSwitchValue) {
-        this.THSwitchValue = THSwitchValue;
         EventBus.getDefault().post(new TemHumEvent(temperature, humidity));
         if ((Math.abs(temperature - last_mTemperature) > 3 || Math.abs(temperature - last_mTemperature) > 10)) {
             last_mTemperature = temperature;
@@ -201,56 +175,97 @@ public class HuNanService extends Service implements IOutputControlView {
         last_mHumidity = humidity;
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onGetPassEvent(PassEvent event) {
-        Lock.getInstance().setState(Lock.LockState.STATE_Unlock);
-        Lock.getInstance().doNext();
-        Observable.timer(120, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
-                .subscribe(new Observer<Long>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        unlock_noOpen = d;
-                    }
 
-                    @Override
-                    public void onNext(Long aLong) {
-                        Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
-                        sp.buzz(IOutputControl.Hex.H0);
-                        EventBus.getDefault().post(new LockUpEvent());
+    @Override
+    public void onDoorState(Door.DoorState state) {
+        if (AppInit.getInstrumentConfig().isHongWai()) {
+            if (!WarehouseDoor.getInstance().getMdoorState().equals(state)) {
+                WarehouseDoor.getInstance().setMdoorState(state);
+                if (state.equals(Door.DoorState.State_Open)) {
+                    if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Lockup)) {
+                        Lock.getInstance().doNext();
+                        alarmRecord();
                     }
+                }
+            }
 
-                    @Override
-                    public void onError(Throwable e) {
-
+        } else {
+            if (!WarehouseDoor.getInstance().getMdoorState().equals(state)) {
+                if (state.equals(Door.DoorState.State_Open)) {
+                    WarehouseDoor.getInstance().setMdoorState(state);
+                    WarehouseDoor.getInstance().doNext();
+                    if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Lockup)) {
+                        alarmRecord();
                     }
-
-                    @Override
-                    public void onComplete() {
+                    if (unlock_noOpen != null) {
+                        unlock_noOpen.dispose();
                     }
-                });
+                    if (rx_delay != null) {
+                        rx_delay.dispose();
+                    }
+                } else {
+                    WarehouseDoor.getInstance().setMdoorState(state);
+                    WarehouseDoor.getInstance().doNext();
+                    if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Unlock)) {
+                        final String closeDoorTime = TimeUtils.getNowString();
+                        Observable.timer(10, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
+                                .subscribe(new Observer<Long>() {
+                                    @Override
+                                    public void onSubscribe(Disposable d) {
+                                        rx_delay = d;
+                                    }
+
+                                    @Override
+                                    public void onNext(Long aLong) {
+                                        Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
+                                        sp.buzz(IOutputControl.Hex.H0);
+                                        if (unlock_noOpen != null) {
+                                            unlock_noOpen.dispose();
+                                        }
+                                        CloseDoorRecord(closeDoorTime);
+                                        EventBus.getDefault().post(new LockUpEvent());
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable e) {
+
+                                    }
+
+                                    @Override
+                                    public void onComplete() {
+
+                                    }
+                                });
+                    } else {
+                        WarehouseDoor.getInstance().setMdoorState(state);
+                    }
+                }
+            }
+        }
     }
 
     private Handler handler = new Handler();
-
 
     private void reUpload() {
         final ReUploadBeanDao reUploadBeanDao = mdaoSession.getReUploadBeanDao();
         List<ReUploadBean> list = reUploadBeanDao.queryBuilder().list();
         for (final ReUploadBean bean : list) {
-            RetrofitGenerator.getHnmbyApi().withDataRs(bean.getMethod(), config.getString("key"), bean.getContent())
+            RetrofitGenerator.getXinWeiGuanApi().withDataRr(bean.getMethod(), config.getString("key"), bean.getContent())
                     .subscribeOn(Schedulers.single())
                     .unsubscribeOn(Schedulers.single())
                     .observeOn(Schedulers.single())
-                    .subscribe(new Observer<String>() {
+                    .subscribe(new Observer<ResponseBody>() {
                         @Override
                         public void onSubscribe(@NonNull Disposable d) {
 
                         }
 
                         @Override
-                        public void onNext(@NonNull String s) {
+                        public void onNext(@NonNull ResponseBody responseBody) {
                             Log.e("信息提示", bean.getMethod());
                             reUploadBeanDao.delete(bean);
+
+
                         }
 
                         @Override
@@ -268,35 +283,35 @@ public class HuNanService extends Service implements IOutputControlView {
         }
     }
 
-
     private void syncData() {
-        RetrofitGenerator.getHnmbyApi().syncPersonInfo("updatePersion", config.getString("key"), 3)
+        final JSONObject obj = new JSONObject();
+        try {
+            obj.put("personType", "2");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RetrofitGenerator.getXinWeiGuanApi().withDataRr("updatePerson", config.getString("key"), obj.toString())
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<String>() {
+                .subscribe(new Observer<ResponseBody>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(String s) {
+                    public void onNext(ResponseBody responseBody) {
                         try {
-                            mdaoSession.getEmployerDao().deleteAll();
-                            if (s.equals("no")) {
+                            String s = ParsingTool.extractMainContent(responseBody);
 
-                            } else {
-                                String[] idList = s.split("\\|");
-                                if (idList.length > 0) {
-                                    for (String id : idList) {
-                                        if (!id.equals("")) {
-                                            mdaoSession.insertOrReplace(new Employer(id.toUpperCase(), 3));
-                                        }
-                                    }
+                            mdaoSession.getEmployerDao().deleteAll();
+                            String[] idList = s.split("\\|");
+                            if (idList.length > 0) {
+                                for (String id : idList) {
+                                    mdaoSession.insertOrReplace(new Employer(id.toUpperCase(), 2));
                                 }
                             }
-
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -310,35 +325,36 @@ public class HuNanService extends Service implements IOutputControlView {
 
                     @Override
                     public void onComplete() {
-                        RetrofitGenerator.getHnmbyApi().syncPersonInfo("updatePersion", config.getString("key"), 2)
+                        try {
+                            obj.put("personType", "1");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        RetrofitGenerator.getXinWeiGuanApi().withDataRr("updatePerson", config.getString("key"), obj.toString())
                                 .subscribeOn(Schedulers.io())
                                 .unsubscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(new Observer<String>() {
+                                .subscribe(new Observer<ResponseBody>() {
                                     @Override
                                     public void onSubscribe(Disposable d) {
 
                                     }
 
                                     @Override
-                                    public void onNext(String s) {
+                                    public void onNext(ResponseBody responseBody) {
                                         try {
-                                            if (s.equals("no")) {
+                                            String s = ParsingTool.extractMainContent(responseBody);
 
-                                            } else {
-                                                String[] idList = s.split("\\|");
-                                                if (idList.length > 0) {
-                                                    for (String id : idList) {
-                                                        if (!id.equals("")) {
-                                                            mdaoSession.insertOrReplace(new Employer(id.toUpperCase(), 2));
-                                                        }
-                                                    }
+                                            String[] idList = s.split("\\|");
+                                            if (idList.length > 0) {
+                                                for (String id : idList) {
+                                                    mdaoSession.insertOrReplace(new Employer(id.toUpperCase(), 1));
                                                 }
                                             }
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
-
                                     }
 
                                     @Override
@@ -349,59 +365,21 @@ public class HuNanService extends Service implements IOutputControlView {
 
                                     @Override
                                     public void onComplete() {
-                                        RetrofitGenerator.getHnmbyApi().syncPersonInfo("updatePersion", config.getString("key"), 1)
-                                                .subscribeOn(Schedulers.io())
-                                                .unsubscribeOn(Schedulers.io())
-                                                .observeOn(AndroidSchedulers.mainThread())
-                                                .subscribe(new Observer<String>() {
-                                                    @Override
-                                                    public void onSubscribe(Disposable d) {
+                                        try {
+                                            List<Keeper> keeperList = mdaoSession.getKeeperDao().loadAll();
+                                            for (Keeper keeper : keeperList) {
+                                                try {
+                                                    mdaoSession.queryRaw(Employer.class, "where CARD_ID = '" + keeper.getCardID() + "'").get(0);
+                                                } catch (IndexOutOfBoundsException e) {
+                                                    mdaoSession.delete(keeper);
+                                                    FacePresenter.getInstance().FaceDeleteByUserName(keeper.getName());
+                                                }
+                                            }
+                                        } catch (SQLiteException e) {
+                                            Log.e(TAG, e.toString());
+                                        }
+                                        getPic();
 
-                                                    }
-
-                                                    @Override
-                                                    public void onNext(String s) {
-                                                        try {
-                                                            if (s.equals("no")) {
-
-                                                            } else {
-                                                                String[] idList = s.split("\\|");
-                                                                if (idList.length > 0) {
-                                                                    for (String id : idList) {
-                                                                        if (!id.equals("")) {
-                                                                            mdaoSession.insertOrReplace(new Employer(id.toUpperCase(), 1));
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        } catch (Exception e) {
-                                                            e.printStackTrace();
-                                                        }
-                                                    }
-
-                                                    @Override
-                                                    public void onError(Throwable e) {
-                                                        FacePresenter.getInstance().FaceIdentify_model();
-                                                    }
-
-                                                    @Override
-                                                    public void onComplete() {
-                                                        try {
-                                                            List<Keeper> keeperList = mdaoSession.getKeeperDao().loadAll();
-                                                            for (Keeper keeper : keeperList) {
-                                                                try {
-                                                                    mdaoSession.queryRaw(Employer.class, "where CARD_ID = '" + keeper.getCardID() + "'").get(0);
-                                                                } catch (IndexOutOfBoundsException e) {
-                                                                    mdaoSession.delete(keeper);
-                                                                    FacePresenter.getInstance().FaceDeleteByUserName(keeper.getName());
-                                                                }
-                                                            }
-                                                        } catch (SQLiteException e) {
-                                                            Log.e(TAG, e.toString());
-                                                        }
-                                                        getPic();
-                                                    }
-                                                });
                                     }
                                 });
                     }
@@ -409,23 +387,16 @@ public class HuNanService extends Service implements IOutputControlView {
     }
 
     int count = 0;
+
     StringBuffer logMen;
 
     private void getPic() {
-//        if (config.getBoolean("wzwPic", true)) {
-//            mdaoSession.insertOrReplace(new Employer("441302199308100538", 1));
-//            Bitmap wzwbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wzw);
-//            if (FacePresenter.getInstance().FaceRegInBackGround(new CardInfoBean("441302199308100538", "王振文"), wzwbitmap, FileUtils.bitmapToBase64(wzwbitmap))) {
-//                Log.e("message", "王振文照片完成");
-//            }
-//        }
         logMen = new StringBuffer();
         count = 0;
         List<Employer> employers = mdaoSession.loadAll(Employer.class);
         if (employers.size() > 0) {
             for (Employer employer : employers) {
-                RetrofitGenerator.getHnmbyApi()
-                        .recentPic("recentPic", config.getString("key"), employer.getCardID())
+                RetrofitGenerator.getXinWeiGuanApi().queryPersonInfo("recentPic", config.getString("key"), employer.getCardID())
                         .subscribeOn(Schedulers.single())
                         .unsubscribeOn(Schedulers.single())
                         .observeOn(Schedulers.single())
@@ -439,10 +410,10 @@ public class HuNanService extends Service implements IOutputControlView {
                             public void onNext(ResponseBody responseBody) {
                                 try {
                                     count++;
-                                    JSONObject jsonObject = new JSONObject(responseBody.string());
+                                    String s = ParsingTool.extractMainContent(responseBody);
+                                    JSONObject jsonObject = new JSONObject(s);
                                     String result = jsonObject.getString("result");
                                     if (result.equals("true")) {
-
                                         String ps = jsonObject.getString("returnPic");
                                         String name = jsonObject.getString("personName");
                                         try {
@@ -514,10 +485,8 @@ public class HuNanService extends Service implements IOutputControlView {
                                                 logMen.append(name + "、");
                                             }
                                             logMen.deleteCharAt(logMen.length() - 1);
-
                                             handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
                                             Log.e(TAG, logMen.toString());
-
                                         } else {
                                             handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
                                             Log.e(TAG, logMen.toString());
@@ -542,7 +511,6 @@ public class HuNanService extends Service implements IOutputControlView {
                                             logMen.append(name + "、");
                                         }
                                         logMen.deleteCharAt(logMen.length() - 1);
-
                                         handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
                                         Log.e(TAG, logMen.toString());
 
@@ -566,33 +534,26 @@ public class HuNanService extends Service implements IOutputControlView {
         }
     }
 
-
-    boolean REUP = false;
-
     private void testNet() {
-        RetrofitGenerator.getHnmbyApi().withDataRs("testNet", config.getString("key"), null)
+        RetrofitGenerator.getXinWeiGuanApi().noData("testNet", config.getString("key"))
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<String>() {
+                .subscribe(new Observer<ResponseBody>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(String s) {
-                        if (s.equals("true")) {
+                    public void onNext(ResponseBody responseBody) {
+                        String s = ParsingTool.extractMainContent(responseBody);
+                        if (s.startsWith("true")) {
                             EventBus.getDefault().post(new NetworkEvent(true));
-                            if (!REUP) {
-                                reUpload();
-                                REUP = true;
-                            }
                         } else {
                             EventBus.getDefault().post(new NetworkEvent(false));
-                            REUP = false;
-
                         }
+
                     }
 
                     @Override
@@ -607,31 +568,70 @@ public class HuNanService extends Service implements IOutputControlView {
                 });
     }
 
+
     private void CloseDoorRecord(String time) {
-        final JSONObject CloseDoorRecordJson = new JSONObject();
+        JSONObject CloseDoorRecordJson = new JSONObject();
         try {
             CloseDoorRecordJson.put("datetime", time);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        RetrofitGenerator.getHnmbyApi().withDataRs("closeDoorRecord", config.getString("key"), CloseDoorRecordJson.toString())
+        RetrofitGenerator.getXinWeiGuanApi().withDataRr("closeDoorRecord", config.getString("key"), CloseDoorRecordJson.toString())
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<String>() {
+                .subscribe(new Observer<ResponseBody>() {
                     @Override
-                    public void onSubscribe(@NonNull Disposable d) {
+                    public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(@NonNull String s) {
+                    public void onNext(ResponseBody responseBody) {
 
                     }
 
                     @Override
-                    public void onError(@NonNull Throwable e) {
+                    public void onError(Throwable e) {
                         mdaoSession.insert(new ReUploadBean(null, "closeDoorRecord", CloseDoorRecordJson.toString()));
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+    private void alarmRecord() {
+        EventBus.getDefault().post(new AlarmEvent());
+        final JSONObject alarmRecordJson = new JSONObject();
+        try {
+            alarmRecordJson.put("datetime", TimeUtils.getNowString());// 报警时间
+            alarmRecordJson.put("alarmType", String.valueOf(1));  //报警类型
+            alarmRecordJson.put("alarmValue", String.valueOf(0));  //报警值
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RetrofitGenerator.getXinWeiGuanApi().withDataRr("alarmRecord", config.getString("key"), alarmRecordJson.toString())
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<ResponseBody>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(ResponseBody responseBody) {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        mdaoSession.insert(new ReUploadBean(null, "alarmRecord", alarmRecordJson.toString()));
                     }
 
                     @Override
@@ -649,7 +649,7 @@ public class HuNanService extends Service implements IOutputControlView {
             jsonObject.put("switching", THSwitchValue);
             jsonObject.put("temperature", last_mTemperature);
             jsonObject.put("humidity", last_mHumidity);
-            if (WarehouseDoor.getInstance().getMdoorState().equals(Door.DoorState.State_Open)) {
+            if (Door.getInstance().getMdoorState().equals(State_Open)) {
                 jsonObject.put("state", "0");
             } else {
                 jsonObject.put("state", "1");
@@ -657,18 +657,18 @@ public class HuNanService extends Service implements IOutputControlView {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        RetrofitGenerator.getHnmbyApi().withDataRs("stateRecord", config.getString("key"), jsonObject.toString())
+        RetrofitGenerator.getXinWeiGuanApi().withDataRr("stateRecord", config.getString("key"), jsonObject.toString())
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<String>() {
+                .subscribe(new Observer<ResponseBody>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(String s) {
+                    public void onNext(ResponseBody responseBody) {
 
                     }
 
@@ -682,42 +682,7 @@ public class HuNanService extends Service implements IOutputControlView {
 
                     }
                 });
-    }
 
-    private void alarmRecord() {
-        EventBus.getDefault().post(new AlarmEvent());
-        final JSONObject alarmRecordJson = new JSONObject();
-        try {
-            alarmRecordJson.put("datetime", TimeUtils.getNowString());
-            alarmRecordJson.put("alarmType", String.valueOf(1));
-            alarmRecordJson.put("alarmValue", String.valueOf(0));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        RetrofitGenerator.getHnmbyApi().withDataRs("alarmRecord", config.getString("key"), alarmRecordJson.toString())
-                .subscribeOn(Schedulers.io()).unsubscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<String>() {
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
-
-            }
-
-            @Override
-            public void onNext(@NonNull String s) {
-
-            }
-
-            @Override
-            public void onError(@NonNull Throwable e) {
-                mdaoSession.insert(new ReUploadBean(null, "alarmRecord", alarmRecordJson.toString()));
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        });
     }
 
 }

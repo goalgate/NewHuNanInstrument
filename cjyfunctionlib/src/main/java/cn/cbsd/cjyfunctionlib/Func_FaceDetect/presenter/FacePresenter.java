@@ -6,16 +6,14 @@ import android.util.Log;
 import android.view.TextureView;
 
 
-import com.baidu.idl.main.facesdk.api.FaceApi;
 import com.baidu.idl.main.facesdk.camera.AutoTexturePreviewView;
 import com.baidu.idl.main.facesdk.listener.SdkInitListener;
-import com.baidu.idl.main.facesdk.manager.FaceSDKManager;
 import com.baidu.idl.main.facesdk.manager.UserInfoManager;
 import com.baidu.idl.main.facesdk.model.LivenessModel;
 import com.baidu.idl.main.facesdk.model.User;
 
 
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.FaceImpl;
+import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.view.IFaceView;
 
@@ -23,7 +21,7 @@ import cn.cbsd.cjyfunctionlib.Func_FaceDetect.view.IFaceView;
 public class FacePresenter {
     private IFaceView view;
 
-    private IFace iFace = new FaceImpl();
+    private IFace iFace = new HuNanFaceImpl();
 
     private static FacePresenter instance = null;
 
@@ -192,7 +190,7 @@ public class FacePresenter {
         try {
             iFace.PreviewCease(listener);
         } catch (Exception e) {
-            Log.e("FaceIdentify", e.toString());
+            Log.e("PreviewCease", e.toString());
 
         }
     }
@@ -211,7 +209,7 @@ public class FacePresenter {
         try {
             iFace.useRGBCamera(status);
         } catch (Exception e) {
-            Log.e("FaceIdentify", e.toString());
+            Log.e("useRGBCamera", e.toString());
 
         }
     }
@@ -220,7 +218,7 @@ public class FacePresenter {
         try {
             return iFace.getGlobalBitmap();
         } catch (Exception e) {
-            Log.e("FaceIdentify", e.toString());
+            Log.e("getGlobalBitmap", e.toString());
         }
         return null;
     }
@@ -233,11 +231,20 @@ public class FacePresenter {
         }
     }
 
-    public void FaceDelete(String userName) {
+    public void FaceDeleteByUserName(String userName) {
         try {
-            iFace.FaceDelete(userName);
+            iFace.FaceDeleteByUserName(userName);
         } catch (Exception e) {
-            Log.e("FaceDelete", e.toString());
+            Log.e("FaceDeleteByUserName", e.toString());
+
+        }
+    }
+
+    public void FaceDeleteByUserId(String UserId) {
+        try {
+            iFace.FaceDeleteByUserId(UserId);
+        } catch (Exception e) {
+            Log.e("FaceDeleteByUserId", e.toString());
 
         }
     }
@@ -256,7 +263,7 @@ public class FacePresenter {
         try {
             iFace.FaceUpdate(bitmap, userName,listener);
         } catch (Exception e) {
-            Log.e("FaceGroupDelete", e.toString());
+            Log.e("FaceUpdate", e.toString());
         }
     }
 
@@ -264,13 +271,16 @@ public class FacePresenter {
         try {
             iFace.FaceRegOrUpdateByFeature( userName,UserInfo,feature,RegOrUpdate);
         } catch (Exception e) {
-            Log.e("FaceGroupDelete", e.toString());
+            Log.e("FaceRUByFeature", e.toString());
         }
     }
 
-    public User GetUser(String userName) {
-        return iFace.GetUser(userName);
+    public User GetUserByUserName(String userName) {
+        return iFace.GetUserByUserName(userName);
     }
 
+    public User GetUserByIdInTable(int IdInTable) {
+        return iFace.GetUserByIdInTable(IdInTable);
+    }
 
 }

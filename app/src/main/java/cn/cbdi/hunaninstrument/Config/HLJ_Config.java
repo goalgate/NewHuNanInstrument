@@ -1,12 +1,12 @@
 package cn.cbdi.hunaninstrument.Config;
 
-
-import cn.cbdi.hunaninstrument.Project_HuNan.HuNanService;
+import cn.cbdi.hunaninstrument.Project_Hebei.HeBeiService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
 
-public class HuNanConfig extends BaseConfig {
+public class HLJ_Config extends BaseConfig {
+
     @Override
     public boolean isFace() {
         return true;
@@ -24,23 +24,22 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public String getDev_prefix() {
-        return "";
+        return "800100";
     }
 
     @Override
     public String getPersonInfoPrefix() {
-        return "";
+        return "da_gzmb_persionInfo?";
     }
 
     @Override
     public String getUpDataPrefix() {
-        return "";
+        return "da_gzmb_updata?";
     }
-
 
     @Override
     public String getServerId() {
-        return "http://129.204.110.143:8031/";
+        return "http://221.207.254.111:100/";
     }
 
     @Override
@@ -60,7 +59,7 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public String getProject() {
-        return "HNMBY";        //湖南民爆云
+        return "HLJFB";        //黑龙江防爆
     }
 
     @Override
@@ -97,7 +96,6 @@ public class HuNanConfig extends BaseConfig {
     public void readCard() {
         IDCardPresenter.getInstance().ReadID();
         IDCardPresenter.getInstance().ReadIC();
-
     }
 
     @Override
@@ -113,17 +111,17 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public Class getServiceName() {
-        return HuNanService.class;
+        return HeBeiService.class;
     }
 
     @Override
     public String getMainActivity() {
-        return ".Project_HuNan.HuNanMainActivity";
+        return ".Project_Hebei.HebeiMainActivity";
     }
 
     @Override
     public String getAddActivity() {
-        return ".Project_HuNan.HuNanRegActivity";
+        return ".Project_Hebei.HeBeiRegActivity";
     }
 
     @Override
@@ -143,8 +141,9 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public boolean XungengCanOpen() {
-        return true;
+        return false;
     }
+
 
     @Override
     public boolean DoorMonitorChosen() {
@@ -159,5 +158,6 @@ public class HuNanConfig extends BaseConfig {
     @Override
     public void setHongWai(boolean hongWai) {
         this.hongWai= hongWai;
+
     }
 }

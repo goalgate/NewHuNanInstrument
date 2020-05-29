@@ -46,7 +46,9 @@ public interface IFace {
 
     void SetGroupID(String groupId);
 
-    void FaceDelete(String userName);
+    void FaceDeleteByUserName(String userName);
+
+    void FaceDeleteByUserId(String userId);
 
     void FaceVerifyAndReg(String userName, String userInfo, Bitmap bitmap);
 
@@ -56,7 +58,9 @@ public interface IFace {
 
     void FaceGroupDelete(String groupId);
 
-    User GetUser(String userName);
+    User GetUserByUserName(String userName);
+
+    User GetUserByIdInTable(int IdInTable);
 
     interface IFaceListener {
         void onText(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, String text);

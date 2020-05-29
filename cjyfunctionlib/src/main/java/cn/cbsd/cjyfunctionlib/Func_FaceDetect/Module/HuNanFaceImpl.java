@@ -71,7 +71,7 @@ import io.reactivex.schedulers.Schedulers;
 import static com.baidu.idl.main.facesdk.model.BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_ID_PHOTO;
 import static com.baidu.idl.main.facesdk.model.BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_LIVE_PHOTO;
 
-public class FaceImpl implements IFace {
+public class HuNanFaceImpl implements IFace {
 
     private IFaceListener listener;
 
@@ -305,7 +305,7 @@ public class FaceImpl implements IFace {
 
     @Override
     public Bitmap getGlobalBitmap() {
-        Bitmap global_bitmap = byteToBitmap(global_BitmapBytes,mWidth,mHeight);
+        Bitmap global_bitmap = byteToBitmap(global_BitmapBytes, mWidth, mHeight);
         return global_bitmap;
     }
 
@@ -315,8 +315,17 @@ public class FaceImpl implements IFace {
     }
 
     @Override
-    public void FaceDelete(String userName) {
+    public void FaceDeleteByUserName(String userName) {
         if (FaceApi.getInstance().userDeleteByName(userName, mGroupId)) {
+            Toast.makeText(mContext, userName + "删除成功", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(mContext, userName + "不存在", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void FaceDeleteByUserId(String userId) {
+        if (FaceApi.getInstance().userDelete(userId, mGroupId)) {
             Toast.makeText(mContext, userName + "删除成功", Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(mContext, userName + "不存在", Toast.LENGTH_LONG).show();
@@ -371,8 +380,13 @@ public class FaceImpl implements IFace {
     }
 
     @Override
-    public User GetUser(String userName) {
+    public User GetUserByUserName(String userName) {
         return FaceApi.getInstance().getUserListByUserName(mGroupId, userName).get(0);
+    }
+
+    @Override
+    public User GetUserByIdInTable(int IdInTable) {
+        return FaceApi.getInstance().getUserListById(IdInTable);
     }
 
     @Override
@@ -695,6 +709,8 @@ public class FaceImpl implements IFace {
                 Log.e("qing", "注册成功");
                 handler.post(() -> {
                     listener.onText(action, FacePresenter.FaceResultType.Reg_success, "人脸数据录入成功");
+                    listener.onUser(action, FacePresenter.FaceResultType.Reg_success, GetUserByUserName(userName));
+
                 });
                 // 数据变化，更新内存
                 FaceApi.getInstance().initDatabases(true);
@@ -731,7 +747,7 @@ public class FaceImpl implements IFace {
         } else {
             BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
             headphotoIR = BitmapUtils.getInstaceBmp(image);
-            Bitmap global_bitmap = byteToBitmap(global_BitmapBytes,mWidth,mHeight);
+            Bitmap global_bitmap = byteToBitmap(global_BitmapBytes, mWidth, mHeight);
             handler.post(() -> {
                 listener.onBitmap(action, FacePresenter.FaceResultType.Identify_success, global_bitmap);
                 listener.onBitmap(action, FacePresenter.FaceResultType.headphotoIR, headphotoIR);

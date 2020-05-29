@@ -176,7 +176,7 @@ public class FaceDetectActivity extends Activity implements IFaceView {
                 }
             }).start();
         } else if (vid == R.id.btn_faceDelete) {
-            fp.FaceDelete(userName);
+            fp.FaceDeleteByUserName(userName);
         } else if (vid == R.id.btn_faceVerify) {
             fp.FaceVerify(userName, userInfo, userBmp);
         } else if (vid == R.id.btn_faceIdentifyModel) {

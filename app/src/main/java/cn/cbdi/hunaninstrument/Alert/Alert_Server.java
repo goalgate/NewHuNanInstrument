@@ -23,10 +23,13 @@ import java.util.concurrent.TimeUnit;
 import cn.cbdi.hunaninstrument.AppInit;
 import cn.cbdi.hunaninstrument.Config.BaseConfig;
 import cn.cbdi.hunaninstrument.Config.HuNanConfig;
+import cn.cbdi.hunaninstrument.Config.XinWeiGuan_Config;
+import cn.cbdi.hunaninstrument.Project_XinWeiGuan.ParsingTool;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
 import cn.cbdi.hunaninstrument.Tool.DAInfo;
 import cn.cbdi.hunaninstrument.R;
 
+import cn.cbdi.hunaninstrument.Tool.ServerConnectionUtil;
 import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Machine.CJYHelper;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -35,6 +38,7 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.ResponseBody;
 
 public class Alert_Server {
 
@@ -103,6 +107,63 @@ public class Alert_Server {
                                 @Override
                                 public void onComplete() {
 
+                                }
+                            });
+                } else if(AppInit.getInstrumentConfig().getClass().getName().equals(XinWeiGuan_Config.class.getName())) {
+                    new RetrofitGenerator().getXinWeiGuanApi(url).noData("testNet", config.getString("key"))
+                            .subscribeOn(Schedulers.io())
+                            .unsubscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Observer<ResponseBody>() {
+                                @Override
+                                public void onSubscribe(Disposable d) {
+
+                                }
+
+                                @Override
+                                public void onNext(ResponseBody responseBody) {
+                                    try {
+                                        String s = ParsingTool.extractMainContent(responseBody);
+                                        if (s.equals("true")) {
+                                            config.put("ServerId", url);
+                                            ToastUtils.showLong("连接服务器成功,请点击确定立即启用");
+                                            callback.setNetworkBmp();
+                                        } else {
+                                            ToastUtils.showLong("连接服务器失败");
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+
+                                @Override
+                                public void onError(Throwable e) {
+                                    ToastUtils.showLong("服务器连接失败");
+                                }
+
+                                @Override
+                                public void onComplete() {
+
+                                }
+                            });
+
+                }else{
+                    new ServerConnectionUtil().post(url + AppInit.getInstrumentConfig().getUpDataPrefix() + "daid=" + config.getString("daid") + "&dataType=test", url
+                            , new ServerConnectionUtil.Callback() {
+                                @Override
+                                public void onResponse(String response) {
+                                    if (response != null) {
+                                        if (response.startsWith("true")) {
+                                            config.put("ServerId", url);
+                                            ToastUtils.showLong("连接服务器成功");
+                                            callback.setNetworkBmp();
+                                        } else {
+                                            ToastUtils.showLong("设备验证错误");
+                                        }
+                                    } else {
+                                        ToastUtils.showLong("服务器连接失败");
+                                    }
                                 }
                             });
                 }

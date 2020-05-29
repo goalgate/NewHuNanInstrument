@@ -113,44 +113,55 @@ public class FaceInitActivity extends RxActivity {
 
 
     private void appStart() {
-        if (config.getBoolean("firstStart", true)) {
-            JSONObject jsonKey = new JSONObject();
-            try {
-                jsonKey.put("daid", daid);
-                jsonKey.put("check", DESX.encrypt(daid));
+        if(AppInit.getInstrumentConfig().getDev_prefix().startsWith("800")){
+            if (config.getBoolean("firstStart", true)) {
+                ActivityUtils.startActivity(getPackageName(), getPackageName() + ".StartActivity");
+                return;
+            } else {
+                ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
+                return;
+            }
+        }else{
+            if (config.getBoolean("firstStart", true)) {
+                JSONObject jsonKey = new JSONObject();
+                try {
+                    jsonKey.put("daid", daid);
+                    jsonKey.put("check", DESX.encrypt(daid));
 //                jsonKey.put("daid", "024147-127051-043058");
 //                jsonKey.put("check", DESX.encrypt("024147-127051-043058"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            config.put("firstStart", false);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                config.put("firstStart", false);
 //            config.put("daid", new NetInfo().getMacId());
-            config.put("daid", daid);
-            config.put("key", DESX.encrypt(jsonKey.toString()));
-            config.put("ServerId", AppInit.getInstrumentConfig().getServerId());
-            AssetsUtils.getInstance(AppInit.getContext()).copyAssetsToSD("wltlib", "wltlib");
+                config.put("daid", daid);
+                config.put("key", DESX.encrypt(jsonKey.toString()));
+                config.put("ServerId", AppInit.getInstrumentConfig().getServerId());
+                AssetsUtils.getInstance(AppInit.getContext()).copyAssetsToSD("wltlib", "wltlib");
+            }
+
+            if (AppInit.getInstrumentConfig().DoorMonitorChosen() && config.getBoolean("SetDoorMonitor", true)) {
+                new AlertView("选择门感应方式", null, null, new String[]{"门磁", "红外对射"}, null, FaceInitActivity.this, AlertView.Style.Alert, (o, position) -> {
+                    if (position == 0) {
+                        config.put("isHongWai", false);
+                        AppInit.getInstrumentConfig().setHongWai(false);
+                    } else if (position == 1) {
+                        config.put("isHongWai", true);
+                        AppInit.getInstrumentConfig().setHongWai(true);
+                    }
+                    config.put("SetDoorMonitor", false);
+                    ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
+                }).show();
+            } else {
+                if (config.getBoolean("isHongWai", true)) {
+                    AppInit.getInstrumentConfig().setHongWai(true);
+                } else {
+                    AppInit.getInstrumentConfig().setHongWai(false);
+                }
+                ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
+            }
         }
 
-        if (AppInit.getInstrumentConfig().DoorMonitorChosen() && config.getBoolean("SetDoorMonitor", true)) {
-            new AlertView("选择门感应方式", null, null, new String[]{"门磁", "红外对射"}, null, FaceInitActivity.this, AlertView.Style.Alert, (o, position) -> {
-                if (position == 0) {
-                    config.put("isHongWai", false);
-                    AppInit.getInstrumentConfig().setHongWai(false);
-                } else if (position == 1) {
-                    config.put("isHongWai", true);
-                    AppInit.getInstrumentConfig().setHongWai(true);
-                }
-                config.put("SetDoorMonitor", false);
-                ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
-            }).show();
-        } else {
-            if (config.getBoolean("isHongWai", true)) {
-                AppInit.getInstrumentConfig().setHongWai(true);
-            } else {
-                AppInit.getInstrumentConfig().setHongWai(false);
-            }
-            ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
-        }
     }
 
     private void CheckLicenseKey(String xlsName,String licenseKey) {

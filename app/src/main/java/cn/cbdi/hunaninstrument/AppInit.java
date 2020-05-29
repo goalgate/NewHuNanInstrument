@@ -8,6 +8,8 @@ import com.blankj.utilcode.util.Utils;
 import com.squareup.leakcanary.LeakCanary;
 
 import cn.cbdi.hunaninstrument.Config.BaseConfig;
+import cn.cbdi.hunaninstrument.Config.HLJ_Config;
+import cn.cbdi.hunaninstrument.Config.HebeiConfig;
 import cn.cbdi.hunaninstrument.Config.HuNanConfig;
 import cn.cbdi.hunaninstrument.greendao.DaoMaster;
 import cn.cbdi.hunaninstrument.greendao.DaoSession;

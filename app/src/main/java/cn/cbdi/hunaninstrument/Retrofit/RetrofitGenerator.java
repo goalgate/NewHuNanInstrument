@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.HNMBYApi;
+import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.HeBeiApi;
+import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.XinWeiGuanApi;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -26,6 +28,14 @@ public class RetrofitGenerator {
     private static HNMBYApi hnmbyApi;
 
     private HNMBYApi testHnmbyApi;
+
+    private static XinWeiGuanApi xinWeiGuanApi;
+
+    private XinWeiGuanApi testXinWeiGuanApi;
+
+    private static HeBeiApi heBeiApi;
+
+    private HeBeiApi testHeBeiApi;
 
     private static OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();
     private static Gson gson = new GsonBuilder()
@@ -80,5 +90,33 @@ public class RetrofitGenerator {
             hnmbyApi = createService(HNMBYApi.class);
         }
         return hnmbyApi;
+    }
+
+    public XinWeiGuanApi getXinWeiGuanApi(String url) {
+        if (testXinWeiGuanApi == null) {
+            testXinWeiGuanApi = createService(XinWeiGuanApi.class, url);
+        }
+        return testXinWeiGuanApi;
+    }
+
+    public static XinWeiGuanApi getXinWeiGuanApi() {
+        if (xinWeiGuanApi == null) {
+            xinWeiGuanApi = createService(XinWeiGuanApi.class);
+        }
+        return xinWeiGuanApi;
+    }
+
+    public HeBeiApi getHeBeiApi(String url) {
+        if (testHeBeiApi == null) {
+            testHeBeiApi = createService(HeBeiApi.class, url);
+        }
+        return testHeBeiApi;
+    }
+
+    public static HeBeiApi getHeBeiApi() {
+        if (heBeiApi == null) {
+            heBeiApi = createService(HeBeiApi.class);
+        }
+        return heBeiApi;
     }
 }
