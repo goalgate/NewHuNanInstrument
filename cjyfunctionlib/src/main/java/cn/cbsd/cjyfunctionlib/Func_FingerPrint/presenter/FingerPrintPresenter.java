@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 
 import cn.cbsd.cjyfunctionlib.Func_FingerPrint.module.FingerPrintImpl;
+import cn.cbsd.cjyfunctionlib.Func_FingerPrint.module.FingerPrintImpl2;
 import cn.cbsd.cjyfunctionlib.Func_FingerPrint.module.IFingerPrint;
 import cn.cbsd.cjyfunctionlib.Func_FingerPrint.view.IFingerPrintView;
 
@@ -32,7 +33,7 @@ public class FingerPrintPresenter {
     }
 
 
-    IFingerPrint fpModule = new FingerPrintImpl();
+    IFingerPrint fpModule = new FingerPrintImpl2();
 
     public void fpInit(Context context) {
         fpModule.onInit(context,getFpListener());

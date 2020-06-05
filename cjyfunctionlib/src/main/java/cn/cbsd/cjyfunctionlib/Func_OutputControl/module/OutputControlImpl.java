@@ -43,7 +43,8 @@ public class OutputControlImpl implements IOutputControl {
             , 0x01, 0x00, (byte) 0x41, (byte) 0x92, (byte) 0x93, 0x63};
 
     private byte[] dt_buzz2 = {(byte) 0xAA, (byte) 0xAA, (byte) 0xAA, (byte) 0x96, 0x69, 0x22, 0x45, 0x35, (byte) 0xDF};
-
+    private byte[] dt_buzz_ = {(byte) 0xAA, (byte) 0xAA, (byte) 0xAA, (byte) 0x0B, 0x0B, 0x02, 0x33, (byte) 0x7B,
+            0x23};
 
     //    新命令20190812
 
@@ -136,7 +137,7 @@ public class OutputControlImpl implements IOutputControl {
 
     @Override
     public void onBuzz(Hex hex) {
-        sendData(dt_buzz2);
+        sendData(dt_buzz_);
 
     }
 
@@ -144,12 +145,12 @@ public class OutputControlImpl implements IOutputControl {
     @Override
     public void onElectricLock(Hex hex, boolean status) {
         if (!status) {
-            sendData(dt_relay_close);
+            sendData(dt_D5relay_close);
         } else {
             if (hex == Hex.H0) {
-                sendData(dt_relay_open);
+                sendData(dt_D5relay_open);
             } else {
-                sendData(adjust(dt_relay, hex));
+                sendData(adjust(dt_D5relay, hex));
             }
         }
     }

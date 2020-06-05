@@ -43,6 +43,7 @@ import cn.cbdi.hunaninstrument.Bean.Keeper;
 import cn.cbdi.hunaninstrument.Bean.ReUploadBean;
 
 import cn.cbdi.hunaninstrument.EventBus.AlarmEvent;
+import cn.cbdi.hunaninstrument.EventBus.FingerPrintIdentityEvent;
 import cn.cbdi.hunaninstrument.EventBus.LockUpEvent;
 import cn.cbdi.hunaninstrument.EventBus.NetworkEvent;
 import cn.cbdi.hunaninstrument.EventBus.PassEvent;
@@ -58,6 +59,7 @@ import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.ApkUtils;
 import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.SignUtils;
 import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
+import cn.cbsd.cjyfunctionlib.Func_FingerPrint.presenter.FingerPrintPresenter;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
@@ -70,11 +72,6 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
-
-import static cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant.MANUAL_PATH;
-import static cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant.NEW_APK_PATH;
-import static cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant.SIGN_MD5;
-import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Close;
 import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Open;
 
 public class XinWeiGuanService extends Service implements IOutputControlView {
@@ -95,6 +92,9 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
     Disposable rx_delay;
 
     Disposable unlock_noOpen;
+
+    private SPUtils fingerprintBooksRevert = SPUtils.getInstance("fingerprintBooksRevert");
+
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -320,6 +320,7 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
                     @Override
                     public void onError(Throwable e) {
                         FacePresenter.getInstance().FaceIdentify_model();
+                        EventBus.getDefault().post(new FingerPrintIdentityEvent());
 
                     }
 
@@ -360,6 +361,7 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
                                     @Override
                                     public void onError(Throwable e) {
                                         FacePresenter.getInstance().FaceIdentify_model();
+                                        EventBus.getDefault().post(new FingerPrintIdentityEvent());
 
                                     }
 
@@ -367,18 +369,23 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
                                     public void onComplete() {
                                         try {
                                             List<Keeper> keeperList = mdaoSession.getKeeperDao().loadAll();
+                                            List<Employer> employers = mdaoSession.getEmployerDao().loadAll();
+
                                             for (Keeper keeper : keeperList) {
                                                 try {
                                                     mdaoSession.queryRaw(Employer.class, "where CARD_ID = '" + keeper.getCardID() + "'").get(0);
                                                 } catch (IndexOutOfBoundsException e) {
                                                     mdaoSession.delete(keeper);
                                                     FacePresenter.getInstance().FaceDeleteByUserName(keeper.getName());
+                                                    FingerPrintPresenter.getInstance().fpRemoveTmpl(fingerprintBooksRevert.getString(keeper.getFaceUserId()));
+
                                                 }
                                             }
                                         } catch (SQLiteException e) {
                                             Log.e(TAG, e.toString());
                                         }
                                         getPic();
+                                        EventBus.getDefault().post(new FingerPrintIdentityEvent());
 
                                     }
                                 });

@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.HNMBYApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.HeBeiApi;
+import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.NMGYZBApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.XinWeiGuanApi;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -36,6 +37,10 @@ public class RetrofitGenerator {
     private static HeBeiApi heBeiApi;
 
     private HeBeiApi testHeBeiApi;
+
+    private static NMGYZBApi nmgyzbApi;
+
+    private NMGYZBApi testNMGYZBApi;
 
     private static OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();
     private static Gson gson = new GsonBuilder()
@@ -118,5 +123,19 @@ public class RetrofitGenerator {
             heBeiApi = createService(HeBeiApi.class);
         }
         return heBeiApi;
+    }
+
+    public NMGYZBApi getNMGYZBApi(String url) {
+        if (testNMGYZBApi == null) {
+            testNMGYZBApi = createService(NMGYZBApi.class, url);
+        }
+        return testNMGYZBApi;
+    }
+
+    public static NMGYZBApi getNMGYZBApi() {
+        if (nmgyzbApi == null) {
+            nmgyzbApi = createService(NMGYZBApi.class);
+        }
+        return nmgyzbApi;
     }
 }

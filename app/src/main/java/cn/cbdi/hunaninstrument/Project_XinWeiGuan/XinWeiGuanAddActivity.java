@@ -26,6 +26,7 @@ import com.blankj.utilcode.util.BarUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.TimeUtils;
 import com.blankj.utilcode.util.ToastUtils;
+import com.jakewharton.rxbinding2.view.RxView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -35,6 +36,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -52,6 +55,8 @@ import cn.cbdi.hunaninstrument.greendao.DaoSession;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.CardInfoBean;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardInfo;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
+import cn.cbsd.cjyfunctionlib.Func_FingerPrint.presenter.FingerPrintPresenter;
+import cn.cbsd.cjyfunctionlib.Func_FingerPrint.view.IFingerPrintView;
 import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -60,13 +65,19 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 
-public class XinWeiGuanAddActivity extends Activity {
+public class XinWeiGuanAddActivity extends Activity implements IFingerPrintView {
 
     private ArrayAdapter<String> adapter;
 
     DaoSession mdaoSession = AppInit.getInstance().getDaoSession();
 
+    FingerPrintPresenter fpp = FingerPrintPresenter.getInstance();
+
     private SPUtils config = SPUtils.getInstance("config");
+
+    private SPUtils fingerprintBooks = SPUtils.getInstance("fingerprintBooks");
+
+    private SPUtils fingerprintBooksRevert = SPUtils.getInstance("fingerprintBooksRevert");
 
     List<String> peoples = new ArrayList<String>();
 
@@ -78,6 +89,12 @@ public class XinWeiGuanAddActivity extends Activity {
 
     String userFaceID = "EMPTY";
 
+    String fingerprintID = "EMPTY";
+
+    int SpinnerSelected = -1;
+
+    boolean FingerReady = false;
+
     @BindView(R.id.peopleSpinner)
     Spinner peopleSpinner;
 
@@ -86,6 +103,12 @@ public class XinWeiGuanAddActivity extends Activity {
 
     @BindView(R.id.tv_peopleTips)
     TextView tv_peopleTips;
+
+    @BindView(R.id.iv_finger)
+    ImageView iv_finger;
+
+    @BindView(R.id.tv_finger)
+    TextView tv_finger;
 
     @OnClick(R.id.iv_userPic)
     void getPic() {
@@ -109,7 +132,7 @@ public class XinWeiGuanAddActivity extends Activity {
         Bundle bundle = new Bundle();
         bundle.putString("cardId", cardId);
         bundle.putString("name", name);
-        ActivityUtils.startActivity(bundle, getPackageName(), getPackageName() + ".Activity_XinWeiGuan.XinWeiGuanFaceDetectActivity");
+        ActivityUtils.startActivity(bundle, getPackageName(), getPackageName() + ".Project_XinWeiGuan.XinWeiGuanFaceDetectActivity");
     }
 
     @OnClick(R.id.btn_cancel)
@@ -128,6 +151,16 @@ public class XinWeiGuanAddActivity extends Activity {
                         }
 
                     }
+                    if (FingerReady) {
+                        fpp.fpRemoveTmpl(fingerprintID);
+                    }
+                    FingerReady = false;
+                    userFaceID = "EMPTY";
+                    fingerprintID = "EMPTY";
+                    peopleSpinner.setEnabled(true);
+                    peopleSpinner.setSelection(SpinnerSelected);
+                    tv_finger.setText("需选择人员获得指纹编号");
+                    iv_finger.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.zw_icon));
                     iv_userPic.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.user_icon));
                 } else {
                     if (!userFaceID.equals("EMPTY")) {
@@ -138,6 +171,9 @@ public class XinWeiGuanAddActivity extends Activity {
                             e.printStackTrace();
                         }
                     }
+                    if (!fingerprintID.equals("EMPTY")) {
+                        fpp.fpRemoveTmpl(fingerprintID);
+                    }
                     FacePresenter.getInstance().FaceIdentify_model();
                     finish();
                 }
@@ -147,20 +183,35 @@ public class XinWeiGuanAddActivity extends Activity {
 
     @OnClick(R.id.btn_commit)
     void commit() {
-        if (!userFaceID.equals("EMPTY")) {
-
-            try {
-                Keeper keeper = mdaoSession.queryRaw(Keeper.class, "where NAME = '" + choose_cardInfo.name() + "'").get(0);
-            } catch (IndexOutOfBoundsException e) {
-                User user = FacePresenter.getInstance().GetUserByUserName(choose_cardInfo.name());
-                Bitmap image = ((BitmapDrawable) iv_userPic.getDrawable()).getBitmap();
-                Keeper keeper = new Keeper(choose_cardInfo.cardId(), choose_cardInfo.name(),
-                        null, null, FileUtils.bitmapToBase64(image), user.getUserId(), user.getFeature());
-                mdaoSession.insertOrReplace(keeper);
-            }
-
-
+        if ((!userFaceID.equals("EMPTY")) && (!fingerprintID.equals("EMPTY"))) {
+            fingerprintBooks.put(fingerprintID, userFaceID);
+            fingerprintBooksRevert.put(userFaceID, fingerprintID);
+            Keeper keeper = new Keeper(choose_cardInfo.cardId(), choose_cardInfo.name(),
+                    null, null, null, userFaceID, null);
+            mdaoSession.insertOrReplace(keeper);
             userFaceID = "EMPTY";
+            fingerprintID = "EMPTY";
+            ToastUtils.showLong("人员插入成功");
+            alertTitle = "人员插入成功,请选择接下来的操作";
+            cancel();
+        } else if (!fingerprintID.equals("EMPTY")) {
+            String uid = UUID.randomUUID().toString();
+            fingerprintBooks.put(fingerprintID, uid);
+            fingerprintBooksRevert.put(uid, fingerprintID);
+            Keeper keeper = new Keeper(choose_cardInfo.cardId(), choose_cardInfo.name(),
+                    null, null, null, uid, null);
+            mdaoSession.insertOrReplace(keeper);
+            userFaceID = "EMPTY";
+            fingerprintID = "EMPTY";
+            ToastUtils.showLong("人员插入成功");
+            alertTitle = "人员插入成功,请选择接下来的操作";
+            cancel();
+        } else if (!userFaceID.equals("EMPTY")) {
+            Keeper keeper = new Keeper(choose_cardInfo.cardId(), choose_cardInfo.name(),
+                    null, null, null, userFaceID, null);
+            mdaoSession.insertOrReplace(keeper);
+            userFaceID = "EMPTY";
+            fingerprintID = "EMPTY";
             ToastUtils.showLong("人员插入成功");
             alertTitle = "人员插入成功,请选择接下来的操作";
             cancel();
@@ -173,7 +224,7 @@ public class XinWeiGuanAddActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         BarUtils.hideStatusBar(this);
-        setContentView(R.layout.activity_person_add_face);
+        setContentView(R.layout.activity_person_add_face_fingerprint);
         ButterKnife.bind(this);
         EventBus.getDefault().register(this);
 
@@ -183,6 +234,34 @@ public class XinWeiGuanAddActivity extends Activity {
         } catch (Exception e) {
             ToastUtils.showLong(e.toString());
         }
+
+        RxView.clicks(iv_finger).throttleFirst(3, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((o) -> {
+                    fingerprintID = String.valueOf(fpp.fpGetEmptyID());
+                    fpp.fpEnroll(fingerprintID);
+                    iv_finger.setClickable(false);
+                });
+        iv_finger.setClickable(false);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fpp.FingerPrintPresenterSetView(this);
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        fpp.fpCancel(true);
+        fpp.FingerPrintPresenterSetView(null);
+    }
+
+
+    @Override
+    public void onBackPressed() {
     }
 
     @Override
@@ -190,6 +269,33 @@ public class XinWeiGuanAddActivity extends Activity {
         super.onDestroy();
         Alarm.getInstance(this).release();
         EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    public void onText(String msg) {
+        if (!msg.equals("Canceled")) {
+            tv_finger.setText(msg);
+        }
+        if (msg.endsWith("录入成功")) {
+            peopleSpinner.setEnabled(false);
+            FingerReady = true;
+            iv_userPic.setClickable(true);
+//            ToastUtils.showLong("您现在可以点击人像捕捉人脸信息。");
+        }
+        if (msg.endsWith("点我重试")) {
+            iv_finger.setClickable(true);
+        }
+    }
+
+    @Override
+    public void onSetImg(Bitmap bmp) {
+        iv_finger.setImageBitmap(bmp);
+    }
+
+    @Override
+    public void onFpSucc(String msg) {
+
+
     }
 
     int count = 0;
@@ -258,26 +364,23 @@ public class XinWeiGuanAddActivity extends Activity {
                             }
                         });
             }
+        } else {
+            tv_peopleTips.setText("设备没有找到相应人员的信息");
+
         }
 
     }
 
-    class SpinnerSelectedListener implements AdapterView.OnItemSelectedListener {
-
-        public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
-                                   long arg3) {
-            ToastUtils.showLong(("您已挑选：" + peoplesInfo.get(arg2).name() + ",点击图片进入照片采集界面"));
-            choose_cardInfo = peoplesInfo.get(arg2);
-        }
-
-        public void onNothingSelected(AdapterView<?> arg0) {
-        }
-    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onFaceDetectEvent(FaceDetectEvent event) {
         iv_userPic.setImageBitmap(event.getBitmap());
         userFaceID = event.getUserId();
+        peopleSpinner.setEnabled(false);
+        if (!FingerReady) {
+            tv_finger.setText("点击指纹图片录入指纹");
+            iv_finger.setClickable(true);
+        }
     }
 
 
@@ -317,6 +420,29 @@ public class XinWeiGuanAddActivity extends Activity {
                     }
                 });
 
+    }
+
+
+    class SpinnerSelectedListener implements AdapterView.OnItemSelectedListener {
+
+        public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
+                                   long arg3) {
+
+            fpp.fpCancel(true);
+            ToastUtils.showLong(("您已挑选：" + peoplesInfo.get(arg2).name()));
+            choose_cardInfo = peoplesInfo.get(arg2);
+            SpinnerSelected = arg2;
+            try {
+                Thread.sleep(500);
+                fingerprintID = String.valueOf(fpp.fpGetEmptyID());
+                fpp.fpEnroll(fingerprintID);
+            } catch (InterruptedException e) {
+                ToastUtils.showLong(e.toString());
+            }
+        }
+
+        public void onNothingSelected(AdapterView<?> arg0) {
+        }
     }
 
 

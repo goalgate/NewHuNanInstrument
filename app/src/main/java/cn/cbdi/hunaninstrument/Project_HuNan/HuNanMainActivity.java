@@ -56,13 +56,17 @@ import cn.cbdi.hunaninstrument.EventBus.PassEvent;
 import cn.cbdi.hunaninstrument.EventBus.TemHumEvent;
 import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
+import cn.cbdi.hunaninstrument.State.DoorState.WarehouseDoor;
 import cn.cbdi.hunaninstrument.State.OperationState.DoorOpenOperation;
 import cn.cbdi.hunaninstrument.Tool.MediaHelper;
 import cn.cbdi.hunaninstrument.Tool.MyObserver;
+import cn.cbdi.hunaninstrument.Tool.UDPRun;
+import cn.cbdi.hunaninstrument.Tool.UDPState;
 import cn.cbdi.hunaninstrument.UI.NormalWindow;
 import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Machine.CJYHelper;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardInfo;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
+import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
 import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
@@ -115,6 +119,10 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
     String faceScore;
 
     String CompareScore;
+
+    int last_mTemperature;
+
+    int last_mHumidity;
 
     @BindView(R.id.gestures_overlay)
     GestureOverlayView gestures;
@@ -169,7 +177,19 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         EventBus.getDefault().register(this);
         UIReady();
         openService();
-
+        Observable.interval(10, 300, TimeUnit.SECONDS)
+                .observeOn(Schedulers.io())
+                .subscribe((l) -> {
+                    UDPState udp = new UDPState();
+                    //设置通用参数：服务器地址，端口，设备ID，接口URL
+                    udp.setPar("124.172.232.89", 8059, config.getString("daid"), "http://129.204.110.143:8031/");
+                    if (WarehouseDoor.getInstance().getMdoorState().equals(Door.DoorState.State_Open)) {
+                        udp.setState(0, (float) last_mTemperature, (float) last_mHumidity);
+                    } else {
+                        udp.setState(1, (float) last_mTemperature, (float) last_mHumidity);
+                    }
+                    udp.send();
+                });
     }
 
     private void UIReady() {
@@ -515,6 +535,8 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGetTemHumEvent(TemHumEvent event) {
+        last_mTemperature = event.getTem();
+        last_mHumidity = event.getHum();
         tv_temperature.setText(event.getTem() + "℃");
         tv_humidity.setText(event.getHum() + "%");
     }

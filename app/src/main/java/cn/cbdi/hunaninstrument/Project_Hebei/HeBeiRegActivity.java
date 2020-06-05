@@ -151,7 +151,6 @@ public class HeBeiRegActivity extends RxActivity implements IFaceView, IIDCardVi
                     AppInit.getInstrumentConfig().readCard();
                 });
         fp.FacePresenterSetView(this);
-        fp.FaceIdentifyReady();
     }
 
 

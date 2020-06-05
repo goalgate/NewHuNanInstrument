@@ -279,7 +279,6 @@ public class XinWeiGuanFaceImpl implements IFace {
 
     @Override
     public void PreviewCease(CeaseListener listener) {
-        DBManager.getInstance().release();
         Camera1PreviewManager.getInstance().stopPreview();
         Camera1PreviewManager.getInstance().release();
         Camera2PreviewManager.getInstance().stopPreview();
@@ -710,6 +709,7 @@ public class XinWeiGuanFaceImpl implements IFace {
                 handler.post(() -> {
                     listener.onText(action, FacePresenter.FaceResultType.Reg_success, "人脸数据录入成功");
                     listener.onUser(action, FacePresenter.FaceResultType.Reg_success, GetUserByUserName(userName));
+
                 });
                 // 数据变化，更新内存
                 FaceApi.getInstance().initDatabases(true);

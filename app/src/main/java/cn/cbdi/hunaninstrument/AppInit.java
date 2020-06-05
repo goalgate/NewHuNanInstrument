@@ -11,6 +11,7 @@ import cn.cbdi.hunaninstrument.Config.BaseConfig;
 import cn.cbdi.hunaninstrument.Config.HLJ_Config;
 import cn.cbdi.hunaninstrument.Config.HebeiConfig;
 import cn.cbdi.hunaninstrument.Config.HuNanConfig;
+import cn.cbdi.hunaninstrument.Config.XinWeiGuan_Config;
 import cn.cbdi.hunaninstrument.greendao.DaoMaster;
 import cn.cbdi.hunaninstrument.greendao.DaoSession;
 import cn.cbdi.hunaninstrument.greendao.MyOpenHelper;
@@ -50,7 +51,7 @@ public class AppInit extends Application {
 
         instance = this;
 
-        InstrumentConfig = new HuNanConfig();
+        InstrumentConfig = new XinWeiGuan_Config();
 
 //        Lg.setIsSave(true);
 

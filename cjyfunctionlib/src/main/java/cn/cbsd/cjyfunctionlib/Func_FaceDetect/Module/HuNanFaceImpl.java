@@ -279,7 +279,6 @@ public class HuNanFaceImpl implements IFace {
 
     @Override
     public void PreviewCease(CeaseListener listener) {
-        DBManager.getInstance().release();
         Camera1PreviewManager.getInstance().stopPreview();
         Camera1PreviewManager.getInstance().release();
         Camera2PreviewManager.getInstance().stopPreview();
@@ -287,7 +286,7 @@ public class HuNanFaceImpl implements IFace {
         if (mPreviewView != null) {
             mPreviewView = null;
         }
-        if (mPreviewView != null) {
+        if (mPreviewView1 != null) {
             mPreviewView1 = null;
         }
         if (mDrawDetectFaceView != null) {

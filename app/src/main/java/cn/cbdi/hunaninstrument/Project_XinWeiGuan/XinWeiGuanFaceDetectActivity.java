@@ -37,6 +37,7 @@ import io.reactivex.disposables.Disposable;
 
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Reg_failed;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Reg_success;
+import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.headphotoIR;
 
 
 public class XinWeiGuanFaceDetectActivity extends RxActivity implements IFaceView {
@@ -97,7 +98,7 @@ public class XinWeiGuanFaceDetectActivity extends RxActivity implements IFaceVie
     @Override
     public void onStart() {
         super.onStart();
-        fp.CameraPreview(AppInit.getContext(), previewView, previewView1, textureView);
+        fp.CameraPreview(this, previewView, previewView1, textureView);
     }
 
     @Override
@@ -153,15 +154,16 @@ public class XinWeiGuanFaceDetectActivity extends RxActivity implements IFaceVie
     @Override
     public void onUser(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, User user) {
         if (resultType.equals(Reg_success)) {
+            headBmp = fp.getGlobalBitmap();
+
             EventBus.getDefault().post(new FaceDetectEvent(headBmp, user.getUserId()));
+
         }
     }
 
     @Override
     public void onBitmap(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, Bitmap bitmap) {
-        if (resultType.equals(Reg_success)) {
-            headBmp = bitmap;
-        }
+
     }
 
     @Override

@@ -115,7 +115,6 @@ public abstract class BaseActivity extends RxActivity implements IFaceView {
         Log.e(TAG, "onResume");
         fp.useRGBCamera(false);
         fp.FacePresenterSetView(this);
-        fp.FaceIdentifyReady();
     }
 
     @Override

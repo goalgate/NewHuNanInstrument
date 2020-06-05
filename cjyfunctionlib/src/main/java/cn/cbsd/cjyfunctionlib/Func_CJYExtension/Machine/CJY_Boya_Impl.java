@@ -31,6 +31,8 @@ public class CJY_Boya_Impl extends CJYHelper {
     private CJY_Boya_Impl(Context context) {
         this.mContext = context;
         manager = MyManager.getInstance(context);
+        manager.setWatchDogEnable(1);
+        manager.watchDogFeedTime();
     }
 
 

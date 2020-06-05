@@ -38,6 +38,7 @@ import cn.cbdi.hunaninstrument.Project_HuNan.HuNanMainActivity;
 import cn.cbdi.hunaninstrument.Service.UpdateService;
 import cn.cbdi.hunaninstrument.Tool.AssetsUtils;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
+import cn.cbsd.cjyfunctionlib.Func_FingerPrint.presenter.FingerPrintPresenter;
 import cn.cbsd.cjyfunctionlib.R;
 import cn.cbsd.cjyfunctionlib.Tools.DESX;
 import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
@@ -64,6 +65,7 @@ public class FaceInitActivity extends RxActivity {
 
     String daid = new NetInfo().getMacId();
 
+//    String daid = "024147-127050-205074";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -77,9 +79,9 @@ public class FaceInitActivity extends RxActivity {
             File key = new File(Environment.getExternalStorageDirectory() + File.separator + "key.txt");
             String txtForKey = FileUtils.readFile2String(key);
             copyToClipboard(this, txtForKey);
-            CheckLicenseKey("excel" + File.separator + "授权激活码替换列表.xls",txtForKey);
+            CheckLicenseKey("excel" + File.separator + "授权激活码替换列表.xls", txtForKey);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -113,7 +115,7 @@ public class FaceInitActivity extends RxActivity {
 
 
     private void appStart() {
-        if(AppInit.getInstrumentConfig().getDev_prefix().startsWith("800")){
+        if (AppInit.getInstrumentConfig().getDev_prefix().startsWith("800")) {
             if (config.getBoolean("firstStart", true)) {
                 ActivityUtils.startActivity(getPackageName(), getPackageName() + ".StartActivity");
                 return;
@@ -121,19 +123,16 @@ public class FaceInitActivity extends RxActivity {
                 ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
                 return;
             }
-        }else{
+        } else {
             if (config.getBoolean("firstStart", true)) {
                 JSONObject jsonKey = new JSONObject();
                 try {
                     jsonKey.put("daid", daid);
                     jsonKey.put("check", DESX.encrypt(daid));
-//                jsonKey.put("daid", "024147-127051-043058");
-//                jsonKey.put("check", DESX.encrypt("024147-127051-043058"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 config.put("firstStart", false);
-//            config.put("daid", new NetInfo().getMacId());
                 config.put("daid", daid);
                 config.put("key", DESX.encrypt(jsonKey.toString()));
                 config.put("ServerId", AppInit.getInstrumentConfig().getServerId());
@@ -150,7 +149,18 @@ public class FaceInitActivity extends RxActivity {
                         AppInit.getInstrumentConfig().setHongWai(true);
                     }
                     config.put("SetDoorMonitor", false);
-                    ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
+                    if (AppInit.getInstrumentConfig().fingerprint()) {
+                        FingerPrintPresenter.getInstance().fpInit(AppInit.getContext());
+                        FingerPrintPresenter.getInstance().fpOpen();
+                        Observable.timer(3, TimeUnit.SECONDS)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .compose(FaceInitActivity.this.<Long>bindUntilEvent(ActivityEvent.DESTROY))
+                                .subscribe((l) -> ActivityUtils.startActivity(getPackageName(),
+                                        getPackageName() + AppInit.getInstrumentConfig().getMainActivity()));
+                    } else {
+                        ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
+
+                    }
                 }).show();
             } else {
                 if (config.getBoolean("isHongWai", true)) {
@@ -158,13 +168,25 @@ public class FaceInitActivity extends RxActivity {
                 } else {
                     AppInit.getInstrumentConfig().setHongWai(false);
                 }
-                ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
+
+                if (AppInit.getInstrumentConfig().fingerprint()) {
+                    FingerPrintPresenter.getInstance().fpInit(AppInit.getContext());
+                    FingerPrintPresenter.getInstance().fpOpen();
+                    Observable.timer(3, TimeUnit.SECONDS)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .compose(FaceInitActivity.this.<Long>bindUntilEvent(ActivityEvent.DESTROY))
+                            .subscribe((l) -> ActivityUtils.startActivity(getPackageName(),
+                                    getPackageName() + AppInit.getInstrumentConfig().getMainActivity()));
+                } else {
+                    ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
+
+                }
             }
         }
 
     }
 
-    private void CheckLicenseKey(String xlsName,String licenseKey) {
+    private void CheckLicenseKey(String xlsName, String licenseKey) {
         Observable.just(xlsName).flatMap(new Function<String, ObservableSource<String>>() {
             @Override
             public ObservableSource<String> apply(String s) throws Exception {
@@ -174,7 +196,7 @@ public class FaceInitActivity extends RxActivity {
                     for (Sheet sheet : workbook.getSheets()) {
                         int sheetRows = sheet.getRows();
                         for (int i = 0; i < sheetRows; i++) {
-                            if(licenseKey.equals(sheet.getCell(1, i).getContents())){
+                            if (licenseKey.equals(sheet.getCell(1, i).getContents())) {
                                 workbook.close();
                                 return Observable.just(sheet.getCell(2, i).getContents());
                             }
@@ -189,7 +211,7 @@ public class FaceInitActivity extends RxActivity {
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe((s -> {
                     String result = (String) s;
-                    if(s.startsWith("读写")){
+                    if (s.startsWith("读写")) {
                         FacePresenter.getInstance().FaceInit(this, new SdkInitListener() {
                             @Override
                             public void initStart() {
@@ -241,8 +263,8 @@ public class FaceInitActivity extends RxActivity {
                             }
                         });
 
-                    }else{
-                        if(!isNetworkOnline()){
+                    } else {
+                        if (!isNetworkOnline()) {
                             FacePresenter.getInstance().FaceInit(this, new SdkInitListener() {
                                 @Override
                                 public void initStart() {
@@ -257,7 +279,7 @@ public class FaceInitActivity extends RxActivity {
                                 @Override
                                 public void initLicenseFail(int errorCode, String msg) {
                                     // 如果授权失败，跳转授权页面
-                                    handler.post(()-> ToastUtils.showLong("设备未联网导致人脸号更新失败"));
+                                    handler.post(() -> ToastUtils.showLong("设备未联网导致人脸号更新失败"));
 
 //                                    activation = new Activation(FaceInitActivity.this);
 //                                    activation.show();
@@ -295,9 +317,9 @@ public class FaceInitActivity extends RxActivity {
 
                                 }
                             });
-                        }else{
+                        } else {
                             String real_licenseKey = result;
-                            handler.post(()-> ToastUtils.showLong("人脸激活号正在转换，请稍候..."));
+                            handler.post(() -> ToastUtils.showLong("人脸激活号正在转换，请稍候..."));
                             activation = new Activation(this);
                             activation.show();
                             activation.setActivationCallback(new Activation.ActivationCallback() {
@@ -327,7 +349,7 @@ public class FaceInitActivity extends RxActivity {
                 }));
     }
 
-    public static  boolean isNetworkOnline() {
+    public static boolean isNetworkOnline() {
         Runtime runtime = Runtime.getRuntime();
         try {
             Process ipProcess = runtime.exec("ping -c 3 114.114.114.114");
