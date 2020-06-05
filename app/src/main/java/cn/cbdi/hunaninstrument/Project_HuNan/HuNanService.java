@@ -104,19 +104,7 @@ public class HuNanService extends Service implements IOutputControlView {
                 .subscribe((l) -> testNet());
         Observable.interval(10, 600, TimeUnit.SECONDS).observeOn(Schedulers.io())
                 .subscribe((l) -> StateRecord());
-        Observable.interval(10, 60, TimeUnit.SECONDS).observeOn(Schedulers.io())
-                .subscribe((l) -> {
-                    UDPState udp = new UDPState();
-                    //设置通用参数：服务器地址，端口，设备ID，接口URL
-                    udp.setPar("124.172.232.89", 8059, config.getString("daid"), "http://129.204.110.143:8031/");
-                    if (WarehouseDoor.getInstance().getMdoorState().equals(Door.DoorState.State_Open)) {
-                        udp.setState(0, (float) last_mTemperature, (float) last_mHumidity);
-                    } else {
-                        udp.setState(1, (float) last_mTemperature, (float) last_mHumidity);
-                    }
-                    Thread server = new Thread(new UDPRun(udp));
-                    server.start();
-                });
+
     }
 
 
