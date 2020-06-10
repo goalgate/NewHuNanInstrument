@@ -1,4 +1,4 @@
-//package cn.cbdi.hunaninstrument.Project_NMGYZB;
+package cn.cbdi.hunaninstrument.Project_NMGYZB.YZB;//package cn.cbdi.hunaninstrument.Project_NMGYZB;
 //
 //import android.graphics.Bitmap;
 //import android.os.Bundle;

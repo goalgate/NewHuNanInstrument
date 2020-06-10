@@ -59,6 +59,7 @@ import java.util.concurrent.TimeUnit;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
+import cn.cbsd.cjyfunctionlib.Tools.BitmapTools;
 import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -177,7 +178,13 @@ public class HuNanFaceImpl implements IFace {
 
     @Override
     public boolean FaceRegByBase64(String userName, String userInfo, String base64) {
-        Bitmap mBitmap = FileUtils.base64ToBitmap(base64);
+        Bitmap mBitmap;
+        Bitmap origin_Bitmap = FileUtils.base64ToBitmap(base64);
+        if(origin_Bitmap.getWidth()<300){
+             mBitmap = BitmapTools.scaleMatrix(origin_Bitmap,400,400);
+        }else{
+            mBitmap = origin_Bitmap;
+        }
         byte[] bytes = new byte[512];
         float ret = syncFeature(mBitmap, bytes);
         if (ret == 128) {
@@ -243,7 +250,13 @@ public class HuNanFaceImpl implements IFace {
             if (ret1 == 128) {
                 float ret2 = syncFeature(bmp2, bytes2);
                 if (ret2 == 128) {
-                    return true;
+                    float score = FaceSDKManager.getInstance().getFaceFeature().featureCompare(
+                            BDFACE_FEATURE_TYPE_LIVE_PHOTO,
+                            bytes1, bytes2, true);
+                    if(score>70){
+                        return true;
+                    }
+                    return false;
                 } else {
                     return false;
                 }
@@ -647,6 +660,7 @@ public class HuNanFaceImpl implements IFace {
                             listener.onText(action, FacePresenter.FaceResultType.verify_success, "人证比对通过,等待抽取特征值");
                         });
                     } else {
+                        action = FacePresenter.FaceAction.Normal;
                         handler.post(() -> listener.onText(action, FacePresenter.FaceResultType.verify_failed, "人证比对分数过低"));
                     }
                     break;

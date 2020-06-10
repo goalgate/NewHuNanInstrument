@@ -1,12 +1,11 @@
 package cn.cbdi.hunaninstrument.Config;
 
-import cn.cbdi.hunaninstrument.Project_NMGYZB.FB.FBNMGService;
+import cn.cbdi.hunaninstrument.Project_YanCheng.YanChengService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
 
-public class NMGYZB_Config extends BaseConfig {
-
+public class YanChengConfig extends BaseConfig {
     @Override
     public boolean isFace() {
         return true;
@@ -14,7 +13,7 @@ public class NMGYZB_Config extends BaseConfig {
 
     @Override
     public boolean isTemHum() {
-        return false;
+        return true;
     }
 
     @Override
@@ -24,22 +23,23 @@ public class NMGYZB_Config extends BaseConfig {
 
     @Override
     public String getDev_prefix() {
-        return "800100";
+        return "";
     }
 
     @Override
     public String getPersonInfoPrefix() {
-        return "cjy/s/fbcjy_updata?";
+        return "";
     }
 
     @Override
     public String getUpDataPrefix() {
-        return "cjy/s/fbcjy_updata?";
+        return "";
     }
+
 
     @Override
     public String getServerId() {
-        return "http://113.140.1.138:8890/";
+        return "http://124.172.232.83:8007/";
     }
 
     @Override
@@ -54,12 +54,12 @@ public class NMGYZB_Config extends BaseConfig {
 
     @Override
     public String getName() {
-        return "库房采集器";
+        return "防爆采集器";
     }
 
     @Override
     public String getProject() {
-        return "NMGYZB";        //新危管
+        return "YanChengMB";        //盐城
     }
 
     @Override
@@ -94,16 +94,15 @@ public class NMGYZB_Config extends BaseConfig {
 
     @Override
     public void readCard() {
-        IDCardPresenter.getInstance().ReadIC();
         IDCardPresenter.getInstance().ReadID();
+        IDCardPresenter.getInstance().ReadIC();
 
     }
 
     @Override
     public void stopReadCard() {
-        IDCardPresenter.getInstance().StopReadIC();
         IDCardPresenter.getInstance().StopReadID();
-
+        IDCardPresenter.getInstance().StopReadIC();
     }
 
     @Override
@@ -113,17 +112,17 @@ public class NMGYZB_Config extends BaseConfig {
 
     @Override
     public Class getServiceName() {
-        return FBNMGService.class;
+        return YanChengService.class;
     }
 
     @Override
     public String getMainActivity() {
-        return ".Project_NMGYZB.FB.FBNMGMainActivity";
+        return ".Project_YanCheng.YanChengMainActivity";
     }
 
     @Override
     public String getAddActivity() {
-        return ".Project_NMGYZB.FB.FBNMGRegActivity";
+        return "";
     }
 
     @Override
@@ -133,7 +132,7 @@ public class NMGYZB_Config extends BaseConfig {
 
     @Override
     public boolean MenKongSuo() {
-        return false;
+        return true;
     }
 
     @Override
@@ -143,13 +142,12 @@ public class NMGYZB_Config extends BaseConfig {
 
     @Override
     public boolean XungengCanOpen() {
-        return false;
+        return true;
     }
-
 
     @Override
     public boolean DoorMonitorChosen() {
-        return true;
+        return false;
     }
 
     @Override
@@ -160,6 +158,6 @@ public class NMGYZB_Config extends BaseConfig {
     @Override
     public void setHongWai(boolean hongWai) {
         this.hongWai = hongWai;
-
     }
 }
+

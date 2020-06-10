@@ -1,10 +1,10 @@
-package cn.cbdi.hunaninstrument.Project_XinWeiGuan;
+package cn.cbdi.hunaninstrument.Project_YanCheng;
 
 import android.app.Service;
 import android.content.Intent;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
-import android.os.Environment;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
@@ -12,12 +12,9 @@ import android.util.Log;
 
 import com.baidu.idl.main.facesdk.manager.UserInfoManager;
 import com.baidu.idl.main.facesdk.model.User;
-import com.blankj.utilcode.util.AppUtils;
-import com.blankj.utilcode.util.FileIOUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.TimeUtils;
 import com.blankj.utilcode.util.ToastUtils;
-import com.cundong.utils.PatchUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -25,23 +22,15 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import cn.cbdi.hunaninstrument.AppInit;
 import cn.cbdi.hunaninstrument.Bean.Employer;
 import cn.cbdi.hunaninstrument.Bean.Keeper;
 import cn.cbdi.hunaninstrument.Bean.ReUploadBean;
-
 import cn.cbdi.hunaninstrument.EventBus.AlarmEvent;
 import cn.cbdi.hunaninstrument.EventBus.FaceIdentityEvent;
 import cn.cbdi.hunaninstrument.EventBus.FingerPrintIdentityEvent;
@@ -49,16 +38,14 @@ import cn.cbdi.hunaninstrument.EventBus.LockUpEvent;
 import cn.cbdi.hunaninstrument.EventBus.NetworkEvent;
 import cn.cbdi.hunaninstrument.EventBus.PassEvent;
 import cn.cbdi.hunaninstrument.EventBus.TemHumEvent;
-
+import cn.cbdi.hunaninstrument.Project_XinWeiGuan.ParsingTool;
+import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
 import cn.cbdi.hunaninstrument.State.DoorState.WarehouseDoor;
 import cn.cbdi.hunaninstrument.State.LockState.Lock;
-import cn.cbdi.hunaninstrument.Tool.ServerConnectionUtil;
 import cn.cbdi.hunaninstrument.greendao.DaoSession;
 import cn.cbdi.hunaninstrument.greendao.ReUploadBeanDao;
-import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.ApkUtils;
 import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.SignUtils;
-import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_FingerPrint.presenter.FingerPrintPresenter;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
@@ -73,10 +60,11 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
+
 import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Open;
 
-public class XinWeiGuanService extends Service implements IOutputControlView {
-    private String TAG = XinWeiGuanService.class.getSimpleName();
+public class YanChengService extends Service implements IOutputControlView {
+    private String TAG = YanChengService.class.getSimpleName();
 
     OutputControlPresenter sp = OutputControlPresenter.getInstance();
 
@@ -93,9 +81,6 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
     Disposable rx_delay;
 
     Disposable unlock_noOpen;
-
-    private SPUtils fingerprintBooksRevert = SPUtils.getInstance("fingerprintBooksRevert");
-
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -182,7 +167,7 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
         if (AppInit.getInstrumentConfig().isHongWai()) {
             if (!WarehouseDoor.getInstance().getMdoorState().equals(state)) {
                 WarehouseDoor.getInstance().setMdoorState(state);
-                if (state.equals(Door.DoorState.State_Open)) {
+                if (state.equals(State_Open)) {
                     if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Lockup)) {
                         Lock.getInstance().doNext();
                         alarmRecord();
@@ -192,7 +177,7 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
 
         } else {
             if (!WarehouseDoor.getInstance().getMdoorState().equals(state)) {
-                if (state.equals(Door.DoorState.State_Open)) {
+                if (state.equals(State_Open)) {
                     WarehouseDoor.getInstance().setMdoorState(state);
                     WarehouseDoor.getInstance().doNext();
                     if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Lockup)) {
@@ -321,7 +306,6 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
                     @Override
                     public void onError(Throwable e) {
                         EventBus.getDefault().post(new FaceIdentityEvent());
-                        EventBus.getDefault().post(new FingerPrintIdentityEvent());
 
                     }
 
@@ -362,7 +346,6 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
                                     @Override
                                     public void onError(Throwable e) {
                                         EventBus.getDefault().post(new FaceIdentityEvent());
-                                        EventBus.getDefault().post(new FingerPrintIdentityEvent());
 
                                     }
 
@@ -370,15 +353,12 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
                                     public void onComplete() {
                                         try {
                                             List<Keeper> keeperList = mdaoSession.getKeeperDao().loadAll();
-                                            List<Employer> employers = mdaoSession.getEmployerDao().loadAll();
-
                                             for (Keeper keeper : keeperList) {
                                                 try {
                                                     mdaoSession.queryRaw(Employer.class, "where CARD_ID = '" + keeper.getCardID() + "'").get(0);
                                                 } catch (IndexOutOfBoundsException e) {
                                                     mdaoSession.delete(keeper);
                                                     FacePresenter.getInstance().FaceDeleteByUserName(keeper.getName());
-                                                    FingerPrintPresenter.getInstance().fpRemoveTmpl(fingerprintBooksRevert.getString(keeper.getFaceUserId()));
 
                                                 }
                                             }
@@ -386,7 +366,6 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
                                             Log.e(TAG, e.toString());
                                         }
                                         getPic();
-                                        EventBus.getDefault().post(new FingerPrintIdentityEvent());
 
                                     }
                                 });
@@ -399,6 +378,31 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
     StringBuffer logMen;
 
     private void getPic() {
+//        if (config.getBoolean("wzwPic", true)) {
+//            mdaoSession.insertOrReplace(new Employer("441302199308100538", 1));
+//            Bitmap wzwbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.user);
+//            if (FacePresenter.getInstance().FaceRegByBase64("王振文","441302199308100538",FileUtils.bitmapToBase64(wzwbitmap))) {
+//                User user = FacePresenter.getInstance().GetUserByUserName("王振文");
+//                Keeper keeper = new Keeper("441302199308100538",
+//                        "王振文", null, FileUtils.bitmapToBase64(wzwbitmap), null,
+//                        user.getUserId(), user.getFeature());
+//                mdaoSession.getKeeperDao().insertOrReplace(keeper);
+//
+//            }
+//
+//            mdaoSession.insertOrReplace(new Employer("44128219830820403X", 1));
+//            Bitmap songBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.song);
+//            if (FacePresenter.getInstance().FaceRegByBase64("彭艺煊","44128219830820403X",FileUtils.bitmapToBase64(songBitmap))) {
+//                User user = FacePresenter.getInstance().GetUserByUserName("彭艺煊");
+//                Keeper keeper = new Keeper("44128219830820403X",
+//                        "彭艺煊", null, FileUtils.bitmapToBase64(songBitmap), null,
+//                        user.getUserId(), user.getFeature());
+//                mdaoSession.getKeeperDao().insertOrReplace(keeper);
+//
+//            }
+//        }
+
+
         logMen = new StringBuffer();
         count = 0;
         List<Employer> employers = mdaoSession.loadAll(Employer.class);
@@ -692,5 +696,4 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
                 });
 
     }
-
 }

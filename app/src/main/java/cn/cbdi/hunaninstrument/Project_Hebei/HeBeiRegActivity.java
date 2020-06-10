@@ -1,6 +1,7 @@
 package cn.cbdi.hunaninstrument.Project_Hebei;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -40,6 +41,7 @@ import cn.cbdi.hunaninstrument.Tool.MediaHelper;
 import cn.cbdi.hunaninstrument.Tool.MyObserver;
 import cn.cbdi.hunaninstrument.Tool.SafeCheck;
 import cn.cbdi.hunaninstrument.greendao.DaoSession;
+import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.CardInfoBean;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardInfo;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 import cn.cbsd.cjyfunctionlib.Func_Card.view.IIDCardView;
@@ -58,6 +60,8 @@ import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.Fac
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.IMG_MATCH_IMG_True;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Reg_failed;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Reg_success;
+import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.verify_failed;
+import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.verify_success;
 
 public class HeBeiRegActivity extends RxActivity implements IFaceView, IIDCardView {
 
@@ -101,8 +105,6 @@ public class HeBeiRegActivity extends RxActivity implements IFaceView, IIDCardVi
     TextView tv_timer;
 
 
-
-
 //    @OnClick(R.id.preview_view)
 //    void change() {
 //        fp.PreviewCease(() -> HuNanRegActivity.this.finish());
@@ -117,7 +119,7 @@ public class HeBeiRegActivity extends RxActivity implements IFaceView, IIDCardVi
         ButterKnife.bind(this);
         mapInit();
         disposableTips = RxTextView.textChanges(tv_info)
-                .debounce(30, TimeUnit.SECONDS)
+                .debounce(5, TimeUnit.SECONDS)
                 .switchMap(charSequence -> Observable.just("等待用户操作..."))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe((s) -> tv_info.setText(s));
@@ -193,8 +195,16 @@ public class HeBeiRegActivity extends RxActivity implements IFaceView, IIDCardVi
 
     @Override
     public void onsetCardImg(Bitmap bmp) {
-        cardBitmap = bmp;
+//        if (global_cardInfo.name().equals("马楠")) {
+//            global_cardInfo = new CardInfoBean("411222199104206028", "马楠");
+//            cardBitmap = BitmapFactory.decodeResource(getResources(), cn.cbsd.cjyfunctionlib.R.drawable.user);
+//
+//        } else if (global_cardInfo.name().equals("彭艺煊")) {
+//            global_cardInfo = new CardInfoBean("44128219830820403X", "彭艺煊");
+//            cardBitmap = BitmapFactory.decodeResource(getResources(), cn.cbsd.cjyfunctionlib.R.drawable.song);
+//        }
         if (bmp != null) {
+            cardBitmap = bmp;
             try {
                 mdaosession.queryRaw(Employer.class, "where CARD_ID = '" + global_cardInfo.cardId().toUpperCase() + "'").get(0);
                 tv_info.setText("等待人证比对结果返回");
@@ -202,7 +212,7 @@ public class HeBeiRegActivity extends RxActivity implements IFaceView, IIDCardVi
                 MediaHelper.play(MediaHelper.Text.waiting);
                 can_recentPic = true;
                 natural = true;
-                fp.FaceVerifyAndReg(global_cardInfo.name(), global_cardInfo.cardId(), bmp);
+                fp.FaceVerifyAndReg(global_cardInfo.name(), global_cardInfo.cardId(), cardBitmap);
             } catch (IndexOutOfBoundsException e) {
                 HashMap<String, String> map = (HashMap<String, String>) paramsMap.clone();
                 map.put("dataType", "queryPersion");
@@ -228,7 +238,7 @@ public class HeBeiRegActivity extends RxActivity implements IFaceView, IIDCardVi
                                         MediaHelper.play(MediaHelper.Text.waiting);
                                         can_recentPic = true;
                                         natural = true;
-                                        fp.FaceVerifyAndReg(global_cardInfo.name(), global_cardInfo.cardId(), bmp);
+                                        fp.FaceVerifyAndReg(global_cardInfo.name(), global_cardInfo.cardId(), cardBitmap);
                                     } else if (s.equals("noUnitId")) {
                                         tv_info.setText("系统还没有绑定该设备");
                                         tv_timer.setText("系统还没有绑定该设备");
@@ -269,10 +279,10 @@ public class HeBeiRegActivity extends RxActivity implements IFaceView, IIDCardVi
 
     @Override
     public void onText(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, String text) {
-        if (resultType.equals(IMG_MATCH_IMG_True)) {
+        if (resultType.equals(verify_success)) {
             tv_info.setText(text);
             tv_timer.setText(text);
-        } else if (resultType.equals(IMG_MATCH_IMG_False)) {
+        } else if (resultType.equals(verify_failed)) {
             sp.redLight();
             if (can_recentPic) {
                 tv_info.setText("人证比对分数过低，正在调取系统上最新的人员照片");
@@ -295,7 +305,7 @@ public class HeBeiRegActivity extends RxActivity implements IFaceView, IIDCardVi
 
     @Override
     public void onUser(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, User user) {
-        if(resultType.equals(Reg_success)){
+        if (resultType.equals(Reg_success)) {
             Keeper keeper = new Keeper(global_cardInfo.cardId().toUpperCase(),
                     global_cardInfo.name(), FileUtils.bitmapToBase64(headphotoIR), null, null,
                     user.getUserId(), user.getFeature());
@@ -305,7 +315,7 @@ public class HeBeiRegActivity extends RxActivity implements IFaceView, IIDCardVi
 
     @Override
     public void onBitmap(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, Bitmap bitmap) {
-        if(resultType.equals(headphotoIR)){
+        if (resultType.equals(headphotoIR)) {
             headphotoIR = bitmap;
         }
     }
@@ -384,11 +394,14 @@ public class HeBeiRegActivity extends RxActivity implements IFaceView, IIDCardVi
                                 String ps = jsonObject.getString("returnPic");
                                 if (!TextUtils.isEmpty(ps)) {
                                     Bitmap bitmap = FileUtils.base64ToBitmap(ps);
-                                    fp.FaceVerifyAndReg(global_cardInfo.name(),global_cardInfo.cardId(),bitmap);
+                                    fp.FaceVerifyAndReg(global_cardInfo.name(), global_cardInfo.cardId(), bitmap);
                                 } else {
                                     tv_info.setText("该人员尚未在系统提交最新照片");
                                     tv_timer.setText("该人员尚未在系统提交最新照片");
                                 }
+                            }else{
+                                tv_info.setText("人员信息有误");
+                                tv_timer.setText("人员信息有误");
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();

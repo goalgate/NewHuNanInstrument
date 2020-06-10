@@ -1,4 +1,4 @@
-//package cn.cbdi.hunaninstrument.Project_NMGYZB;
+package cn.cbdi.hunaninstrument.Project_NMGYZB.YZB;//package cn.cbdi.hunaninstrument.Project_NMGYZB;
 //
 //import android.app.Service;
 //import android.content.Intent;
@@ -58,8 +58,8 @@
 //
 //import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Open;
 //
-//public class NMGService extends Service implements IOutputControlView {
-//    private String TAG = cn.cbdi.hunaninstrument.Project_XinWeiGuan.XinWeiGuanService.class.getSimpleName();
+//public class FBNMGService extends Service implements IOutputControlView {
+//    private String TAG = FBNMGService.class.getSimpleName();
 //
 //    OutputControlPresenter sp = OutputControlPresenter.getInstance();
 //

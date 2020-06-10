@@ -120,6 +120,13 @@ public class FaceInitActivity extends RxActivity {
                 ActivityUtils.startActivity(getPackageName(), getPackageName() + ".StartActivity");
                 return;
             } else {
+                if (AppInit.getInstrumentConfig().DoorMonitorChosen()){
+                    if (config.getBoolean("isHongWai", true)) {
+                        AppInit.getInstrumentConfig().setHongWai(true);
+                    } else {
+                        AppInit.getInstrumentConfig().setHongWai(false);
+                    }
+                }
                 ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
                 return;
             }
@@ -163,11 +170,14 @@ public class FaceInitActivity extends RxActivity {
                     }
                 }).show();
             } else {
-                if (config.getBoolean("isHongWai", true)) {
-                    AppInit.getInstrumentConfig().setHongWai(true);
-                } else {
-                    AppInit.getInstrumentConfig().setHongWai(false);
+                if (AppInit.getInstrumentConfig().DoorMonitorChosen()){
+                    if (config.getBoolean("isHongWai", true)) {
+                        AppInit.getInstrumentConfig().setHongWai(true);
+                    } else {
+                        AppInit.getInstrumentConfig().setHongWai(false);
+                    }
                 }
+
 
                 if (AppInit.getInstrumentConfig().fingerprint()) {
                     FingerPrintPresenter.getInstance().fpInit(AppInit.getContext());

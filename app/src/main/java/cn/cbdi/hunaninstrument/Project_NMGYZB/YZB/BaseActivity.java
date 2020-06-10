@@ -1,4 +1,4 @@
-//package cn.cbdi.hunaninstrument.Project_NMGYZB;
+package cn.cbdi.hunaninstrument.Project_NMGYZB.YZB;//package cn.cbdi.hunaninstrument.Project_NMGYZB;
 //
 //import android.graphics.BitmapFactory;
 //import android.os.Bundle;
@@ -39,7 +39,7 @@
 //
 //public abstract class BaseActivity extends RxActivity implements IFaceView {
 //
-//    protected String TAG = NMGMainActivity.class.getSimpleName();
+//    protected String TAG = FBNMGMainActivity.class.getSimpleName();
 //
 //    DaoSession mdaosession = AppInit.getInstance().getDaoSession();
 //

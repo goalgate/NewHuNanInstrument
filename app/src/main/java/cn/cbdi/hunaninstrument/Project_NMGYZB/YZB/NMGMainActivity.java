@@ -1,4 +1,4 @@
-//package cn.cbdi.hunaninstrument.Project_NMGYZB;
+package cn.cbdi.hunaninstrument.Project_NMGYZB.YZB;//package cn.cbdi.hunaninstrument.Project_NMGYZB;
 //
 //import android.content.Intent;
 //import android.gesture.Gesture;
@@ -75,7 +75,7 @@
 //import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Close;
 //import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Open;
 //
-//public class NMGMainActivity extends BaseActivity implements SuperWindow2.OptionTypeListener {
+//public class FBNMGMainActivity extends BaseActivity implements SuperWindow2.OptionTypeListener {
 //
 //    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 //
@@ -163,8 +163,8 @@
 //        alert_password.PasswordViewInit(new Alert_Password.Callback() {
 //            @Override
 //            public void normal_call() {
-//                normalWindow = new SuperWindow2(NMGMainActivity.this);
-//                normalWindow.setOptionTypeListener(NMGMainActivity.this);
+//                normalWindow = new SuperWindow2(FBNMGMainActivity.this);
+//                normalWindow.setOptionTypeListener(FBNMGMainActivity.this);
 //                normalWindow.showAtLocation(getWindow().getDecorView().findViewById(android.R.id.content), Gravity.CENTER, 0, 0);
 //            }
 //        });
@@ -197,7 +197,7 @@
 //    }
 //
 //    void openService() {
-//        intent = new Intent(NMGMainActivity.this, AppInit.getInstrumentConfig().getServiceName());
+//        intent = new Intent(FBNMGMainActivity.this, AppInit.getInstrumentConfig().getServiceName());
 //        startService(intent);
 //    }
 //
@@ -283,7 +283,7 @@
 //                        tv_info.setText("仓管员" + cg_User1.getKeeper().getName() + "操作成功,请继续仓管员操作");
 //                        DoorOpenOperation.getInstance().doNext();
 //                        Observable.timer(60, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
-//                                .compose(NMGMainActivity.this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
+//                                .compose(FBNMGMainActivity.this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
 //                                .observeOn(AndroidSchedulers.mainThread())
 //                                .subscribe(new Observer<Long>() {
 //                                    @Override
@@ -412,7 +412,7 @@
 //                try {
 //                    String s = responseBody.string();
 //                    String datetime = s;
-//                    CJYHelper.getInstance(NMGMainActivity.this).setTime(Integer.parseInt(datetime.substring(0, 4)),
+//                    CJYHelper.getInstance(FBNMGMainActivity.this).setTime(Integer.parseInt(datetime.substring(0, 4)),
 //                            Integer.parseInt(datetime.substring(5, 7)),
 //                            Integer.parseInt(datetime.substring(8, 10)),
 //                            Integer.parseInt(datetime.substring(11, 13)),

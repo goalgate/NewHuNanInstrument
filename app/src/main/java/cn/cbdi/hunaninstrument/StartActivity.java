@@ -5,16 +5,22 @@ import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.bigkoo.alertview.AlertView;
 import com.blankj.utilcode.util.ActivityUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
+import com.trello.rxlifecycle2.android.ActivityEvent;
 
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cn.cbdi.hunaninstrument.Tool.AssetsUtils;
+import cn.cbsd.cjyfunctionlib.Func_FingerPrint.presenter.FingerPrintPresenter;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 /**
  * Created by zbsz on 2017/12/8.
@@ -45,8 +51,25 @@ public class StartActivity extends Activity {
             config.put("daid", AppInit.getInstrumentConfig().getDev_prefix() + dev_suffix.getText().toString());
             ToastUtils.showLong("设备ID设置成功");
             AssetsUtils.getInstance(AppInit.getContext()).copyAssetsToSD("wltlib","wltlib");
-            ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
-            StartActivity.this.finish();
+
+            if (AppInit.getInstrumentConfig().DoorMonitorChosen() && config.getBoolean("SetDoorMonitor", true)) {
+                new AlertView("选择门感应方式", null, null, new String[]{"门磁", "红外对射"}, null, StartActivity.this, AlertView.Style.Alert, (o, position) -> {
+                    if (position == 0) {
+                        config.put("isHongWai", false);
+                        AppInit.getInstrumentConfig().setHongWai(false);
+                    } else if (position == 1) {
+                        config.put("isHongWai", true);
+                        AppInit.getInstrumentConfig().setHongWai(true);
+                    }
+                    config.put("SetDoorMonitor", false);
+                    ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
+                    StartActivity.this.finish();
+                }).show();
+            }else{
+                ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
+                StartActivity.this.finish();
+            }
+
         } else {
             ToastUtils.showLong("设备ID输入错误，请重试");
         }

@@ -1,4 +1,4 @@
-package cn.cbdi.hunaninstrument.Project_XinWeiGuan;
+package cn.cbdi.hunaninstrument.Project_YanCheng;
 
 import android.app.ActivityManager;
 import android.content.ComponentName;
@@ -34,10 +34,13 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -52,20 +55,21 @@ import cn.cbdi.hunaninstrument.Bean.Employer;
 import cn.cbdi.hunaninstrument.Bean.Keeper;
 import cn.cbdi.hunaninstrument.Bean.ReUploadBean;
 import cn.cbdi.hunaninstrument.Bean.SceneKeeper;
+
 import cn.cbdi.hunaninstrument.EventBus.FaceIdentityEvent;
 import cn.cbdi.hunaninstrument.EventBus.FingerPrintIdentityEvent;
 import cn.cbdi.hunaninstrument.EventBus.LockUpEvent;
 import cn.cbdi.hunaninstrument.EventBus.PassEvent;
+
+import cn.cbdi.hunaninstrument.Project_XinWeiGuan.ParsingTool;
 import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
 import cn.cbdi.hunaninstrument.State.LockState.Lock;
 import cn.cbdi.hunaninstrument.State.OperationState.DoorOpenOperation;
 import cn.cbdi.hunaninstrument.Tool.MyObserver;
-import cn.cbdi.hunaninstrument.UI.SuperWindow2;
+import cn.cbdi.hunaninstrument.UI.NormalWindow;
 import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Machine.CJYHelper;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
-import cn.cbsd.cjyfunctionlib.Func_FingerPrint.presenter.FingerPrintPresenter;
-import cn.cbsd.cjyfunctionlib.Func_FingerPrint.view.IFingerPrintView;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
@@ -81,14 +85,13 @@ import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 
-import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceAction.Identify;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.IMG_MATCH_IMG_Score;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Identify_failed;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Identify_success;
 import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Close;
 import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Open;
 
-public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2.OptionTypeListener, IFingerPrintView {
+public class YanChengMainActivity extends BaseActivity implements NormalWindow.OptionTypeListener {
 
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -104,7 +107,7 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
 
     Alert_Password alert_password = new Alert_Password(this);
 
-    private SuperWindow2 normalWindow;
+    private NormalWindow normalWindow;
 
     Bitmap Scene_Bitmap;
 
@@ -135,6 +138,9 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
     @OnClick(R.id.lay_lock)
     void showoff() {
         Log.e(TAG, "unReUploadSize" + String.valueOf(mdaosession.loadAll(ReUploadBean.class).size()));
+
+        OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
+
     }
 
     @Override
@@ -176,8 +182,8 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
         alert_password.PasswordViewInit(new Alert_Password.Callback() {
             @Override
             public void normal_call() {
-                normalWindow = new SuperWindow2(XinWeiGuanMainActivity.this);
-                normalWindow.setOptionTypeListener(XinWeiGuanMainActivity.this);
+                normalWindow = new NormalWindow(YanChengMainActivity.this);
+                normalWindow.setOptionTypeListener(YanChengMainActivity.this);
                 normalWindow.showAtLocation(getWindow().getDecorView().findViewById(android.R.id.content), Gravity.CENTER, 0, 0);
             }
         });
@@ -210,7 +216,7 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
     }
 
     void openService() {
-        intent = new Intent(XinWeiGuanMainActivity.this, AppInit.getInstrumentConfig().getServiceName());
+        intent = new Intent(YanChengMainActivity.this, AppInit.getInstrumentConfig().getServiceName());
         startService(intent);
     }
 
@@ -224,7 +230,6 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
     @Override
     public void onResume() {
         super.onResume();
-        FingerPrintPresenter.getInstance().FingerPrintPresenterSetView(this);
         DoorOpenOperation.getInstance().setmDoorOpenOperation(DoorOpenOperation.DoorOpenState.Locking);
         iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj));
         tv_daid.setText(config.getString("daid"));
@@ -243,7 +248,6 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
     @Override
     protected void onRestart() {
         super.onRestart();
-        FingerPrintPresenter.getInstance().fpIdentify();
         FacePresenter.getInstance().FaceIdentify_model();
 
     }
@@ -251,8 +255,7 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
     @Override
     public void onPause() {
         super.onPause();
-        FingerPrintPresenter.getInstance().fpCancel(true);
-        FingerPrintPresenter.getInstance().FingerPrintPresenterSetView(null);
+
     }
 
 
@@ -286,7 +289,20 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
             faceScore = text;
         } else if (resultType.equals(IMG_MATCH_IMG_Score)) {
             CompareScore = text;
-            tv_info.setText("管理员" + cg_User2.getKeeper().getName() + "操作成功,仓库门已解锁");
+            if (AppInit.getInstrumentConfig().MenKongSuo()) {
+                tv_info.setText("管理员" + cg_User2.getKeeper().getName() + "操作成功,仓库门已解锁,15秒后电控锁重新上电");
+                OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.H0, false);
+                Observable.timer(15, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
+                        .compose(YanChengMainActivity.this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe((l) -> {
+                            OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.H0, true);
+
+                        });
+            } else {
+                tv_info.setText("管理员" + cg_User2.getKeeper().getName() + "操作成功,仓库门已解锁");
+
+            }
             DoorOpenOperation.getInstance().doNext();
             EventBus.getDefault().post(new PassEvent());
             if (AppInit.getInstrumentConfig().isHongWai()) {
@@ -313,7 +329,7 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
                         tv_info.setText("管理员" + cg_User1.getKeeper().getName() + "操作成功,请继续操作");
                         DoorOpenOperation.getInstance().doNext();
                         Observable.timer(60, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
-                                .compose(XinWeiGuanMainActivity.this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
+                                .compose(YanChengMainActivity.this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(new Observer<Long>() {
                                     @Override
@@ -419,116 +435,15 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
     }
 
     @Override
-    public void onSuperOptionType(Button view, int type) {
+    public void onOptionType(Button view, int type) {
         normalWindow.dismiss();
         if (type == 1) {
-            fp.PreviewCease(() -> ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getAddActivity()));
-        } else if (type == 2) {
             alert_server.show();
-        } else if (type == 3) {
+        } else if (type == 2) {
             alert_ip.show();
         }
     }
 
-    @Override
-    public void onSetImg(Bitmap bmp) {
-
-    }
-
-    @Override
-    public void onText(String msg) {
-        if ("请确认指纹是否已登记".equals(msg)) {
-            tv_info.setText("请确认指纹是否已登记,再重试");
-            sp.redLight();
-        } else if ("松开手指".equals(msg)) {
-            tv_info.setText(msg);
-        }
-    }
-
-    @Override
-    public void onFpSucc(String msg) {
-        if (msg.startsWith("fp")) {
-            return;
-        }
-        Matrix matrix = new Matrix();
-        matrix.postScale(0.5f, 0.5f);
-        String fingerprintID = msg.substring(3, msg.length());
-        SPUtils fingerprintBooks = SPUtils.getInstance("fingerprintBooks");
-        try {
-            String FaceID = fingerprintBooks.getString(fingerprintID);
-            Keeper keeper = mdaosession.queryRaw(Keeper.class, "where FACE_USER_ID= '" + FaceID + "'").get(0);
-            Employer employer = mdaosession.queryRaw(Employer.class, "where CARD_ID = '" + keeper.getCardID().toUpperCase() + "'").get(0);
-            if (employer.getType() == 1) {
-                if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.Locking)) {
-                    cg_User1.setKeeper(keeper);
-                    Bitmap captureImg = fp.getGlobalBitmap();
-                    captureImg = Bitmap.createBitmap(captureImg, 0, 0, captureImg.getWidth(), captureImg.getHeight(), matrix, true);
-                    cg_User1.setScenePhoto(captureImg);
-                    DoorOpenOperation.getInstance().doNext();
-                    sp.greenLight();
-                    tv_info.setText(String.format("管理员%s打卡成功。\n请继续操作", cg_User1.getKeeper().getName()));
-                    Observable.timer(60, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
-                            .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(new Observer<Long>() {
-                                @Override
-                                public void onSubscribe(Disposable d) {
-                                    checkChange = d;
-                                }
-
-                                @Override
-                                public void onNext(Long aLong) {
-                                    checkRecord(String.valueOf(1));
-
-                                }
-
-                                @Override
-                                public void onError(Throwable e) {
-
-                                }
-
-                                @Override
-                                public void onComplete() {
-
-                                }
-                            });
-                } else if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.OneUnlock)) {
-                    if (!keeper.getCardID().equals(cg_User1.getKeeper().getCardID())) {
-                        cg_User2.setKeeper(keeper);
-                        Bitmap captureImg = fp.getGlobalBitmap();
-                        captureImg = Bitmap.createBitmap(captureImg, 0, 0, captureImg.getWidth(), captureImg.getHeight(), matrix, true);
-                        cg_User2.setScenePhoto(captureImg);
-                        if (checkChange != null) {
-                            checkChange.dispose();
-                        }
-                        DoorOpenOperation.getInstance().doNext();
-                        sp.greenLight();
-                        tv_info.setText(String.format("管理员%s打卡成功。\n设备已撤防", cg_User2.getKeeper().getName()));
-
-                        EventBus.getDefault().post(new PassEvent());
-                        iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.newui_mj1));
-                    } else {
-                        sp.redLight();
-                        tv_info.setText("请不要连续输入相同的管理员信息");
-                    }
-                } else if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.TwoUnlock)) {
-                    tv_info.setText("仓库门已解锁");
-                }
-            } else if (employer.getType() == 2) {
-                if (checkChange != null) {
-                    checkChange.dispose();
-                }
-                if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.OneUnlock)) {
-                    tv_info.setText("请注意，该人员为巡检员，无法正常解锁\n如需解锁还请两名管理员到现场重新操作\n此次巡检记录已保存");
-                    OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
-                }
-                cg_User1.setKeeper(keeper);
-                checkRecord(String.valueOf(2));
-            }
-        } catch (IndexOutOfBoundsException e) {
-            ToastUtils.showLong(e.toString());
-        }
-    }
 
     private void syncTime() {
         RetrofitGenerator.getXinWeiGuanApi().noData("getTime", config.getString("key"))
@@ -544,7 +459,7 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
                 try {
                     String s = ParsingTool.extractMainContent(responseBody);
                     String datetime = s;
-                    CJYHelper.getInstance(XinWeiGuanMainActivity.this).setTime(Integer.parseInt(datetime.substring(0, 4)),
+                    CJYHelper.getInstance(YanChengMainActivity.this).setTime(Integer.parseInt(datetime.substring(0, 4)),
                             Integer.parseInt(datetime.substring(5, 7)),
                             Integer.parseInt(datetime.substring(8, 10)),
                             Integer.parseInt(datetime.substring(11, 13)),
@@ -826,17 +741,10 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
                 });
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onGetFingerPrintIdentityEvent(FingerPrintIdentityEvent event) {
-        if (isForeground(AppInit.getContext(), XinWeiGuanMainActivity.class.getName())) {
-            FingerPrintPresenter.getInstance().fpIdentify();
-            tv_info.setText("指纹识别功能已启动");
-        }
-    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGetFaceIdentityEvent(FaceIdentityEvent event) {
-        if (isForeground(AppInit.getContext(), XinWeiGuanMainActivity.class.getName())) {
+        if (isForeground(AppInit.getContext(), YanChengMainActivity.class.getName())) {
             fp.FaceIdentify_model();
         }
 
@@ -855,3 +763,4 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
         return false;
     }
 }
+

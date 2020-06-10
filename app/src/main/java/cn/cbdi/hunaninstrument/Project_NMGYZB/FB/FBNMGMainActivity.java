@@ -1,4 +1,4 @@
-package cn.cbdi.hunaninstrument.Project_Hebei;
+package cn.cbdi.hunaninstrument.Project_NMGYZB.FB;
 
 import android.app.ActivityManager;
 import android.content.ComponentName;
@@ -16,6 +16,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.Button;
+
 
 import com.baidu.idl.main.facesdk.model.LivenessModel;
 import com.baidu.idl.main.facesdk.model.User;
@@ -39,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
 import cn.cbdi.hunaninstrument.Alert.Alert_IP;
 import cn.cbdi.hunaninstrument.Alert.Alert_Message;
 import cn.cbdi.hunaninstrument.Alert.Alert_Password;
@@ -49,13 +51,17 @@ import cn.cbdi.hunaninstrument.Bean.DataFlow.UpOpenDoorData;
 import cn.cbdi.hunaninstrument.Bean.DataFlow.UpPersonRecordData;
 import cn.cbdi.hunaninstrument.Bean.Employer;
 import cn.cbdi.hunaninstrument.Bean.Keeper;
+import cn.cbdi.hunaninstrument.Bean.ReUploadBean;
 import cn.cbdi.hunaninstrument.Bean.ReUploadWithBsBean;
 import cn.cbdi.hunaninstrument.Bean.SceneKeeper;
 import cn.cbdi.hunaninstrument.EventBus.FaceIdentityEvent;
+import cn.cbdi.hunaninstrument.EventBus.LockUpEvent;
 import cn.cbdi.hunaninstrument.EventBus.PassEvent;
-import cn.cbdi.hunaninstrument.Project_NMGYZB.FB.FBNMGMainActivity;
+
 import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
+
+import cn.cbdi.hunaninstrument.State.LockState.Lock;
 import cn.cbdi.hunaninstrument.State.OperationState.DoorOpenOperation;
 import cn.cbdi.hunaninstrument.Tool.MediaHelper;
 import cn.cbdi.hunaninstrument.Tool.MyObserver;
@@ -64,22 +70,28 @@ import cn.cbdi.hunaninstrument.Tool.ServerConnectionUtil;
 import cn.cbdi.hunaninstrument.UI.NormalWindow;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardInfo;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
+import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
-import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.IMG_MATCH_IMG_Score;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Identify_failed;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Identify_success;
+import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Close;
+import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Open;
 
-public class HebeiMainActivity extends BaseActivity implements NormalWindow.OptionTypeListener {
+
+public class FBNMGMainActivity extends BaseActivity implements NormalWindow.OptionTypeListener {
 
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    SimpleDateFormat url_timeformatter = new SimpleDateFormat("yyyy-MM-dd%20HH:mm:ss");
 
     private Disposable disposableTips;
 
@@ -114,6 +126,11 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
         alert_message.showMessage();
     }
 
+    @OnClick(R.id.lay_lock)
+    void showoff() {
+        Log.e(TAG, "unReUploadWithBsBeanSize" + String.valueOf(mdaosession.loadAll(ReUploadWithBsBean.class).size()));
+    }
+
     Bitmap Scene_Bitmap;
 
     Bitmap Scene_headphoto;
@@ -141,6 +158,13 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
     }
 
     @Override
+    protected void onRestart() {
+        super.onRestart();
+        fp.FaceIdentify_model();
+    }
+
+
+    @Override
     public void onResume() {
         super.onResume();
         DoorOpenOperation.getInstance().setmDoorOpenOperation(DoorOpenOperation.DoorOpenState.Locking);
@@ -151,12 +175,6 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                 .observeOn(AndroidSchedulers.mainThread())
                 .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
                 .subscribe((l) -> tv_time.setText(formatter.format(new Date(System.currentTimeMillis()))));
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        fp.FaceIdentify_model();
     }
 
     @Override
@@ -172,7 +190,7 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
         mapInit();
         setGestures();
         disposableTips = RxTextView.textChanges(tv_info)
-                .debounce(15, TimeUnit.SECONDS)
+                .debounce(5, TimeUnit.SECONDS)
                 .switchMap(charSequence -> Observable.just("等待用户操作..."))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe((s) -> tv_info.setText(s));
@@ -181,15 +199,15 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                 R.drawable.iv_wifi)));
         alert_message.messageInit();
         alert_password.PasswordViewInit(() -> {
-            normalWindow = new NormalWindow(HebeiMainActivity.this);
-            normalWindow.setOptionTypeListener(HebeiMainActivity.this);
+            normalWindow = new NormalWindow(FBNMGMainActivity.this);
+            normalWindow.setOptionTypeListener(FBNMGMainActivity.this);
             normalWindow.showAtLocation(getWindow().getDecorView().findViewById(android.R.id.content),
                     Gravity.CENTER, 0, 0);
         });
     }
 
     void openService() {
-        intent = new Intent(HebeiMainActivity.this, AppInit.getInstrumentConfig().getServiceName());
+        intent = new Intent(FBNMGMainActivity.this, AppInit.getInstrumentConfig().getServiceName());
         startService(intent);
     }
 
@@ -198,8 +216,6 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
         safeCheck.setURL(config.getString("ServerId"));
         paramsMap.put("daid", config.getString("daid"));
         paramsMap.put("pass", safeCheck.getPass(config.getString("daid")));
-        Log.e("pass", paramsMap.get("pass"));
-
     }
 
     private void setGestures() {
@@ -273,7 +289,7 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
             HashMap<String, String> map = (HashMap<String, String>) paramsMap.clone();
             map.put("dataType", "queryPersion");
             map.put("id", cardInfo.cardId());
-            RetrofitGenerator.getHeBeiApi().GeneralPersionInfo(map)
+            RetrofitGenerator.getNMGYZBApi().GeneralPersionInfo(map)
                     .subscribeOn(Schedulers.io())
                     .unsubscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -324,6 +340,7 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
         }
     }
 
+
     @Override
     public void onBitmap(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, Bitmap bitmap) {
         if (resultType.equals(Identify_success)) {
@@ -331,10 +348,11 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
         } else if (resultType.equals(FacePresenter.FaceResultType.headphotoIR)) {
             Scene_headphoto = bitmap;
         }
+
     }
 
     @Override
-    public void onUser(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, User user) {
+    public void onUser(FacePresenter.FaceAction action,FacePresenter.FaceResultType resultType, User user) {
         if (resultType.equals(FacePresenter.FaceResultType.Identify_success)) {
             try {
                 Keeper keeper = mdaosession.queryRaw(Keeper.class,
@@ -351,7 +369,7 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                         sp.greenLight();
                         DoorOpenOperation.getInstance().doNext();
                         Observable.timer(60, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
-                                .compose(HebeiMainActivity.this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
+                                .compose(FBNMGMainActivity.this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(new Observer<Long>() {
                                     @Override
@@ -392,7 +410,15 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                             return;
                         }
                     } else if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.TwoUnlock)) {
-                        tv_info.setText("仓库门已解锁");
+                        if (AppInit.getInstrumentConfig().isHongWai()) {
+                            Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
+                            String closeDoorTime = formatter.format(new Date(System.currentTimeMillis()));
+                            CloseDoorRecord(closeDoorTime);
+                            EventBus.getDefault().post(new LockUpEvent());
+                            Door.getInstance().setMdoorState(State_Close);
+                        } else {
+                            tv_info.setText("仓库门已解锁");
+                        }
                     }
                 } else if (employer.getType() == 2) {
                     if (checkChange != null) {
@@ -448,35 +474,34 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
             CompareScore = text;
             OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
             sp.greenLight();
-            tv_info.setText("信息处理完毕,仓库门已解锁");
             DoorOpenOperation.getInstance().doNext();
             EventBus.getDefault().post(new PassEvent());
+            if (AppInit.getInstrumentConfig().isHongWai()) {
+                fp.FaceSetNoAction();
+                tv_info.setText("信息处理完毕,仓库门已解锁,20秒后才可重新上锁");
+                Door.getInstance().setMdoorState(State_Open);
+                Door.getInstance().doNext();
+                Observable.timer(20,TimeUnit.SECONDS)
+                        .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<Long>() {
+                            @Override
+                            public void accept(Long aLong) throws Exception {
+                                fp.FaceIdentify_model();
+
+                            }
+                        });
+            }else{
+                tv_info.setText("信息处理完毕,仓库门已解锁");
+
+            }
             iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj1));
         }
     }
 
     @Override
     public void onLivenessModel(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, LivenessModel model) {
-        if (resultType.equals(Identify_success)) {
-            try {
-                Keeper keeper = mdaosession.queryRaw(Keeper.class,
-                        "where CARD_ID = '" + model.getUser().getUserInfo().toUpperCase() + "'").get(0);
-                if (keeper.getHeadphotoBW() == null) {
-                    keeper.setHeadphotoBW(FileUtils.bitmapToBase64(Scene_headphoto));
-                    mdaosession.insertOrReplace(keeper);
-                    fp.FaceRegOrUpdateByFeature(keeper.getName(), keeper.getCardID(), model.getFeature(), false);
 
-                }
-//                else{
-//                    keeper.setHeadphotoBW(null);
-//                    mdaosession.getKeeperDao().insertOrReplace(keeper);
-//                }
-
-
-            } catch (Exception e) {
-                ToastUtils.showLong(e.toString());
-            }
-        }
     }
 
     private void checkRecord(int type) {
@@ -496,7 +521,6 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                         } else {
                             tv_info.setText("巡检数据上传失败");
                         }
-
                         cg_User1 = new SceneKeeper();
                         cg_User2 = new SceneKeeper();
                         if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.OneUnlock)) {
@@ -567,7 +591,7 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                     } else {
                         tv_info.setText("开门记录无法上传,请检查网络,离线数据已保存");
                         sp.redLight();
-                        mdaosession.insertOrReplace(new ReUploadWithBsBean(null, "dataType=openDoor"
+                        mdaosession.insert(new ReUploadWithBsBean(null, "dataType=openDoor"
                                 + "&daid=" + config.getString("daid")
                                 + "&faceRecognition1="
                                 + (cg_User1.getFaceRecognition() + 100)
@@ -586,9 +610,42 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                 });
     }
 
+    private void CloseDoorRecord(String time) {
+        HashMap<String, String> map = (HashMap<String, String>) paramsMap.clone();
+        map.put("dataType", "closeDoor");
+        map.put("time", time);
+        RetrofitGenerator.getNMGYZBApi().GeneralUpdata(map)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        mdaosession.insert(new ReUploadWithBsBean(null, "dataType=closeDoor" + "&time=" + url_timeformatter.format(new Date(System.currentTimeMillis())), null, 0));
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGetFaceIdentityEvent(FaceIdentityEvent event) {
-        if (isForeground(AppInit.getContext(), HebeiMainActivity.class.getName())) {
+        if (isForeground(AppInit.getContext(), FBNMGMainActivity.class.getName())) {
             fp.FaceIdentify_model();
         }
 

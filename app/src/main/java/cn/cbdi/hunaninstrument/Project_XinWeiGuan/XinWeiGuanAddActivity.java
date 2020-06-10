@@ -174,7 +174,6 @@ public class XinWeiGuanAddActivity extends Activity implements IFingerPrintView 
                     if (!fingerprintID.equals("EMPTY")) {
                         fpp.fpRemoveTmpl(fingerprintID);
                     }
-                    FacePresenter.getInstance().FaceIdentify_model();
                     finish();
                 }
             }

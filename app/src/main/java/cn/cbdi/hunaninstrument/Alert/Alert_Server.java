@@ -17,18 +17,25 @@ import com.blankj.utilcode.util.FileIOUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.File;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import cn.cbdi.hunaninstrument.AppInit;
 import cn.cbdi.hunaninstrument.Config.BaseConfig;
 import cn.cbdi.hunaninstrument.Config.HuNanConfig;
+import cn.cbdi.hunaninstrument.Config.NMGYZB_Config;
 import cn.cbdi.hunaninstrument.Config.XinWeiGuan_Config;
+import cn.cbdi.hunaninstrument.Config.YanChengConfig;
+import cn.cbdi.hunaninstrument.EventBus.NetworkEvent;
 import cn.cbdi.hunaninstrument.Project_XinWeiGuan.ParsingTool;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
 import cn.cbdi.hunaninstrument.Tool.DAInfo;
 import cn.cbdi.hunaninstrument.R;
 
+import cn.cbdi.hunaninstrument.Tool.SafeCheck;
 import cn.cbdi.hunaninstrument.Tool.ServerConnectionUtil;
 import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Machine.CJYHelper;
 import io.reactivex.Observable;
@@ -109,7 +116,8 @@ public class Alert_Server {
 
                                 }
                             });
-                } else if(AppInit.getInstrumentConfig().getClass().getName().equals(XinWeiGuan_Config.class.getName())) {
+                } else if(AppInit.getInstrumentConfig().getClass().getName().equals(XinWeiGuan_Config.class.getName())||
+                        AppInit.getInstrumentConfig().getClass().getName().equals(YanChengConfig.class.getName())) {
                     new RetrofitGenerator().getXinWeiGuanApi(url).noData("testNet", config.getString("key"))
                             .subscribeOn(Schedulers.io())
                             .unsubscribeOn(Schedulers.io())
@@ -140,6 +148,46 @@ public class Alert_Server {
                                 @Override
                                 public void onError(Throwable e) {
                                     ToastUtils.showLong("服务器连接失败");
+                                }
+
+                                @Override
+                                public void onComplete() {
+
+                                }
+                            });
+
+                }else if(AppInit.getInstrumentConfig().getClass().getName().equals(NMGYZB_Config.class.getName())) {
+                    HashMap<String, String> paramsMap = new HashMap<String, String>();
+                    SafeCheck safeCheck = new SafeCheck();
+                    safeCheck.setURL(config.getString("ServerId"));
+                    paramsMap.put("daid", config.getString("daid"));
+                    paramsMap.put("pass", safeCheck.getPass(config.getString("daid")));
+                    paramsMap.put("dataType", "test");
+                    RetrofitGenerator.getNMGYZBApi().GeneralUpdata(paramsMap)
+                            .subscribeOn(Schedulers.io())
+                            .unsubscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Observer<String>() {
+                                @Override
+                                public void onSubscribe(Disposable d) {
+
+                                }
+
+                                @Override
+                                public void onNext(String s) {
+                                    if (s.startsWith("true")) {
+                                        config.put("ServerId", url);
+                                        ToastUtils.showLong("连接服务器成功,请点击确定立即启用");
+                                        callback.setNetworkBmp();
+                                    } else {
+                                        ToastUtils.showLong("服务器连接失败");
+                                    }
+
+                                }
+
+                                @Override
+                                public void onError(Throwable e) {
+                                    EventBus.getDefault().post(new NetworkEvent(false));
                                 }
 
                                 @Override

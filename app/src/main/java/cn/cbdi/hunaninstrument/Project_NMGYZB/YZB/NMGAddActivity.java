@@ -1,4 +1,4 @@
-//package cn.cbdi.hunaninstrument.Project_NMGYZB;
+package cn.cbdi.hunaninstrument.Project_NMGYZB.YZB;//package cn.cbdi.hunaninstrument.Project_NMGYZB;
 //
 //import android.app.Activity;
 //import android.content.Context;
