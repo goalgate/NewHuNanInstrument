@@ -5,14 +5,28 @@ import android.graphics.Matrix;
 
 public class BitmapTools {
 
-    public static Bitmap scaleMatrix(Bitmap bitmap, int width, int height){
-        int w = bitmap.getWidth();
-        int h = bitmap.getHeight();
-        float scaleW = width/w;
-        float scaleH = height/h;
+    public static Bitmap scaleMatrix(Bitmap bitmap, int width) {
+
+        int before_width = bitmap.getWidth();
+
+        int before_height = bitmap.getHeight();
+
+        int after_width = width;
+
+        int after_height = (before_height * after_width)/before_width;
+
+        float scaleW = (float) after_width / before_width;
+        float scaleH = (float) after_height / before_height;
         Matrix matrix = new Matrix();
         matrix.postScale(scaleW, scaleH); // 长和宽放大缩小的比例
-        return Bitmap.createBitmap(bitmap, 0, 0, w, h, matrix, true);
+
+        Bitmap newbm = Bitmap.createBitmap(bitmap, 0, 0, before_width, before_height, matrix, true);
+        if (bitmap != null & !bitmap.isRecycled())
+        {
+            bitmap.recycle();
+            bitmap = null;
+        }
+        return newbm;
     }
 
 }

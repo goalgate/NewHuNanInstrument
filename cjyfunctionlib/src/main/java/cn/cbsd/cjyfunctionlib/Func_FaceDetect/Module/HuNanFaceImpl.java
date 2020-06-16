@@ -181,10 +181,14 @@ public class HuNanFaceImpl implements IFace {
         Bitmap mBitmap;
         Bitmap origin_Bitmap = FileUtils.base64ToBitmap(base64);
         if(origin_Bitmap.getWidth()<300){
-             mBitmap = BitmapTools.scaleMatrix(origin_Bitmap,400,400);
-        }else{
+             mBitmap = BitmapTools.scaleMatrix(origin_Bitmap,300);
+        }else if(origin_Bitmap.getWidth()>500){
+            mBitmap = BitmapTools.scaleMatrix(origin_Bitmap,500);
+        }else {
             mBitmap = origin_Bitmap;
         }
+//        mBitmap = origin_Bitmap;
+
         byte[] bytes = new byte[512];
         float ret = syncFeature(mBitmap, bytes);
         if (ret == 128) {
