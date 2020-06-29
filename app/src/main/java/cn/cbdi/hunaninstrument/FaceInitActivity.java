@@ -34,6 +34,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import cn.cbdi.hunaninstrument.Config.YanChengConfig;
 import cn.cbdi.hunaninstrument.Project_HuNan.HuNanMainActivity;
 import cn.cbdi.hunaninstrument.Service.UpdateService;
 import cn.cbdi.hunaninstrument.Tool.AssetsUtils;
@@ -65,7 +66,7 @@ public class FaceInitActivity extends RxActivity {
 
     String daid = new NetInfo().getMacId();
 
-//    String daid = "024147-127050-205074";
+//    String daid = "024147-127051-090034";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -131,6 +132,18 @@ public class FaceInitActivity extends RxActivity {
                 return;
             }
         } else {
+            if(AppInit.getInstrumentConfig().getClass().getName().equals(YanChengConfig.class.getName())){
+                JSONObject jsonKey = new JSONObject();
+                try {
+                    jsonKey.put("daid", daid);
+                    jsonKey.put("check", DESX.encrypt(daid));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                config.put("daid", daid);
+                config.put("key", DESX.encrypt(jsonKey.toString()));
+                config.put("ServerId", AppInit.getInstrumentConfig().getServerId());
+            }
             if (config.getBoolean("firstStart", true)) {
                 JSONObject jsonKey = new JSONObject();
                 try {

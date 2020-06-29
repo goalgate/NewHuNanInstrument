@@ -92,7 +92,7 @@ public class OutputControlActivity extends Activity implements IOutputControlVie
 
         }else if (vid == R.id.btn_ElectricLock){
             ElectricLock = !ElectricLock;
-            ocp.onElectricLock(IOutputControl.Hex.H0, ElectricLock);
+            ocp.onElectricLock(IOutputControl.Hex.HA, ElectricLock);
         }else if (vid == R.id.btn_redlight){
             ocp.redLight();
 
@@ -114,6 +114,10 @@ public class OutputControlActivity extends Activity implements IOutputControlVie
         } else {
             tv_DoorState.setText("门关");
         }
+    }
+
+    @Override
+    public void onSwitchValue(String Value) {
 
     }
 

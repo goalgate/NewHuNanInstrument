@@ -245,6 +245,11 @@ public class XinWeiGuanService extends Service implements IOutputControlView {
         }
     }
 
+    @Override
+    public void onSwitchValue(String Value) {
+
+    }
+
     private Handler handler = new Handler();
 
     private void reUpload() {

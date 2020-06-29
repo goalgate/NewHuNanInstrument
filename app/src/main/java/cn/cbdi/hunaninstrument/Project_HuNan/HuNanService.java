@@ -189,6 +189,11 @@ public class HuNanService extends Service implements IOutputControlView {
         last_mHumidity = humidity;
     }
 
+    @Override
+    public void onSwitchValue(String Value) {
+
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGetPassEvent(PassEvent event) {
         Lock.getInstance().setState(Lock.LockState.STATE_Unlock);

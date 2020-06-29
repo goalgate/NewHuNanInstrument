@@ -130,7 +130,7 @@ public class FaceSDKManager {
                 @Override
                 public void onResponse(int code, String response) {
                     if (code == 0) {
-                        initStatus =SDK_INIT_SUCCESS;
+                        initStatus = SDK_INIT_SUCCESS;
                         if (listener != null) {
                             listener.initLicenseSuccess();
                         }

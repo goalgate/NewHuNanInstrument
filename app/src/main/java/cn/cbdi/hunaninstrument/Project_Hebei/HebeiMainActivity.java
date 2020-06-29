@@ -52,10 +52,12 @@ import cn.cbdi.hunaninstrument.Bean.Keeper;
 import cn.cbdi.hunaninstrument.Bean.ReUploadWithBsBean;
 import cn.cbdi.hunaninstrument.Bean.SceneKeeper;
 import cn.cbdi.hunaninstrument.EventBus.FaceIdentityEvent;
+import cn.cbdi.hunaninstrument.EventBus.LockUpEvent;
 import cn.cbdi.hunaninstrument.EventBus.PassEvent;
 import cn.cbdi.hunaninstrument.Project_NMGYZB.FB.FBNMGMainActivity;
 import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
+import cn.cbdi.hunaninstrument.State.LockState.Lock;
 import cn.cbdi.hunaninstrument.State.OperationState.DoorOpenOperation;
 import cn.cbdi.hunaninstrument.Tool.MediaHelper;
 import cn.cbdi.hunaninstrument.Tool.MyObserver;
@@ -64,6 +66,7 @@ import cn.cbdi.hunaninstrument.Tool.ServerConnectionUtil;
 import cn.cbdi.hunaninstrument.UI.NormalWindow;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardInfo;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
+import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
 import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
@@ -71,15 +74,20 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.IMG_MATCH_IMG_Score;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Identify_failed;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Identify_success;
+import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Close;
+import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Open;
 
 public class HebeiMainActivity extends BaseActivity implements NormalWindow.OptionTypeListener {
 
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private SimpleDateFormat url_timeformatter = new SimpleDateFormat("yyyy-MM-dd%20HH:mm:ss");
 
     private Disposable disposableTips;
 
@@ -392,7 +400,15 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                             return;
                         }
                     } else if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.TwoUnlock)) {
-                        tv_info.setText("仓库门已解锁");
+                        if (AppInit.getInstrumentConfig().isHongWai()) {
+                            Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
+                            String closeDoorTime = formatter.format(new Date(System.currentTimeMillis()));
+                            CloseDoorRecord(closeDoorTime);
+                            EventBus.getDefault().post(new LockUpEvent());
+                            Door.getInstance().setMdoorState(State_Close);
+                        } else {
+                            tv_info.setText("仓库门已解锁");
+                        }
                     }
                 } else if (employer.getType() == 2) {
                     if (checkChange != null) {
@@ -448,9 +464,27 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
             CompareScore = text;
             OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
             sp.greenLight();
-            tv_info.setText("信息处理完毕,仓库门已解锁");
             DoorOpenOperation.getInstance().doNext();
             EventBus.getDefault().post(new PassEvent());
+            if (AppInit.getInstrumentConfig().isHongWai()) {
+                fp.FaceSetNoAction();
+                tv_info.setText("信息处理完毕,仓库门已解锁,20秒后才可重新上锁");
+                Door.getInstance().setMdoorState(State_Open);
+                Door.getInstance().doNext();
+                Observable.timer(20,TimeUnit.SECONDS)
+                        .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<Long>() {
+                            @Override
+                            public void accept(Long aLong) throws Exception {
+                                fp.FaceIdentify_model();
+
+                            }
+                        });
+            }else{
+                tv_info.setText("信息处理完毕,仓库门已解锁");
+
+            }
             iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj1));
         }
     }
@@ -585,6 +619,39 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                     cg_User2 = new SceneKeeper();
                 });
     }
+
+    private void CloseDoorRecord(String time) {
+        HashMap<String, String> map = (HashMap<String, String>) paramsMap.clone();
+        map.put("dataType", "closeDoor");
+        map.put("time", time);
+        RetrofitGenerator.getHeBeiApi().GeneralUpdata(map)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        mdaosession.insert(new ReUploadWithBsBean(null, "dataType=closeDoor" + "&time=" + url_timeformatter.format(new Date(System.currentTimeMillis())), null, 0));
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGetFaceIdentityEvent(FaceIdentityEvent event) {

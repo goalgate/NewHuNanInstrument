@@ -100,8 +100,6 @@ public abstract class BaseActivity extends RxActivity implements IFaceView {
         sp.Open();
         firstUse();
         Log.e(TAG, "onCreate");
-        OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.H0, true);
-
     }
 
 

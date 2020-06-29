@@ -137,9 +137,31 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
 
     @OnClick(R.id.lay_lock)
     void showoff() {
-        Log.e(TAG, "unReUploadSize" + String.valueOf(mdaosession.loadAll(ReUploadBean.class).size()));
+        try {
+            StringBuffer logMen = new StringBuffer();
 
-        OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
+            List<Keeper> keeperList = mdaosession.loadAll(Keeper.class);
+            if (keeperList.size() > 0) {
+                Set<String> list = new HashSet<>();
+                for (Keeper keeper : keeperList) {
+                    list.add(keeper.getName());
+                }
+                for (String name : list) {
+                    logMen.append(name + "、");
+                }
+                logMen.deleteCharAt(logMen.length() - 1);
+                ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕");
+                Log.e(TAG, logMen.toString());
+
+            } else {
+                ToastUtils.showLong("该设备没有可使用的人脸特征");
+                Log.e(TAG, logMen.toString());
+
+            }
+        }catch (Exception e){
+            ToastUtils.showLong(e.toString());
+        }
+//        OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.HA, true);
 
     }
 
@@ -290,15 +312,8 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
         } else if (resultType.equals(IMG_MATCH_IMG_Score)) {
             CompareScore = text;
             if (AppInit.getInstrumentConfig().MenKongSuo()) {
-                tv_info.setText("管理员" + cg_User2.getKeeper().getName() + "操作成功,仓库门已解锁,15秒后电控锁重新上电");
-                OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.H0, false);
-                Observable.timer(15, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
-                        .compose(YanChengMainActivity.this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe((l) -> {
-                            OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.H0, true);
-
-                        });
+                tv_info.setText("管理员" + cg_User2.getKeeper().getName() + "操作成功,仓库门已解锁");
+                OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.HA, true);
             } else {
                 tv_info.setText("管理员" + cg_User2.getKeeper().getName() + "操作成功,仓库门已解锁");
 
@@ -306,8 +321,23 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
             DoorOpenOperation.getInstance().doNext();
             EventBus.getDefault().post(new PassEvent());
             if (AppInit.getInstrumentConfig().isHongWai()) {
+                fp.FaceSetNoAction();
+                tv_info.setText("信息处理完毕,仓库门已解锁,20秒后才可重新上锁");
                 Door.getInstance().setMdoorState(State_Open);
                 Door.getInstance().doNext();
+                Observable.timer(20,TimeUnit.SECONDS)
+                        .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<Long>() {
+                            @Override
+                            public void accept(Long aLong) throws Exception {
+                                fp.FaceIdentify_model();
+
+                            }
+                        });
+            }else{
+                tv_info.setText("信息处理完毕,仓库门已解锁");
+
             }
             iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj1));
         }

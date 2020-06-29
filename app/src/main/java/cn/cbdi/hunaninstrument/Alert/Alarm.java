@@ -35,23 +35,18 @@ public class Alarm {
 
     private static Alarm instance = null;
 
-    public static Alarm getInstance(Context context) {
+    public static Alarm getInstance(Context context, OnItemClickListener onItemClickListener) {
         if (instance == null) {
-            instance = new Alarm(context);
+            instance = new Alarm(context, onItemClickListener);
         }
         return instance;
     }
 
-    private Alarm(Context context) {
+    private Alarm(Context context, OnItemClickListener onItemClickListener) {
         this.context = context;
         alarmView = (ViewGroup) LayoutInflater.from(this.context).inflate(R.layout.alarm_text, null);
         alarmText = (TextView) alarmView.findViewById(R.id.alarmText);
-        alert = new AlertView("", null, null, new String[]{"确定"}, null, context, AlertView.Style.Alert, new OnItemClickListener() {
-            @Override
-            public void onItemClick(Object o, int position) {
-
-            }
-        });
+        alert = new AlertView("", null, null, new String[]{"确定"}, null, context, AlertView.Style.Alert, onItemClickListener);
         alert.addExtView(alarmView);
     }
 
@@ -66,7 +61,7 @@ public class Alarm {
             } else {
                 callback.onIsKnown();
             }
-        }else{
+        } else {
             callback.onIsKnown();
         }
     }
@@ -81,10 +76,11 @@ public class Alarm {
         alarmText.setText(msg);
         Observable.timer(1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe((l)-> alert.show());
+                .subscribe((l) -> alert.show());
 
     }
-    public void setKnown( boolean known) {
+
+    public void setKnown(boolean known) {
         networkIsKnown = known;
     }
 
@@ -96,12 +92,13 @@ public class Alarm {
 
     public interface networkCallback {
         void onIsKnown();
+
         void onTextBack(String msg);
     }
 
     public void doorAlarm(doorCallback callback) {
-        if(WarehouseDoor.getInstance().getMdoorState().equals(Door.DoorState.State_Open)){
-            if(Lock.getInstance().getState().equals(Lock.LockState.STATE_Unlock)){
+        if (WarehouseDoor.getInstance().getMdoorState().equals(Door.DoorState.State_Open)) {
+            if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Unlock)) {
 //        if (WarehouseDoor.getInstance().getDoorState().getClass().getName().equals(State_Open.class.getName())) {
 //            if (Lock.getInstance().getLockState().getClass().getName().equals(State_Unlock.class.getName())) {
                 alarmText.setText("门磁已打开,如需撤防请先闭合门磁");
@@ -117,7 +114,7 @@ public class Alarm {
         }
     }
 
-    public void release(){
+    public void release() {
         instance = null;
     }
 }

@@ -11,6 +11,7 @@ import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.HNMBYApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.HeBeiApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.NMGYZBApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.XinWeiGuanApi;
+import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.YZBApi;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -41,6 +42,10 @@ public class RetrofitGenerator {
     private static NMGYZBApi nmgyzbApi;
 
     private NMGYZBApi testNMGYZBApi;
+
+    private YZBApi testYzbApi;
+
+    private static YZBApi yzbApi;
 
     private static OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();
     private static Gson gson = new GsonBuilder()
@@ -137,5 +142,21 @@ public class RetrofitGenerator {
             nmgyzbApi = createService(NMGYZBApi.class);
         }
         return nmgyzbApi;
+    }
+
+
+    public YZBApi getYzbApi(String url){
+        if(testYzbApi==null){
+            testYzbApi = createService(YZBApi.class,url);
+        }
+        return testYzbApi;
+    }
+
+
+    public static YZBApi getYzbApi(){
+        if (yzbApi==null){
+            yzbApi = createService(YZBApi.class);
+        }
+        return yzbApi;
     }
 }

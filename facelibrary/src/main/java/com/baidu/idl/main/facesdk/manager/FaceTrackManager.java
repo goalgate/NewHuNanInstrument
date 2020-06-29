@@ -134,6 +134,12 @@ public class FaceTrackManager {
                             rgbInstance, faceInfo.landmarks);
                     livenessModel.setRgbLivenessScore(rgbScore);
                     livenessModel.setRgbLivenessDuration(System.currentTimeMillis() - startTime);
+
+                    float nirScore = FaceSDKManager.getInstance().getFaceLiveness().silentLive(
+                            BDFaceSDKCommon.LiveType.BDFACE_SILENT_LIVE_TYPE_NIR,
+                            rgbInstance, faceInfo.landmarks);
+                    livenessModel.setIrLivenessScore(nirScore);
+                    livenessModel.setIrLivenessDuration(System.currentTimeMillis() - startTime);
                 }
                 // 流程结束销毁图片，开始下一帧图片检测，否着内存泄露
                 rgbInstance.destory();

@@ -1,5 +1,6 @@
 package cn.cbsd.cjyfunctionlib.Func_OutputControl.module;
 
+import android.content.pm.ApplicationInfo;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -118,7 +119,7 @@ public class OutputControlImpl implements IOutputControl {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe((l) -> sendData(dt_temHum_));
         } else {
-            if (disposable != null){
+            if (disposable != null) {
                 disposable.dispose();
             }
         }
@@ -145,12 +146,12 @@ public class OutputControlImpl implements IOutputControl {
     @Override
     public void onElectricLock(Hex hex, boolean status) {
         if (!status) {
-            sendData(dt_D5relay_close);
+            sendData(dt_relay_close);
         } else {
             if (hex == Hex.H0) {
-                sendData(dt_D5relay_open);
+                sendData(dt_relay_open);
             } else {
-                sendData(adjust(dt_D5relay, hex));
+                sendData(adjust(dt_relay, hex));
             }
         }
     }
@@ -314,13 +315,15 @@ public class OutputControlImpl implements IOutputControl {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == 0x123) {
-                if (testStr.equals("AAAAAA000001000000")) {
+                listener.onSwitchValue(testStr);
+                if (testStr.substring(10, 12).equals("01")) {
                     listener.onDoorState(Door.DoorState.State_Close);
-                } else if (testStr.equals("AAAAAA000000000000")) {
+                } else {
                     listener.onDoorState(Door.DoorState.State_Open);
                 }
+
             } else if (msg.what == 0x234) {
-                listener.onTemHum(temperature, humidity,testStr);
+                listener.onTemHum(temperature, humidity, testStr);
             }
         }
     };

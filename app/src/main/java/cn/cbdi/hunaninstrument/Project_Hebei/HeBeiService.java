@@ -121,13 +121,13 @@ public class HeBeiService extends Service implements IOutputControlView {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe((l) -> syncData());
         reUpload();
-        Observable.interval(0, 30, TimeUnit.SECONDS).observeOn(Schedulers.io())
+        Observable.interval(40, 300, TimeUnit.SECONDS).observeOn(Schedulers.io())
                 .subscribe((l) -> testNet());
         Observable.interval(0, AppInit.getInstrumentConfig().getCheckOnlineTime(), TimeUnit.MINUTES)
                 .observeOn(Schedulers.io())
                 .subscribe((l) -> checkOnline());
         if (AppInit.getInstrumentConfig().isTemHum()) {
-            sp.readHum(5,true);
+            sp.readHum(5, true);
             Observable.interval(10, 3600, TimeUnit.SECONDS).observeOn(Schedulers.io())
                     .subscribe((l) -> StateRecord());
         }
@@ -144,33 +144,34 @@ public class HeBeiService extends Service implements IOutputControlView {
     public void onGetPassEvent(PassEvent event) {
         Lock.getInstance().setState(Lock.LockState.STATE_Unlock);
         Lock.getInstance().doNext();
-        Observable.timer(120, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
-                .subscribe(new Observer<Long>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        unlock_noOpen = d;
-                    }
+        if (!AppInit.getInstrumentConfig().isHongWai()) {
+            Observable.timer(120, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
+                    .subscribe(new Observer<Long>() {
+                        @Override
+                        public void onSubscribe(Disposable d) {
+                            unlock_noOpen = d;
+                        }
 
-                    @Override
-                    public void onNext(Long aLong) {
-                        Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
-                        sp.buzz(IOutputControl.Hex.H0);
-                        EventBus.getDefault().post(new LockUpEvent());
-                    }
+                        @Override
+                        public void onNext(Long aLong) {
+                            Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
+                            sp.buzz(IOutputControl.Hex.H0);
+                            EventBus.getDefault().post(new LockUpEvent());
+                        }
 
-                    @Override
-                    public void onError(Throwable e) {
+                        @Override
+                        public void onError(Throwable e) {
 
-                    }
+                        }
 
-                    @Override
-                    public void onComplete() {
-                    }
-                });
+                        @Override
+                        public void onComplete() {
+                        }
+                    });
+        }
     }
-
     @Override
-    public void onTemHum(int temperature, int humidity,String THSwitchValue) {
+    public void onTemHum(int temperature, int humidity, String THSwitchValue) {
         EventBus.getDefault().post(new TemHumEvent(temperature, humidity));
         if ((Math.abs(temperature - last_mTemperature) > 3 || Math.abs(temperature - last_mTemperature) > 10)) {
             last_mTemperature = temperature;
@@ -183,60 +184,77 @@ public class HeBeiService extends Service implements IOutputControlView {
 
     @Override
     public void onDoorState(Door.DoorState state) {
-        if(!WarehouseDoor.getInstance().getMdoorState().equals(state)){
-            if(state.equals(Door.DoorState.State_Open)){
+        if (AppInit.getInstrumentConfig().isHongWai()) {
+            if (!WarehouseDoor.getInstance().getMdoorState().equals(state)) {
                 WarehouseDoor.getInstance().setMdoorState(state);
-                WarehouseDoor.getInstance().doNext();
-                if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Lockup)) {
-                    alarmRecord();
+                if (state.equals(Door.DoorState.State_Open)) {
+                    if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Lockup)) {
+                        Lock.getInstance().doNext();
+                        alarmRecord();
+                    }
                 }
-                if (unlock_noOpen != null) {
-                    unlock_noOpen.dispose();
-                }
-                if (rx_delay != null) {
-                    rx_delay.dispose();
-                }
-            }else{
-                WarehouseDoor.getInstance().setMdoorState(state);
-                WarehouseDoor.getInstance().doNext();
-                if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Unlock)) {
-                    final String closeDoorTime = TimeUtils.getNowString();
-                    Observable.timer(10, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
-                            .subscribe(new Observer<Long>() {
-                                @Override
-                                public void onSubscribe(Disposable d) {
-                                    rx_delay = d;
-                                }
+            }
 
-                                @Override
-                                public void onNext(Long aLong) {
-                                    Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
-                                    sp.buzz(IOutputControl.Hex.H0);
-                                    if (unlock_noOpen != null) {
-                                        unlock_noOpen.dispose();
-                                    }
-                                    CloseDoorRecord(closeDoorTime);
-                                    EventBus.getDefault().post(new LockUpEvent());
-                                }
-
-                                @Override
-                                public void onError(Throwable e) {
-
-                                }
-
-                                @Override
-                                public void onComplete() {
-
-                                }
-                            });
+        } else {
+            if (!WarehouseDoor.getInstance().getMdoorState().equals(state)) {
+                if (state.equals(Door.DoorState.State_Open)) {
+                    WarehouseDoor.getInstance().setMdoorState(state);
+                    WarehouseDoor.getInstance().doNext();
+                    if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Lockup)) {
+                        alarmRecord();
+                    }
+                    if (unlock_noOpen != null) {
+                        unlock_noOpen.dispose();
+                    }
+                    if (rx_delay != null) {
+                        rx_delay.dispose();
+                    }
                 } else {
                     WarehouseDoor.getInstance().setMdoorState(state);
+                    WarehouseDoor.getInstance().doNext();
+                    if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Unlock)) {
+                        final String closeDoorTime = TimeUtils.getNowString();
+                        Observable.timer(10, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
+                                .subscribe(new Observer<Long>() {
+                                    @Override
+                                    public void onSubscribe(Disposable d) {
+                                        rx_delay = d;
+                                    }
+
+                                    @Override
+                                    public void onNext(Long aLong) {
+                                        Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
+                                        sp.buzz(IOutputControl.Hex.H0);
+                                        if (unlock_noOpen != null) {
+                                            unlock_noOpen.dispose();
+                                        }
+                                        CloseDoorRecord(closeDoorTime);
+                                        EventBus.getDefault().post(new LockUpEvent());
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable e) {
+
+                                    }
+
+                                    @Override
+                                    public void onComplete() {
+
+                                    }
+                                });
+                    } else {
+                        WarehouseDoor.getInstance().setMdoorState(state);
+                    }
                 }
             }
         }
 
     }
 
+    @Override
+    public void onSwitchValue(String Value) {
+
+    }
 
     private Handler handler = new Handler();
 
@@ -514,21 +532,21 @@ public class HeBeiService extends Service implements IOutputControlView {
                                                 Log.e("ps_len", String.valueOf(ps.length()));
                                                 Log.e("keeper_len", String.valueOf(keeper.getHeadphoto().replaceAll("\r|\n", "").length()));
                                                 Bitmap bitmap = FileUtils.base64ToBitmap(ps);
-                                                FacePresenter.getInstance().FaceUpdate(bitmap,name,new UserInfoManager.UserInfoListener(){
+                                                FacePresenter.getInstance().FaceUpdate(bitmap, name, new UserInfoManager.UserInfoListener() {
                                                     public void updateImageSuccess(Bitmap bitmap) {
                                                         keeper.setHeadphoto(ps);
                                                         keeper.setHeadphotoBW(null);
                                                         mdaoSession.getKeeperDao().insertOrReplace(keeper);
                                                     }
                                                     public void updateImageFailure(String message) {
-                                                        Log.e(TAG,message);
+                                                        Log.e(TAG, message);
                                                     }
                                                 });
                                             }
                                         } catch (IndexOutOfBoundsException e) {
                                             if (!TextUtils.isEmpty(ps)) {
                                                 Bitmap bitmap = FileUtils.base64ToBitmap(ps);
-                                                if (FacePresenter.getInstance().FaceRegByBase64(name,employer.getCardID(),ps)) {
+                                                if (FacePresenter.getInstance().FaceRegByBase64(name, employer.getCardID(), ps)) {
                                                     User user = FacePresenter.getInstance().GetUserByUserName(name);
                                                     Keeper keeper = new Keeper(employer.getCardID().toUpperCase(),
                                                             name, ps, null, null,
@@ -554,11 +572,11 @@ public class HeBeiService extends Service implements IOutputControlView {
                                             logMen.deleteCharAt(logMen.length() - 1);
 
                                             handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
-                                            Log.e(TAG,logMen.toString());
+                                            Log.e(TAG, logMen.toString());
 
                                         } else {
                                             handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
-                                            Log.e(TAG,logMen.toString());
+                                            Log.e(TAG, logMen.toString());
 
                                         }
                                     }
@@ -578,11 +596,11 @@ public class HeBeiService extends Service implements IOutputControlView {
                                             logMen.deleteCharAt(logMen.length() - 1);
 
                                             handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
-                                            Log.e(TAG,logMen.toString());
+                                            Log.e(TAG, logMen.toString());
 
                                         } else {
                                             handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
-                                            Log.e(TAG,logMen.toString());
+                                            Log.e(TAG, logMen.toString());
 
                                         }
                                     }
@@ -606,11 +624,11 @@ public class HeBeiService extends Service implements IOutputControlView {
                                         logMen.deleteCharAt(logMen.length() - 1);
 
                                         handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
-                                        Log.e(TAG,logMen.toString());
+                                        Log.e(TAG, logMen.toString());
 
                                     } else {
                                         handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
-                                        Log.e(TAG,logMen.toString());
+                                        Log.e(TAG, logMen.toString());
 
                                     }
                                 }
@@ -622,7 +640,7 @@ public class HeBeiService extends Service implements IOutputControlView {
                             }
                         });
             }
-        }else {
+        } else {
             EventBus.getDefault().post(new FaceIdentityEvent());
             handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
         }

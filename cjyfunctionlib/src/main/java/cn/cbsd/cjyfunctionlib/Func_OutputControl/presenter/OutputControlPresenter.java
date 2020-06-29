@@ -47,6 +47,13 @@ public class OutputControlPresenter {
                     view.onTemHum(temperature, humidity,THSwitchValue);
                 }
             }
+
+            @Override
+            public void onSwitchValue(String Value) {
+                if (view != null) {
+                    view.onSwitchValue(Value);
+                }
+            }
         });
     }
 

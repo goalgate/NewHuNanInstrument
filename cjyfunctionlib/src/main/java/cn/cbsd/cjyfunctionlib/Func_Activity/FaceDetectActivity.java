@@ -184,22 +184,23 @@ public class FaceDetectActivity extends Activity implements IFaceView {
         } else if (vid == R.id.btn_faceIdentify) {
             fp.FaceIdentify();
         } else if (vid == R.id.btn_faceNormal) {
-            new Thread(()->{
-                fp.FaceUpdate(songBmp,userName,new UserInfoManager.UserInfoListener(){
-                    public void updateImageSuccess(Bitmap bitmap) {
-                        runOnUiThread(()->{
-                            tv_info.setText("人脸特征更新成功");
-                        });
-                    }
-
-                    public void updateImageFailure(String message) {
-                        runOnUiThread(()->{
-                            tv_info.setText("人脸特征更新失败");
-
-                        });
-                    }
-                });
-            }).start();
+            fp.FaceSetNoAction();
+//            new Thread(()->{
+//                fp.FaceUpdate(songBmp,userName,new UserInfoManager.UserInfoListener(){
+//                    public void updateImageSuccess(Bitmap bitmap) {
+//                        runOnUiThread(()->{
+//                            tv_info.setText("人脸特征更新成功");
+//                        });
+//                    }
+//
+//                    public void updateImageFailure(String message) {
+//                        runOnUiThread(()->{
+//                            tv_info.setText("人脸特征更新失败");
+//
+//                        });
+//                    }
+//                });
+//            }).start();
         } else if (vid == R.id.btn_faceCount) {
             fp.FaceIdentifyReady();
         }
@@ -264,9 +265,9 @@ public class FaceDetectActivity extends Activity implements IFaceView {
 
     @Override
     public void onLivenessModel(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, LivenessModel model) {
-        if (resultType.equals(Identify_failed)) {
-            fp.FaceRegOrUpdateByFeature(userName,userInfo,model.getFeature(),false);
-
-        }
+//        if (resultType.equals(Identify_failed)) {
+//            fp.FaceRegOrUpdateByFeature(userName,userInfo,model.getFeature(),false);
+//
+//        }
     }
 }

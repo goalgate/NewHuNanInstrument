@@ -69,6 +69,12 @@
             android:theme="@style/ImageTranslucentTheme">
         </activity>
 
+
+        <activity android:name=".Project_YZBYPT.YZBYPT_MainActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme">
+        </activity>
+
         <activity
             android:name=".Project_YanCheng.YanChengMainActivity"
             android:launchMode="standard"
@@ -80,6 +86,7 @@
         <service android:name=".Project_HuNan.HuNanService"></service>
         <service android:name=".Project_Hebei.HeBeiService"></service>
         <service android:name=".Project_XinWeiGuan.XinWeiGuanService"></service>
+        <service android:name=".Project_YZBYPT.YZBYPT_Service"></service>
 
         <service android:name=".Service.UpdateService"></service>
 

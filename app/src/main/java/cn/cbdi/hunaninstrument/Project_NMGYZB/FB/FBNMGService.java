@@ -229,6 +229,11 @@ public class FBNMGService extends Service implements IOutputControlView {
         }
     }
 
+    @Override
+    public void onSwitchValue(String Value) {
+
+    }
+
     private void reUpload() {
         ReUploadWithBsBeanDao reUploadWithBsBeanDao = mdaoSession.getReUploadWithBsBeanDao();
         List<ReUploadWithBsBean> list = reUploadWithBsBeanDao.queryBuilder().list();

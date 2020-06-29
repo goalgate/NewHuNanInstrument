@@ -17,10 +17,6 @@ public class BootBroadcastReceiver extends BroadcastReceiver {
             Intent intent2 = new Intent(context, FaceInitActivity.class);
             intent2.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent2);
-            if(AppInit.getInstrumentConfig().MenKongSuo()){
-                OutputControlPresenter.getInstance().Open();
-                OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.H0, true);
-            }
         }
     }
 }

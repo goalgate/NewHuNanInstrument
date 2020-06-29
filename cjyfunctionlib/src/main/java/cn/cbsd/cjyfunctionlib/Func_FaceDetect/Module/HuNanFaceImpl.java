@@ -513,6 +513,8 @@ public class HuNanFaceImpl implements IFace {
             FaceTrackManager.getInstance().setAliving(false);
         } else if (Integer.valueOf(liveType) == 2) { // 活体检测
             FaceTrackManager.getInstance().setAliving(true);
+        } else if (Integer.valueOf(liveType) == 5) { // 自定义活体检测
+            FaceTrackManager.getInstance().setAliving(true);
         }
         IDENTITYING = false;
 
@@ -624,7 +626,8 @@ public class HuNanFaceImpl implements IFace {
 
         int liveType = SingleBaseConfig.getBaseConfig().getType();
         // 无活体
-        if (Integer.valueOf(liveType) == 1) {
+        if (Integer.valueOf(liveType) == 1||
+                (Integer.valueOf(liveType) == 5&&(model.getRgbLivenessScore()> SingleBaseConfig.getBaseConfig().getRgbLiveScore()||model.getIrLivenessScore()> SingleBaseConfig.getBaseConfig().getNirLiveScore()))) {
             BDFaceImageInstance image = model.getBdFaceImageInstance();
             switch (action) {
                 case Reg:

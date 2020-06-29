@@ -215,7 +215,7 @@ public class XinWeiGuanAddActivity extends Activity implements IFingerPrintView 
             alertTitle = "人员插入成功,请选择接下来的操作";
             cancel();
         } else {
-            Alarm.getInstance(XinWeiGuanAddActivity.this).messageAlarm("您还有信息未登记，如需退出请按取消");
+            Alarm.getInstance(XinWeiGuanAddActivity.this,null).messageAlarm("您还有信息未登记，如需退出请按取消");
         }
     }
 
@@ -266,7 +266,7 @@ public class XinWeiGuanAddActivity extends Activity implements IFingerPrintView 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Alarm.getInstance(this).release();
+        Alarm.getInstance(this,null).release();
         EventBus.getDefault().unregister(this);
     }
 

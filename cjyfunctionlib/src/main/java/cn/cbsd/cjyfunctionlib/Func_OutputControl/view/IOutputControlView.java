@@ -12,4 +12,6 @@ public interface IOutputControlView {
 
     void onTemHum(int temperature, int humidity,String THSwitchValue);
 
+    void onSwitchValue(String Value);
+
 }

@@ -28,6 +28,7 @@ import cn.cbdi.hunaninstrument.Config.BaseConfig;
 import cn.cbdi.hunaninstrument.Config.HuNanConfig;
 import cn.cbdi.hunaninstrument.Config.NMGYZB_Config;
 import cn.cbdi.hunaninstrument.Config.XinWeiGuan_Config;
+import cn.cbdi.hunaninstrument.Config.YZBYPT_Config;
 import cn.cbdi.hunaninstrument.Config.YanChengConfig;
 import cn.cbdi.hunaninstrument.EventBus.NetworkEvent;
 import cn.cbdi.hunaninstrument.Project_XinWeiGuan.ParsingTool;
@@ -187,7 +188,7 @@ public class Alert_Server {
 
                                 @Override
                                 public void onError(Throwable e) {
-                                    EventBus.getDefault().post(new NetworkEvent(false));
+                                    ToastUtils.showLong("服务器连接失败");
                                 }
 
                                 @Override
@@ -196,7 +197,41 @@ public class Alert_Server {
                                 }
                             });
 
-                }else{
+                }else if(AppInit.getInstrumentConfig().getClass().getName().equals(YZBYPT_Config.class.getName())){
+                    new RetrofitGenerator().getYzbApi(url).withDataRs("testNet", config.getString("key"), null)
+                            .subscribeOn(Schedulers.io())
+                            .unsubscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Observer<String>() {
+                                @Override
+                                public void onSubscribe(Disposable d) {
+
+                                }
+
+                                @Override
+                                public void onNext(String s) {
+                                    if (s.startsWith("true")) {
+                                        config.put("ServerId", url);
+                                        ToastUtils.showLong("连接服务器成功,请点击确定立即启用");
+                                        callback.setNetworkBmp();
+                                    } else {
+                                        ToastUtils.showLong("服务器连接失败");
+                                    }
+                                }
+
+                                @Override
+                                public void onError(Throwable e) {
+                                    ToastUtils.showLong("服务器连接失败");
+
+                                }
+
+                                @Override
+                                public void onComplete() {
+
+                                }
+                            });
+                }
+                else{
                     new ServerConnectionUtil().post(url + AppInit.getInstrumentConfig().getUpDataPrefix() + "daid=" + config.getString("daid") + "&dataType=test", url
                             , new ServerConnectionUtil.Callback() {
                                 @Override

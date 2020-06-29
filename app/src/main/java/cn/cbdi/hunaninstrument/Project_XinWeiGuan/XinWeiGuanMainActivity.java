@@ -290,8 +290,23 @@ public class XinWeiGuanMainActivity extends BaseActivity implements SuperWindow2
             DoorOpenOperation.getInstance().doNext();
             EventBus.getDefault().post(new PassEvent());
             if (AppInit.getInstrumentConfig().isHongWai()) {
+                fp.FaceSetNoAction();
+                tv_info.setText("信息处理完毕,仓库门已解锁,20秒后才可重新上锁");
                 Door.getInstance().setMdoorState(State_Open);
                 Door.getInstance().doNext();
+                Observable.timer(20,TimeUnit.SECONDS)
+                        .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<Long>() {
+                            @Override
+                            public void accept(Long aLong) throws Exception {
+                                fp.FaceIdentify_model();
+
+                            }
+                        });
+            }else{
+                tv_info.setText("信息处理完毕,仓库门已解锁");
+
             }
             iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj1));
         }
