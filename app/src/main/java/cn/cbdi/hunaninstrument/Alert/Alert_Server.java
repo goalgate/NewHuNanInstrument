@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import cn.cbdi.hunaninstrument.AppInit;
 import cn.cbdi.hunaninstrument.Config.BaseConfig;
+import cn.cbdi.hunaninstrument.Config.GZYZB_Config;
 import cn.cbdi.hunaninstrument.Config.HuNanConfig;
 import cn.cbdi.hunaninstrument.Config.NMGYZB_Config;
 import cn.cbdi.hunaninstrument.Config.XinWeiGuan_Config;
@@ -197,7 +198,8 @@ public class Alert_Server {
                                 }
                             });
 
-                }else if(AppInit.getInstrumentConfig().getClass().getName().equals(YZBYPT_Config.class.getName())){
+                }else if(AppInit.getInstrumentConfig().getClass().getName().equals(YZBYPT_Config.class.getName())||
+                        (AppInit.getInstrumentConfig().getClass().getName().equals(GZYZB_Config.class.getName()))){
                     new RetrofitGenerator().getYzbApi(url).withDataRs("testNet", config.getString("key"), null)
                             .subscribeOn(Schedulers.io())
                             .unsubscribeOn(Schedulers.io())

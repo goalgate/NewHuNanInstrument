@@ -62,6 +62,8 @@ public interface IFace {
 
     User GetUserByIdInTable(int IdInTable);
 
+    void Feature_to_Feature(byte[] feature1, byte[] feature2);
+
     interface IFaceListener {
         void onText(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, String text);
 

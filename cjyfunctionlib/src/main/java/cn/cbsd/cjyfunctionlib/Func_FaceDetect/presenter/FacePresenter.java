@@ -160,6 +160,15 @@ public class FacePresenter {
         return false;
     }
 
+    public void Feature_to_Feature(byte[] feature1,byte[] feature2) {
+        try {
+            iFace.Feature_to_Feature(feature1, feature2);
+        } catch (Exception e) {
+            Log.e("Feature_to_Feature", e.toString());
+
+        }
+    }
+
     public void FaceSetNoAction() {
         try {
             iFace.FaceSetNoAction();

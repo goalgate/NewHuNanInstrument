@@ -1,6 +1,7 @@
 package cn.cbdi.hunaninstrument.Config;
 
 
+import cn.cbdi.hunaninstrument.Service.UpdateService;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
 
 /**
@@ -70,5 +71,9 @@ public abstract class BaseConfig {
     public abstract boolean isHongWai();
 
     public abstract void setHongWai(boolean hongWai);
+
+    public Class getUpdateService(){
+        return UpdateService.class;
+    }
 
 }

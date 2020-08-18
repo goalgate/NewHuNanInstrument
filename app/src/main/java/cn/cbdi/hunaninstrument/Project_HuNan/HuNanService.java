@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
@@ -42,6 +43,7 @@ import cn.cbdi.hunaninstrument.EventBus.NetworkEvent;
 import cn.cbdi.hunaninstrument.EventBus.PassEvent;
 import cn.cbdi.hunaninstrument.EventBus.RebootEvent;
 import cn.cbdi.hunaninstrument.EventBus.TemHumEvent;
+import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
 import cn.cbdi.hunaninstrument.State.DoorState.WarehouseDoor;
 import cn.cbdi.hunaninstrument.State.LockState.Lock;
@@ -52,6 +54,7 @@ import cn.cbdi.hunaninstrument.greendao.DaoSession;
 import cn.cbdi.hunaninstrument.greendao.ReUploadBeanDao;
 import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Machine.CJYHelper;
 import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.SignUtils;
+import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.CardInfoBean;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
@@ -102,6 +105,9 @@ public class HuNanService extends Service implements IOutputControlView {
         sp.readHum(5, true);
         Observable.interval(40, 600, TimeUnit.SECONDS).observeOn(Schedulers.io())
                 .subscribe((l) -> testNet());
+        Observable.interval(0, AppInit.getInstrumentConfig().getCheckOnlineTime(), TimeUnit.MINUTES)
+                .observeOn(Schedulers.io())
+                .subscribe((l) -> CheckOnline());
         Observable.interval(10, 600, TimeUnit.SECONDS).observeOn(Schedulers.io())
                 .subscribe((l) -> StateRecord());
 
@@ -408,8 +414,14 @@ public class HuNanService extends Service implements IOutputControlView {
 //        if (config.getBoolean("wzwPic", true)) {
 //            mdaoSession.insertOrReplace(new Employer("441302199308100538", 1));
 //            Bitmap wzwbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.wzw);
-//            if (FacePresenter.getInstance().FaceRegInBackGround(new CardInfoBean("441302199308100538", "王振文"), wzwbitmap, FileUtils.bitmapToBase64(wzwbitmap))) {
-//                Log.e("message", "王振文照片完成");
+//            if (FacePresenter.getInstance().FaceRegByBase64("王振文", "441302199308100538", FileUtils.bitmapToBase64(wzwbitmap))) {
+//                User user = FacePresenter.getInstance().GetUserByUserName("王振文");
+//                Keeper keeper = new Keeper("441302199308100538",
+//                        "王振文", FileUtils.bitmapToBase64(wzwbitmap), null, null,
+//                        user.getUserId(), user.getFeature());
+//                mdaoSession.getKeeperDao().insertOrReplace(keeper);
+//                Log.e("myface", "王振文" + "人脸特征已存");
+//
 //            }
 //        }
         logMen = new StringBuffer();
@@ -599,6 +611,36 @@ public class HuNanService extends Service implements IOutputControlView {
                     }
                 });
     }
+
+
+    private void CheckOnline() {
+        RetrofitGenerator.getHnmbyApi().withDataRs("checkOnline", config.getString("key"), null)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+
 
     private void CloseDoorRecord(String time) {
         final JSONObject CloseDoorRecordJson = new JSONObject();

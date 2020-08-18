@@ -50,6 +50,22 @@
             android:name=".Project_XinWeiGuan.XinWeiGuanFaceDetectActivity"
             android:launchMode="standard"
             android:theme="@style/ImageTranslucentTheme"></activity>
+
+        <activity
+            android:name=".Project_GZYZB.GZYZBMainActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+
+        <activity
+            android:name=".Project_GZYZB.GZYZBAddActvity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+
+        <activity
+            android:name=".Project_GZYZB.GZYZBFaceDetectActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+
         <activity
             android:name=".Project_Hebei.HebeiMainActivity"
             android:launchMode="standard"
@@ -87,8 +103,10 @@
         <service android:name=".Project_Hebei.HeBeiService"></service>
         <service android:name=".Project_XinWeiGuan.XinWeiGuanService"></service>
         <service android:name=".Project_YZBYPT.YZBYPT_Service"></service>
+        <service android:name=".Project_GZYZB.GZYZBService"></service>
 
         <service android:name=".Service.UpdateService"></service>
+        <service android:name=".Service.HuNanUpdateService"></service>
 
         <receiver android:name=".BroadcastReceiver.BootBroadcastReceiver">
             <intent-filter>

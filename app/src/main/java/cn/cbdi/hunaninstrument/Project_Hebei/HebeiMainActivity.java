@@ -33,7 +33,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -120,6 +122,34 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
     @OnClick(R.id.lay_network)
     void showMessage() {
         alert_message.showMessage();
+    }
+
+    @OnClick(R.id.lay_lock)
+    void ds() {
+        try {
+            StringBuffer logMen = new StringBuffer();
+            List<Keeper> keeperList = mdaosession.loadAll(Keeper.class);
+            if (keeperList.size() > 0) {
+                Set<String> list = new HashSet<>();
+                for (Keeper keeper : keeperList) {
+                    list.add(keeper.getName());
+                }
+                for (String name : list) {
+                    logMen.append(name + "、");
+                }
+                logMen.deleteCharAt(logMen.length() - 1);
+                ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕");
+                Log.e(TAG, logMen.toString());
+
+            } else {
+                ToastUtils.showLong("该设备没有可使用的人脸特征");
+                Log.e(TAG, logMen.toString());
+
+            }
+        } catch (Exception e) {
+            ToastUtils.showLong(e.toString());
+        }
+
     }
 
     Bitmap Scene_Bitmap;

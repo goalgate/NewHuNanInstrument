@@ -4,14 +4,18 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
+
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.TimeUtils;
+
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import cn.cbdi.hunaninstrument.AppInit;
 import cn.cbdi.hunaninstrument.Bean.ReUploadBean;
 import cn.cbdi.hunaninstrument.EventBus.AlarmEvent;
@@ -48,6 +52,8 @@ public class YZBYPT_Service extends Service implements IOutputControlView {
     int last_mHumidity = 0;
 
     String THSwitchValue;
+
+    String Last_Door_Value;
 
     @Override
     public void onCreate() {
@@ -117,15 +123,22 @@ public class YZBYPT_Service extends Service implements IOutputControlView {
 
     @Override
     public void onSwitchValue(String Value) {
-        if (Value.substring(6, 8).equals("01")) {
+        if (Value.startsWith("AAAAAA")) {
+            if (Value.substring(6, 8).equals("00")) {
+                if (Last_Door_Value.equals("01")) {
+                    if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Lockup)) {
+                        Lock.getInstance().doNext();
+                        alarmRecord();
+                        OpenDoor(false);
+                    }
+                }
+                Last_Door_Value = Value.substring(6, 8);
+            } else if (Value.substring(6, 8).equals("01")) {
+                Last_Door_Value = Value.substring(6, 8);
 
-        } else {
-            if (Lock.getInstance().getState().equals(Lock.LockState.STATE_Lockup)) {
-                Lock.getInstance().doNext();
-                alarmRecord();
-                OpenDoor(false);
             }
         }
+
     }
 
 
@@ -138,7 +151,6 @@ public class YZBYPT_Service extends Service implements IOutputControlView {
         last_mTemperature = temperature;
         last_mHumidity = humidity;
     }
-
 
 
     private void alarmRecord() {

@@ -10,6 +10,16 @@ public class SceneKeeper {
 
     private Bitmap SceneHeadPhoto;
 
+    private byte[] faceFeature;
+
+    public void setFaceFeature(byte[] faceFeature) {
+        this.faceFeature = faceFeature;
+    }
+
+    public byte[] getFaceFeature() {
+        return faceFeature;
+    }
+
     private int faceRecognition;
     public void setSceneHeadPhoto(Bitmap sceneHeadPhoto) {
         SceneHeadPhoto = sceneHeadPhoto;

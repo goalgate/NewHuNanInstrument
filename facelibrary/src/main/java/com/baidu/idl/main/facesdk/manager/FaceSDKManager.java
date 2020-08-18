@@ -615,7 +615,19 @@ public class FaceSDKManager {
                 // 获取LivenessConfig liveCheckMode 配置选项：【不使用活体：1】；【RGB活体：2】；【RGB+NIR活体：3】；【RGB+Depth活体：4】
                 // TODO 活体检测
                 float rgbScore = -1;
-                if (liveCheckMode != 1) {
+                float nirScore = -1;
+
+                if (liveCheckMode == 1 || liveCheckMode == 5) {
+                    long startIrTime = System.currentTimeMillis();
+                    nirScore = FaceSDKManager.getInstance().getFaceLiveness().silentLive(
+                            BDFaceSDKCommon.LiveType.BDFACE_SILENT_LIVE_TYPE_NIR,
+                            rgbInstance, faceInfos[0].landmarks);
+                    livenessModel.setIrLivenessScore(nirScore);
+                    livenessModel.setIrLivenessDuration(System.currentTimeMillis() - startIrTime);
+                    LogUtils.e(TIME_TAG, "live nir time = " + livenessModel.getIrLivenessDuration());
+                }
+
+                if (liveCheckMode != 1 && liveCheckMode != 5) {
                     long startRgbTime = System.currentTimeMillis();
                     rgbScore = FaceSDKManager.getInstance().getFaceLiveness().silentLive(
                             BDFaceSDKCommon.LiveType.BDFACE_SILENT_LIVE_TYPE_RGB,
@@ -625,7 +637,6 @@ public class FaceSDKManager {
                     LogUtils.e(TIME_TAG, "live rgb time = " + livenessModel.getRgbLivenessDuration());
                 }
 
-                float nirScore = -1;
                 if (liveCheckMode == 3 && nirData != null) {
                     // 创建检测对象，如果原始数据YUV-IR，转为算法检测的图片BGR
                     // TODO: 用户调整旋转角度和是否镜像，手机和开发版需要动态适配
@@ -712,6 +723,8 @@ public class FaceSDKManager {
                         onFeatureCheck(rgbInstance, faceInfos[0].landmarks, livenessModel, featureCheckMode);
                     } else if (liveCheckMode == 4 && rgbScore > SingleBaseConfig.getBaseConfig().getRgbLiveScore()
                             && depthScore > SingleBaseConfig.getBaseConfig().getDepthLiveScore()) {
+                        onFeatureCheck(rgbInstance, faceInfos[0].landmarks, livenessModel, featureCheckMode);
+                    } else if (liveCheckMode == 5 && nirScore > SingleBaseConfig.getBaseConfig().getNirLiveScore()) {
                         onFeatureCheck(rgbInstance, faceInfos[0].landmarks, livenessModel, featureCheckMode);
                     }
                 }

@@ -1,13 +1,12 @@
 package cn.cbdi.hunaninstrument.Config;
 
-
-import cn.cbdi.hunaninstrument.Project_HuNan.HuNanService;
-import cn.cbdi.hunaninstrument.Service.HuNanUpdateService;
+import cn.cbdi.hunaninstrument.Project_GZYZB.GZYZBService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
 
-public class HuNanConfig extends BaseConfig {
+public class GZYZB_Config extends BaseConfig {
+
     @Override
     public boolean isFace() {
         return true;
@@ -30,18 +29,17 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public String getPersonInfoPrefix() {
-        return "";
+        return "da_gzmb_persionInfo?";
     }
 
     @Override
     public String getUpDataPrefix() {
-        return "";
+        return "da_gzmb_updata?";
     }
-
 
     @Override
     public String getServerId() {
-        return "http://129.204.110.143:8031/";
+        return "http://yzbyun.wxhxp.cn:81/";
     }
 
     @Override
@@ -51,17 +49,17 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public String getModel() {
-        return "CBDI-DA-01";
+        return "CBDI-P-IC";
     }
 
     @Override
     public String getName() {
-        return "防爆采集器";
+        return "库房采集器";
     }
 
     @Override
     public String getProject() {
-        return "HNMBY";        //湖南民爆云
+        return "GZYZB";        //贵州易制爆
     }
 
     @Override
@@ -96,40 +94,37 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public void readCard() {
-        IDCardPresenter.getInstance().ReadID();
         IDCardPresenter.getInstance().ReadIC();
-
     }
 
     @Override
     public void stopReadCard() {
-        IDCardPresenter.getInstance().StopReadID();
         IDCardPresenter.getInstance().StopReadIC();
     }
 
     @Override
     public boolean fingerprint() {
-        return false;
+        return true;
     }
 
     @Override
     public Class getServiceName() {
-        return HuNanService.class;
+        return GZYZBService.class;
     }
 
     @Override
     public String getMainActivity() {
-        return ".Project_HuNan.HuNanMainActivity";
+        return ".Project_GZYZB.GZYZBMainActivity";
     }
 
     @Override
     public String getAddActivity() {
-        return ".Project_HuNan.HuNanRegActivity";
+        return ".Project_GZYZB.GZYZBAddActvity";
     }
 
     @Override
     public boolean TouchScreen() {
-        return false;
+        return true;
     }
 
     @Override
@@ -147,6 +142,7 @@ public class HuNanConfig extends BaseConfig {
         return true;
     }
 
+
     @Override
     public boolean DoorMonitorChosen() {
         return false;
@@ -159,11 +155,6 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public void setHongWai(boolean hongWai) {
-        this.hongWai= hongWai;
-    }
-
-    @Override
-    public Class getUpdateService() {
-        return HuNanUpdateService.class;
+        this.hongWai = hongWai;
     }
 }

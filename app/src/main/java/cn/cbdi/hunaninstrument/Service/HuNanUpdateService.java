@@ -75,7 +75,7 @@ public class HuNanUpdateService extends Service {
     }
 
     private void CopySourceFile() {
-        if (AppUtils.getAppVersionName().equals("2.1") && config.getBoolean("CopySourceFileVer_21", true)) {
+        if (AppUtils.getAppVersionName().equals("2.4") && config.getBoolean("CopyFileVer_24", true)) {
 //            if (!new File(UpdateConstant.ORIGINAL_APK_PATH).exists()) {
             Observable.create((emitter) -> {
                 emitter.onNext(ApkUtils.copyfile(
@@ -90,7 +90,7 @@ public class HuNanUpdateService extends Service {
                         Boolean status = (boolean) l;
                         if (status) {
                             ToastUtils.showLong("源文件复制成功");
-                            config.put("CopySourceFileVer_21", false);
+                            config.put("CopyFileVer_24", false);
                             autoUpdate();
                         } else {
                             ToastUtils.showLong("源文件复制失败");
@@ -98,14 +98,14 @@ public class HuNanUpdateService extends Service {
                     });
 //            }
         } else {
-            config.put("CopySourceFileVer_21", false);
+            config.put("CopyFileVer_24", false);
         }
     }
 
 
     private void autoUpdate() {
         File key = new File(Environment.getExternalStorageDirectory() + File.separator + "key.txt");
-        if (config.getBoolean("CopySourceFileVer_21", true)) {
+        if (config.getBoolean("CopyFileVer_24", true)) {
 
         } else {
             File file = new File(NEW_APK_PATH);

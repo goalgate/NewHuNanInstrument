@@ -196,6 +196,11 @@ public class XinWeiGuanFaceImpl implements IFace {
     }
 
     @Override
+    public void Feature_to_Feature(byte[] feature1, byte[] feature2) {
+
+    }
+
+    @Override
     public boolean IMG_to_IMG(Bitmap bmp1, Bitmap bmp2, boolean IDCard_HeadPhoto, boolean useThread) {
         if (useThread) {
             es.submit(() -> {

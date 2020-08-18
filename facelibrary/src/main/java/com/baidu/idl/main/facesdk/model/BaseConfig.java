@@ -27,7 +27,7 @@ public class BaseConfig {
     // 默认为max。分为"max" 、"none"三个方式，分别是最大人脸 ，和不检测人脸
     private String trackType = "max";
     // 默认为80px。可传入大于50px的数值，小于此大小的人脸不予检测
-    private int minimumFace = 100;
+    private int minimumFace = 80;
     // 模糊度设置，默认0.5。取值范围[0~1]，0是最清晰，1是最模糊
     private float blur = 0.5f;
     // 光照设置，默认40.取值范围[0~255], 数值越大，光线越强
@@ -59,7 +59,7 @@ public class BaseConfig {
     // 人脸完整度，默认为1。0为人脸溢出图像边界，1为人脸都在图像边界内
     private float completeness = 1f;
     // 识别阈值，0-100，默认为80分,需要选择具体模型的阈值。live：80、idcard：80
-    private int threshold = 70;
+    private int threshold = 80;
     // 使用的特征抽取模型默认为生活照：1；证件照：2
     private int activeModel = 1;
     // 识别结果出来后的演示展示，默认为0ms

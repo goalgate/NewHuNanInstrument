@@ -94,6 +94,8 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
 
     Intent intent;
 
+    byte[] mFeatures;
+
     Alert_Message alert_message = new Alert_Message(this);
 
     Alert_Server alert_server = new Alert_Server(this);
@@ -143,7 +145,6 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
     void ds() {
         try {
             StringBuffer logMen = new StringBuffer();
-
             List<Keeper> keeperList = mdaosession.loadAll(Keeper.class);
             if (keeperList.size() > 0) {
                 Set<String> list = new HashSet<>();
@@ -162,7 +163,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                 Log.e(TAG, logMen.toString());
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             ToastUtils.showLong(e.toString());
         }
 
@@ -177,6 +178,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         EventBus.getDefault().register(this);
         UIReady();
         openService();
+        Log.e("key",config.getString("key"));
         Observable.interval(10, 300, TimeUnit.SECONDS)
                 .observeOn(Schedulers.io())
                 .subscribe((l) -> {
@@ -195,7 +197,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
     private void UIReady() {
         setGestures();
         disposableTips = RxTextView.textChanges(tv_info)
-                .debounce(15, TimeUnit.SECONDS)
+                .debounce(5, TimeUnit.SECONDS)
                 .switchMap(charSequence -> Observable.just("等待用户操作..."))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe((s) -> tv_info.setText(s));
@@ -387,6 +389,8 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                         cg_User1.setScenePhoto(Scene_Bitmap);
                         cg_User1.setFaceRecognition(Integer.parseInt(faceScore));
                         cg_User1.setSceneHeadPhoto(Scene_headphoto);
+                        cg_User1.setFaceFeature(mFeatures);
+
                         tv_info.setText("仓管员" + cg_User1.getKeeper().getName() + "操作成功,请继续仓管员操作");
                         sp.greenLight();
                         DoorOpenOperation.getInstance().doNext();
@@ -401,7 +405,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
 
                                     @Override
                                     public void onNext(Long aLong) {
-                                        checkRecord(String.valueOf(2));
+                                        checkRecord(String.valueOf(2), keeper, Scene_Bitmap);
                                     }
 
                                     @Override
@@ -423,8 +427,10 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                             cg_User2.setScenePhoto(Scene_Bitmap);
                             cg_User2.setSceneHeadPhoto(Scene_headphoto);
                             cg_User2.setFaceRecognition(Integer.parseInt(faceScore));
+                            cg_User2.setFaceFeature(mFeatures);
                             tv_info.setText("仓管员" + cg_User2.getKeeper().getName() + "操作成功,请等待...");
-                            fp.IMG_to_IMG(cg_User1.getSceneHeadPhoto(), cg_User2.getSceneHeadPhoto(), false, true);
+                            fp.Feature_to_Feature(cg_User1.getFaceFeature(),cg_User2.getFaceFeature());
+//                            fp.IMG_to_IMG(cg_User1.getSceneHeadPhoto(), cg_User2.getSceneHeadPhoto(), false, true);
                         } else {
                             sp.redLight();
                             tv_info.setText("请不要连续输入相同的管理员信息");
@@ -438,31 +444,33 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                         checkChange.dispose();
                     }
                     if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.OneUnlock)) {
-                        if (!keeper.getCardID().equals(cg_User1.getKeeper().getCardID())) {
-                            sp.greenLight();
-                            cg_User2.setKeeper(keeper);
-                            cg_User2.setScenePhoto(Scene_Bitmap);
-                            cg_User2.setSceneHeadPhoto(Scene_headphoto);
-                            cg_User2.setFaceRecognition(Integer.parseInt(faceScore));
-                            tv_info.setText("巡检员" + cg_User2.getKeeper().getName() + "操作成功,请等待...");
-                            fp.IMG_to_IMG(cg_User1.getSceneHeadPhoto(), cg_User2.getSceneHeadPhoto(), false, true);
+                        if (AppInit.getInstrumentConfig().XungengCanOpen()) {
+                            if (!keeper.getCardID().equals(cg_User1.getKeeper().getCardID())) {
+                                sp.greenLight();
+                                cg_User2.setKeeper(keeper);
+                                cg_User2.setScenePhoto(Scene_Bitmap);
+                                cg_User2.setSceneHeadPhoto(Scene_headphoto);
+                                cg_User2.setFaceRecognition(Integer.parseInt(faceScore));
+                                cg_User2.setFaceFeature(mFeatures);
+                                tv_info.setText("巡检员" + cg_User2.getKeeper().getName() + "操作成功,请等待...");
+                                fp.Feature_to_Feature(cg_User1.getFaceFeature(),cg_User2.getFaceFeature());
+//                                fp.IMG_to_IMG(cg_User1.getSceneHeadPhoto(), cg_User2.getSceneHeadPhoto(), false, true);
+                            } else {
+                                sp.redLight();
+                                tv_info.setText("请不要连续输入相同的管理员信息");
+                                return;
+                            }
                         } else {
-                            sp.redLight();
-                            tv_info.setText("请不要连续输入相同的管理员信息");
-                            return;
+                            checkRecord("2", keeper, Scene_Bitmap);
                         }
                     } else {
-                        cg_User1.setKeeper(keeper);
-                        cg_User1.setScenePhoto(Scene_Bitmap);
-                        checkRecord("2");
+                        checkRecord("2", keeper, Scene_Bitmap);
                     }
                 } else if (employer.getType() == 3) {
                     if (checkChange != null) {
                         checkChange.dispose();
                     }
-                    cg_User1.setKeeper(keeper);
-                    cg_User1.setScenePhoto(Scene_Bitmap);
-                    checkRecord("3");
+                    checkRecord("3", keeper, Scene_Bitmap);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -485,14 +493,14 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         if (resultType.equals(Identify_failed)) {
             tv_info.setText(text);
             sp.redLight();
-            unknownPeopleNoCard(fp.getGlobalBitmap());
+//            unknownPeopleNoCard(fp.getGlobalBitmap());
         } else if (resultType.equals(Identify_success)) {
             faceScore = text;
         } else if (resultType.equals(IMG_MATCH_IMG_Score)) {
             CompareScore = text;
             OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
             sp.greenLight();
-            runOnUiThread(()->tv_info.setText("信息处理完毕,仓库门已解锁"));
+            runOnUiThread(() -> tv_info.setText("信息处理完毕,仓库门已解锁"));
             DoorOpenOperation.getInstance().doNext();
             EventBus.getDefault().post(new PassEvent());
             iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj1));
@@ -505,20 +513,22 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
             try {
                 Keeper keeper = mdaosession.queryRaw(Keeper.class,
                         "where CARD_ID = '" + model.getUser().getUserInfo().toUpperCase() + "'").get(0);
-                if(keeper.getHeadphotoBW()==null){
+                mFeatures = model.getFeature();
+                if (keeper.getHeadphotoBW() == null) {
                     keeper.setHeadphotoBW(FileUtils.bitmapToBase64(Scene_headphoto));
                     mdaosession.insertOrReplace(keeper);
-                    fp.FaceRegOrUpdateByFeature(keeper.getName(),keeper.getCardID(),model.getFeature(),false);
-
+                    fp.FaceRegOrUpdateByFeature(keeper.getName(), keeper.getCardID(), model.getFeature(), false);
                 }
-//                else{
-//                    keeper.setHeadphotoBW(null);
-//                    mdaosession.getKeeperDao().insertOrReplace(keeper);
-//                }
-
-
-            }catch (Exception e){
+            } catch (Exception e) {
                 ToastUtils.showLong(e.toString());
+            }
+        } else if (resultType.equals(Identify_failed)) {
+            if (model.getIrLivenessScore() > 0.01f) {
+                unknownPeopleNoCard(fp.getGlobalBitmap());
+                Log.e("model_IrScore", String.valueOf(model.getIrLivenessScore()));
+            } else {
+                Log.e("model_IrScore", String.valueOf(model.getIrLivenessScore()));
+
             }
         }
     }
@@ -531,6 +541,11 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         } else if (type == 2) {
             alert_ip.show();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -611,13 +626,13 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         });
     }
 
-    private void checkRecord(String type) {
+    private void checkRecord(String type, Keeper keeper, Bitmap bitmap) {
         OutputControlPresenter.getInstance().on12V_Alarm(false);
         final JSONObject checkRecordJson = new JSONObject();
         try {
-            checkRecordJson.put("id", cg_User1.getKeeper().getCardID());
-            checkRecordJson.put("name", cg_User1.getKeeper().getName());
-            checkRecordJson.put("photos", FileUtils.bitmapToBase64(cg_User1.getScenePhoto()));
+            checkRecordJson.put("id", keeper.getCardID());
+            checkRecordJson.put("name", keeper.getName());
+            checkRecordJson.put("photos", FileUtils.bitmapToBase64(bitmap));
             checkRecordJson.put("checkType", type);
             checkRecordJson.put("datetime", TimeUtils.getNowString());
         } catch (JSONException e) {
@@ -634,7 +649,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                     public void onNext(String s) {
                         if (s.equals("true")) {
                             sp.greenLight();
-                            tv_info.setText("巡检员" + cg_User1.getKeeper().getName() + "巡检成功");
+                            tv_info.setText("巡检员" + keeper.getName() + "巡检成功");
                         } else if (s.equals("false")) {
                             tv_info.setText("巡检失败");
                         } else if (s.equals("dataErr")) {

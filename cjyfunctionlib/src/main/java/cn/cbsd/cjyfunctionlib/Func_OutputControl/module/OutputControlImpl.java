@@ -263,8 +263,8 @@ public class OutputControlImpl implements IOutputControl {
                         bufCount = 0;
                         testStr += testStrTemp;
                         if (testStr.contains("AAAAAA")) {
-                            testStr = testStr.substring(testStr.indexOf("AAAAAA"),
-                                    testStr.indexOf("AAAAAA") + 18);
+                            testStr = testStr.substring(testStr.lastIndexOf("AAAAAA"),
+                                    testStr.lastIndexOf("AAAAAA") + 18);
 
                             mhandler.sendEmptyMessage(0x123);
                         }
@@ -315,12 +315,22 @@ public class OutputControlImpl implements IOutputControl {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == 0x123) {
-                listener.onSwitchValue(testStr);
-                if (testStr.substring(10, 12).equals("01")) {
-                    listener.onDoorState(Door.DoorState.State_Close);
-                } else {
-                    listener.onDoorState(Door.DoorState.State_Open);
+                try {
+                    Log.e("switch", testStr);
+                    listener.onSwitchValue(testStr);
+                    if (testStr.equals("AAAAAA000001000000") || testStr.equals("AAAAAA000000000000")) {
+                        if (testStr.substring(10, 12).equals("01")) {
+                            listener.onDoorState(Door.DoorState.State_Close);
+                        } else {
+                            listener.onDoorState(Door.DoorState.State_Open);
+                        }
+                    }
+                } catch (StringIndexOutOfBoundsException e) {
+                    Log.e("OutputControlImpl", e.toString());
+                } catch (Exception e) {
+                    Log.e("OutputControlImpl", e.toString());
                 }
+
 
             } else if (msg.what == 0x234) {
                 listener.onTemHum(temperature, humidity, testStr);

@@ -1,7 +1,6 @@
 package cn.cbdi.hunaninstrument;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -17,7 +16,7 @@ import android.widget.Toast;
 
 import com.baidu.idl.main.facesdk.listener.SdkInitListener;
 import com.baidu.idl.main.facesdk.ui.Activation;
-import com.baidu.idl.main.facesdk.utils.PreferencesUtil;
+
 import com.bigkoo.alertview.AlertView;
 import com.blankj.utilcode.util.ActivityUtils;
 import com.blankj.utilcode.util.NetworkUtils;
@@ -35,8 +34,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import cn.cbdi.hunaninstrument.Config.YanChengConfig;
-import cn.cbdi.hunaninstrument.Project_HuNan.HuNanMainActivity;
-import cn.cbdi.hunaninstrument.Service.UpdateService;
 import cn.cbdi.hunaninstrument.Tool.AssetsUtils;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_FingerPrint.presenter.FingerPrintPresenter;
@@ -66,14 +63,14 @@ public class FaceInitActivity extends RxActivity {
 
     String daid = new NetInfo().getMacId();
 
-//    String daid = "024147-127051-090034";
+//    String daid = "042162-079043-230210";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.faceinit);
 
-        Intent intent = new Intent(FaceInitActivity.this, UpdateService.class);
+        Intent intent = new Intent(FaceInitActivity.this, AppInit.getInstrumentConfig().getUpdateService());
         startService(intent);
 
         try {
@@ -121,7 +118,7 @@ public class FaceInitActivity extends RxActivity {
                 ActivityUtils.startActivity(getPackageName(), getPackageName() + ".StartActivity");
                 return;
             } else {
-                if (AppInit.getInstrumentConfig().DoorMonitorChosen()){
+                if (AppInit.getInstrumentConfig().DoorMonitorChosen()) {
                     if (config.getBoolean("isHongWai", true)) {
                         AppInit.getInstrumentConfig().setHongWai(true);
                     } else {
@@ -132,7 +129,7 @@ public class FaceInitActivity extends RxActivity {
                 return;
             }
         } else {
-            if(AppInit.getInstrumentConfig().getClass().getName().equals(YanChengConfig.class.getName())){
+            if (AppInit.getInstrumentConfig().getClass().getName().equals(YanChengConfig.class.getName())) {
                 JSONObject jsonKey = new JSONObject();
                 try {
                     jsonKey.put("daid", daid);
@@ -179,11 +176,10 @@ public class FaceInitActivity extends RxActivity {
                                         getPackageName() + AppInit.getInstrumentConfig().getMainActivity()));
                     } else {
                         ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
-
                     }
                 }).show();
             } else {
-                if (AppInit.getInstrumentConfig().DoorMonitorChosen()){
+                if (AppInit.getInstrumentConfig().DoorMonitorChosen()) {
                     if (config.getBoolean("isHongWai", true)) {
                         AppInit.getInstrumentConfig().setHongWai(true);
                     } else {
@@ -366,9 +362,7 @@ public class FaceInitActivity extends RxActivity {
                             activation.keyEt.setText(real_licenseKey);
                             activation.activateBtn.performClick();
                         }
-
                     }
-
                 }));
     }
 

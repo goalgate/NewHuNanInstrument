@@ -98,9 +98,11 @@ public class HuNanFaceImpl implements IFace {
 
     Disposable IdentifyTimeOut;
 
-//    private Bitmap global_bitmap;
+    private Bitmap global_bitmap;
 
     private byte[] global_BitmapBytes;
+
+    private byte[] global_BitmapBytes_backup;
 
     private Bitmap headphotoIR;
 
@@ -180,11 +182,11 @@ public class HuNanFaceImpl implements IFace {
     public boolean FaceRegByBase64(String userName, String userInfo, String base64) {
         Bitmap mBitmap;
         Bitmap origin_Bitmap = FileUtils.base64ToBitmap(base64);
-        if(origin_Bitmap.getWidth()<300){
-             mBitmap = BitmapTools.scaleMatrix(origin_Bitmap,300);
-        }else if(origin_Bitmap.getWidth()>500){
-            mBitmap = BitmapTools.scaleMatrix(origin_Bitmap,500);
-        }else {
+        if (origin_Bitmap.getWidth() < 300) {
+            mBitmap = BitmapTools.scaleMatrix(origin_Bitmap, 300);
+        } else if (origin_Bitmap.getWidth() > 500) {
+            mBitmap = BitmapTools.scaleMatrix(origin_Bitmap, 500);
+        } else {
             mBitmap = origin_Bitmap;
         }
 //        mBitmap = origin_Bitmap;
@@ -204,6 +206,17 @@ public class HuNanFaceImpl implements IFace {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public void Feature_to_Feature(byte[] feature1, byte[] feature2) {
+        es.submit(() -> {
+            float score = FaceSDKManager.getInstance().getFaceFeature().featureCompare(
+                    BDFACE_FEATURE_TYPE_LIVE_PHOTO,
+                    feature1, feature2, true);
+            listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, String.valueOf((int) score));
+        });
+
     }
 
     @Override
@@ -257,7 +270,7 @@ public class HuNanFaceImpl implements IFace {
                     float score = FaceSDKManager.getInstance().getFaceFeature().featureCompare(
                             BDFACE_FEATURE_TYPE_LIVE_PHOTO,
                             bytes1, bytes2, true);
-                    if(score>70){
+                    if (score > 70) {
                         return true;
                     }
                     return false;
@@ -321,7 +334,11 @@ public class HuNanFaceImpl implements IFace {
 
     @Override
     public Bitmap getGlobalBitmap() {
-        Bitmap global_bitmap = byteToBitmap(global_BitmapBytes, mWidth, mHeight);
+        try {
+            global_bitmap = byteToBitmap(global_BitmapBytes, mWidth, mHeight);
+        } catch (NullPointerException e) {
+            global_bitmap =  byteToBitmap(global_BitmapBytes_backup, mWidth, mHeight);
+        }
         return global_bitmap;
     }
 
@@ -369,7 +386,7 @@ public class HuNanFaceImpl implements IFace {
 
     @Override
     public void FaceUpdate(Bitmap bitmap, String userName, UserInfoManager.UserInfoListener userInfoListener) {
-        if (IDENTITYING) {
+        if (!IDENTITYING) {
             String imageName = mGroupId + "-" + userName + ".jpg";
             UserInfoManager.getInstance().updateImage(bitmap, mGroupId, userName, imageName, new UserInfoManager.UserInfoListener() {
                 @Override
@@ -471,6 +488,7 @@ public class HuNanFaceImpl implements IFace {
         Camera1PreviewManager.getInstance().setCameraFacing(Camera1PreviewManager.CAMERA_FACING_BACK);//红外
         Camera1PreviewManager.getInstance().startPreview(context, mPreviewView1, mWidth, mHeight,
                 (data, camera, width, height) -> {
+                    global_BitmapBytes_backup = data;
                     if (!useRGBCamera) {
                         if (action.equals(FacePresenter.FaceAction.Identify) || action.equals(FacePresenter.FaceAction.Identify_Model)) {
                             IDENTITYING = true;
@@ -626,8 +644,8 @@ public class HuNanFaceImpl implements IFace {
 
         int liveType = SingleBaseConfig.getBaseConfig().getType();
         // 无活体
-        if (Integer.valueOf(liveType) == 1||
-                (Integer.valueOf(liveType) == 5&&(model.getRgbLivenessScore()> SingleBaseConfig.getBaseConfig().getRgbLiveScore()||model.getIrLivenessScore()> SingleBaseConfig.getBaseConfig().getNirLiveScore()))) {
+        if (Integer.valueOf(liveType) == 1 ||
+                (Integer.valueOf(liveType) == 5 && (model.getRgbLivenessScore() > SingleBaseConfig.getBaseConfig().getRgbLiveScore() || model.getIrLivenessScore() > SingleBaseConfig.getBaseConfig().getNirLiveScore()))) {
             BDFaceImageInstance image = model.getBdFaceImageInstance();
             switch (action) {
                 case Reg:
@@ -751,6 +769,8 @@ public class HuNanFaceImpl implements IFace {
     }
 
 
+
+
     private void identity(LivenessModel livenessModel, boolean isN) {
 
         if (!isN) {
@@ -767,13 +787,17 @@ public class HuNanFaceImpl implements IFace {
         } else {
             BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
             headphotoIR = BitmapUtils.getInstaceBmp(image);
-            Bitmap global_bitmap = byteToBitmap(global_BitmapBytes, mWidth, mHeight);
+            try {
+                global_bitmap =  byteToBitmap(global_BitmapBytes, mWidth, mHeight);
+            } catch (NullPointerException e) {
+                global_bitmap =  byteToBitmap(global_BitmapBytes_backup, mWidth, mHeight);
+            }
             handler.post(() -> {
                 listener.onBitmap(action, FacePresenter.FaceResultType.Identify_success, global_bitmap);
                 listener.onBitmap(action, FacePresenter.FaceResultType.headphotoIR, headphotoIR);
                 listener.onText(action, FacePresenter.FaceResultType.Identify_success, String.valueOf((int) livenessModel.getFeatureScore()));
-                listener.onUser(action, FacePresenter.FaceResultType.Identify_success, user);
                 listener.onLivenessModel(action, FacePresenter.FaceResultType.Identify_success, livenessModel);
+                listener.onUser(action, FacePresenter.FaceResultType.Identify_success, user);
             });
 
         }
