@@ -226,27 +226,27 @@ public class ReadCard2 implements ICardInfo {
                             System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
                             if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
                                     + readBuffer[0]) + 2).equals("2000")) {
-                                Log.e("card天线关闭", "天线关闭成功");
+//                                Log.e("card天线关闭", "天线关闭成功");
                             } else {
-                                Log.e("card天线关闭", "天线关闭失败");
+//                                Log.e("card天线关闭", "天线关闭失败");
                             }
                         }, 50);
                         sendandread(dt_antenna_open, readBuffer, () -> {
                             System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
                             if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
                                     + readBuffer[0]) + 2).equals("2000")) {
-                                Log.e("card天线开启", "天线开启成功");
+//                                Log.e("card天线开启", "天线开启成功");
                             } else {
-                                Log.e("card天线开启", "天线开启失败");
+//                                Log.e("card天线开启", "天线开启失败");
                             }
                         }, 50);
                         sendandread(dt_ica_set, readBuffer, () -> {
                             System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
                             if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
                                     + readBuffer[0]) + 2).equals("2000")) {
-                                Log.e("cardTYBEA设置", "TYBEA设置成功");
+//                                Log.e("cardTYBEA设置", "TYBEA设置成功");
                             } else {
-                                Log.e("cardTYBEA设置", "TYBEA设置失败");
+//                                Log.e("cardTYBEA设置", "TYBEA设置失败");
                             }
                         }, 50);
                         if (useIC) {
@@ -259,11 +259,11 @@ public class ReadCard2 implements ICardInfo {
                                     readType_ = uidget;
                                     readState_ = 1;
                                     mHandler.sendEmptyMessage(0);
-                                    Log.e("cardIC读卡", "IC卡已读");
+//                                    Log.e("cardIC读卡", "IC卡已读");
                                 } else if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
                                         + readBuffer[0]) + 2).equals("E1CF")) {
                                     ic_continuous = false;
-                                    Log.e("cardIC读卡", "IC无读卡数据，转入ID");
+//                                    Log.e("cardIC读卡", "IC无读卡数据，转入ID");
                                     IDCardOperation();
                                 }
                             }, 100);
@@ -287,27 +287,27 @@ public class ReadCard2 implements ICardInfo {
                     System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
                     if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
                             + readBuffer[0]) + 2).equals("2000")) {
-                        Log.e("card天线关闭", "天线关闭成功");
+//                        Log.e("card天线关闭", "天线关闭成功");
                     } else {
-                        Log.e("card天线关闭", "天线关闭失败");
+//                        Log.e("card天线关闭", "天线关闭失败");
                     }
                 }, 50);
                 sendandread(dt_antenna_open, readBuffer, () -> {
                     System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
                     if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
                             + readBuffer[0]) + 2).equals("2000")) {
-                        Log.e("card天线开启", "天线开启成功");
+//                        Log.e("card天线开启", "天线开启成功");
                     } else {
-                        Log.e("card天线开启", "天线开启失败");
+//                        Log.e("card天线开启", "天线开启失败");
                     }
                 }, 50);
                 sendandread(dt_ica_setB, readBuffer, () -> {
                     System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
                     if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
                             + readBuffer[0]) + 2).equals("2000")) {
-                        Log.e("cardTYBEB设置", "TYBEB设置成功");
+//                        Log.e("cardTYBEB设置", "TYBEB设置成功");
                     } else {
-                        Log.e("cardTYBEB设置", "TYBEB设置失败");
+//                        Log.e("cardTYBEB设置", "TYBEB设置失败");
                     }
                 }, 50);
                 sendandread(dt_isCer, readBuffer, () -> {
@@ -315,13 +315,13 @@ public class ReadCard2 implements ICardInfo {
                     if (readBuffer[((readBuffer[0] << 8) + readBuffer[1]) + 1] == CRC16.Xor(readBuffer,
                             ((readBuffer[0] << 8) + readBuffer[1]) + 1)) {
                         if (readBuffer[1] == 0x08) {
-                            Log.e("cardID寻卡", "寻卡成功");
+//                            Log.e("cardID寻卡", "寻卡成功");
                         } else if (readBuffer[1] == 0x04) {
-                            Log.e("cardID寻卡", "寻卡失败");
+//                            Log.e("cardID寻卡", "寻卡失败");
                             id_continuous = false;
                         }
                     } else {
-                        Log.e("cardID寻卡", "寻卡：错误数据包");
+//                        Log.e("cardID寻卡", "寻卡：错误数据包");
 
                     }
                 }, 200);
@@ -330,12 +330,12 @@ public class ReadCard2 implements ICardInfo {
                     if (readBuffer[((readBuffer[0] << 8) + readBuffer[1]) + 1] == CRC16.Xor(readBuffer,
                             ((readBuffer[0] << 8) + readBuffer[1]) + 1)) {
                         if (readBuffer[1] == 0x0C) {
-                            Log.e("cardID选卡", "选卡成功");
+//                            Log.e("cardID选卡", "选卡成功");
                         } else if (readBuffer[1] == 0x04) {
-                            Log.e("cardID选卡", "选卡失败");
+//                            Log.e("cardID选卡", "选卡失败");
                         }
                     } else {
-                        Log.e("cardID选卡", "选卡：错误数据包");
+//                        Log.e("cardID选卡", "选卡：错误数据包");
                     }
                 }, 100);
                 if (id_continuous) {

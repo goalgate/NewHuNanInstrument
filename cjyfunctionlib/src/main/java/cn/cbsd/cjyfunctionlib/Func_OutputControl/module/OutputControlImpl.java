@@ -138,7 +138,7 @@ public class OutputControlImpl implements IOutputControl {
 
     @Override
     public void onBuzz(Hex hex) {
-        sendData(dt_buzz_);
+        sendData(dt_buzz2);
 
     }
 

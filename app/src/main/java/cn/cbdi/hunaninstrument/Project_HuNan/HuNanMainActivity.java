@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.security.auth.login.LoginException;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -75,6 +77,7 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 
@@ -248,6 +251,8 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         fp.CameraPreview(AppInit.getContext(), previewView, previewView1, textureView);
     }
 
+
+    String old_time ="init";
     @Override
     public void onResume() {
         super.onResume();
@@ -260,7 +265,17 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         Observable.interval(0, 1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
-                .subscribe((l) -> tv_time.setText(formatter.format(new Date(System.currentTimeMillis()))));
+                .subscribe((l) -> {
+                    tv_time.setText(formatter.format(new Date(System.currentTimeMillis())));
+                    Log.e("now",tv_time.getText().toString());
+                    if(old_time.equals(tv_time.getText().toString())){
+                        Log.e("breakTime",tv_time.getText().toString());
+                        OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
+
+                    }else{
+                        old_time = tv_time.getText().toString();
+                    }
+                });
     }
 
     @Override

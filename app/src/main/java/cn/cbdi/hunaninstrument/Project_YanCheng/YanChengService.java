@@ -236,10 +236,13 @@ public class YanChengService extends Service implements IOutputControlView {
     }
 
     private Handler handler = new Handler();
+    int max_Reupload = 200;
+    int count_Reupload = 0;
 
     private void reUpload() {
         final ReUploadBeanDao reUploadBeanDao = mdaoSession.getReUploadBeanDao();
         List<ReUploadBean> list = reUploadBeanDao.queryBuilder().list();
+        count_Reupload = list.size();
         for (final ReUploadBean bean : list) {
             RetrofitGenerator.getXinWeiGuanApi().withDataRr(bean.getMethod(), config.getString("key"), bean.getContent())
                     .subscribeOn(Schedulers.single())
@@ -262,6 +265,12 @@ public class YanChengService extends Service implements IOutputControlView {
                         @Override
                         public void onError(@NonNull Throwable e) {
                             Log.e("信息提示error", bean.getMethod());
+                            if (count_Reupload > max_Reupload) {
+                                count_Reupload--;
+                                reUploadBeanDao.delete(bean);
+                                Log.e("信息提示error", bean.getMethod());
+
+                            }
 
                         }
 
@@ -699,6 +708,141 @@ public class YanChengService extends Service implements IOutputControlView {
 
                     }
                 });
-
     }
+
+//    private Handler handler = new Handler() {
+//        @Override
+//        public void handleMessage(Message msg) {
+//            if (msg.what == 0x123) {
+//                syncData();
+//                Log.e("result", "0x123");
+//            } else if (msg.what == 0x234) {
+//                Log.e("result", "0x234");
+//                try {
+//                    String filepath = Environment.getExternalStorageDirectory() + File.separator + "offline_data";
+//                    File file_dir = new File(filepath);
+//                    String excel_filepath = filepath + File.separator + "人员数据表.xls";
+//                    File excel_file = new File(excel_filepath);
+//                    if (!excel_file.exists()) {
+//                        ToastUtils.showLong("本地没有找到离线数据包");
+//                        EventBus.getDefault().post(new FaceIdentityEvent());
+//                        return;
+//                    }
+//                    FileInputStream inputStream = new FileInputStream(excel_file);
+//                    Workbook workbook = Workbook.getWorkbook(inputStream);
+//                    mdaoSession.deleteAll(Employer.class);
+//                    for (Sheet sheet : workbook.getSheets()) {
+//                        int sheetRows = sheet.getRows();
+//                        for (int i = 1; i < sheetRows; i++) {
+//                            String idnum = sheet.getCell(1, i).getContents();
+//                            String name = sheet.getCell(2, i).getContents();
+//                            String type = sheet.getCell(3, i).getContents();
+//                            String photo_path = sheet.getCell(4, i).getContents();
+//                            Bitmap photo = BitmapFactory.decodeFile(filepath + File.separator + photo_path);
+//                            String ps = FileUtils.bitmapToBase64(photo);
+//                            mdaoSession.insertOrReplace(new Employer(idnum.toUpperCase(), Integer.parseInt(type)));
+//                            try {
+//                                Keeper keeper = mdaoSession.queryRaw(Keeper.class, "where CARD_ID = '" + idnum.toUpperCase() + "'").get(0);
+//                                if (!TextUtils.isEmpty(ps) && keeper.getHeadphoto().length() != ps.length()) {
+//
+//                                    FacePresenter.getInstance().FaceUpdate(photo, name, new UserInfoManager.UserInfoListener() {
+//                                        public void updateImageSuccess(Bitmap bitmap) {
+//                                            keeper.setHeadphoto(ps);
+//                                            keeper.setHeadphotoBW(null);
+//                                            mdaoSession.getKeeperDao().insertOrReplace(keeper);
+//                                        }
+//
+//                                        public void updateImageFailure(String message) {
+//                                            Log.e(TAG, message);
+//                                        }
+//                                    });
+//                                }
+//                            } catch (IndexOutOfBoundsException e) {
+//                                if (!TextUtils.isEmpty(ps)) {
+//                                    if (FacePresenter.getInstance().FaceRegByBase64(name, idnum.toUpperCase(), ps)) {
+//                                        User user = FacePresenter.getInstance().GetUserByUserName(name);
+//                                        Keeper keeper = new Keeper(idnum.toUpperCase(),
+//                                                name, ps, null, null,
+//                                                user.getUserId(), user.getFeature());
+//                                        mdaoSession.getKeeperDao().insertOrReplace(keeper);
+//                                        Log.e("myface", name + "人脸特征已存");
+//
+//                                    }
+//                                }
+//                            }
+//                        }
+//
+//                    }
+//                    workbook.close();
+//                    com.blankj.utilcode.util.FileUtils.deleteDir(file_dir);
+//                    EventBus.getDefault().post(new FaceIdentityEvent());
+//                    try {
+//                        StringBuffer logMen = new StringBuffer();
+//
+//                        List<Keeper> keeperList = mdaoSession.loadAll(Keeper.class);
+//                        if (keeperList.size() > 0) {
+//                            Set<String> list = new HashSet<>();
+//                            for (Keeper keeper : keeperList) {
+//                                list.add(keeper.getName());
+//                            }
+//                            for (String name : list) {
+//                                logMen.append(name + "、");
+//                            }
+//                            logMen.deleteCharAt(logMen.length() - 1);
+//                            ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕");
+//                            Log.e(TAG, logMen.toString());
+//
+//                        } else {
+//                            ToastUtils.showLong("该设备没有可使用的人脸特征");
+//                            Log.e(TAG, logMen.toString());
+//
+//                        }
+//                    }catch (Exception e){
+//                        ToastUtils.showLong(e.toString());
+//                    }
+//
+//                } catch (Exception e) {
+//                    ToastUtils.showLong("无法解析离线数据包，请按照格式制作离线格式包");
+//                    EventBus.getDefault().post(new FaceIdentityEvent());
+//                }
+//            }
+//            super.handleMessage(msg);
+//        }
+//    };
+//
+//    public void testTcp(String ServerId) {
+//        int firstColon = ServerId.indexOf(":");
+//        int lastColon = ServerId.lastIndexOf(":");
+//        int lastSlash = ServerId.lastIndexOf("/");
+//        String ip = ServerId.substring(firstColon + 3, lastColon);
+//        int port = Integer.valueOf(ServerId.substring(lastColon + 1, lastSlash));
+//        Log.e("ip", ip);
+//        Log.e("port", String.valueOf(port));
+//
+//
+//        new Thread(() -> {
+//            Socket connect = new Socket();
+//            try {
+//                if (ip == null || ip.trim().equals("")) {
+//                    handler.sendEmptyMessage(0x123);
+//                }
+//                connect.connect(new InetSocketAddress(ip, port), 100);
+//                if (connect.isConnected()) {
+//                    handler.sendEmptyMessage(0x123);
+//                } else {
+//                    handler.sendEmptyMessage(0x234);
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            } finally {
+//                try {
+//                    connect.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
+//    }
+
+
 }

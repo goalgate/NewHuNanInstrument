@@ -20,10 +20,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".StartActivity"
+        <activity
+            android:name=".StartActivity"
             android:launchMode="standard"
-            android:theme="@style/ImageTranslucentTheme">
-        </activity>
+            android:theme="@style/ImageTranslucentTheme"></activity>
 
         <activity
             android:name=".Project_HuNan.HuNanMainActivity"
@@ -35,6 +35,10 @@
             android:launchMode="standard"
             android:theme="@style/ImageTranslucentTheme"></activity>
 
+        <activity
+            android:name=".Project_NMGYZB.New.NewNMGMainActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
 
         <activity
             android:name=".Project_XinWeiGuan.XinWeiGuanMainActivity"
@@ -76,20 +80,20 @@
             android:launchMode="standard"
             android:theme="@style/ImageTranslucentTheme"></activity>
 
-        <activity android:name=".Project_NMGYZB.FB.FBNMGMainActivity"
+        <activity
+            android:name=".Project_NMGYZB.FB.FBNMGMainActivity"
             android:launchMode="standard"
-            android:theme="@style/ImageTranslucentTheme">
-        </activity>
-        <activity android:name=".Project_NMGYZB.FB.FBNMGRegActivity"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+        <activity
+            android:name=".Project_NMGYZB.FB.FBNMGRegActivity"
             android:launchMode="standard"
-            android:theme="@style/ImageTranslucentTheme">
-        </activity>
+            android:theme="@style/ImageTranslucentTheme"></activity>
 
 
-        <activity android:name=".Project_YZBYPT.YZBYPT_MainActivity"
+        <activity
+            android:name=".Project_YZBYPT.YZBYPT_MainActivity"
             android:launchMode="standard"
-            android:theme="@style/ImageTranslucentTheme">
-        </activity>
+            android:theme="@style/ImageTranslucentTheme"></activity>
 
         <activity
             android:name=".Project_YanCheng.YanChengMainActivity"
@@ -104,16 +108,29 @@
         <service android:name=".Project_XinWeiGuan.XinWeiGuanService"></service>
         <service android:name=".Project_YZBYPT.YZBYPT_Service"></service>
         <service android:name=".Project_GZYZB.GZYZBService"></service>
+        <service android:name=".Project_NMGYZB.New.NewNMGService"></service>
 
         <service android:name=".Service.UpdateService"></service>
         <service android:name=".Service.HuNanUpdateService"></service>
+        <service android:name=".Service.NewNMGUpdateService"></service>
 
         <receiver android:name=".BroadcastReceiver.BootBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <receiver android:name=".BroadcastReceiver.USBReceiver">
+            <intent-filter android:priority="1000">
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MEDIA_MOUNTED"/>
+                <action android:name="android.intent.action.MEDIA_UNMOUNTED" />
+                <action android:name="android.intent.action.MEDIA_REMOVED"/>
+                <data android:scheme="file"></data>
+            </intent-filter>
+        </receiver>
     </application>
+
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />

@@ -26,5 +26,8 @@ public abstract class CJYHelper {
         return CJY_Boya_Impl.getInstance(context);
     }
 
+    public abstract void turnOffBackLight();
+
+    public abstract void turnOnBackLight();
 
 }

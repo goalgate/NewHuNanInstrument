@@ -287,6 +287,7 @@ public class HuNanFaceImpl implements IFace {
     @Override
     public void FaceSetNoAction() {
         action = FacePresenter.FaceAction.Normal;
+        IDENTITYING = false;
 
     }
 

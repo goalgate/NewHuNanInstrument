@@ -33,6 +33,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import cn.cbdi.hunaninstrument.Config.NMGFB_NewConfig;
 import cn.cbdi.hunaninstrument.Config.YanChengConfig;
 import cn.cbdi.hunaninstrument.Tool.AssetsUtils;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
@@ -63,7 +64,7 @@ public class FaceInitActivity extends RxActivity {
 
     String daid = new NetInfo().getMacId();
 
-//    String daid = "042162-079043-230210";
+//    String daid = "000224-076000-002180";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -124,6 +125,20 @@ public class FaceInitActivity extends RxActivity {
                     } else {
                         AppInit.getInstrumentConfig().setHongWai(false);
                     }
+                }
+                if (AppInit.getInstrumentConfig().getClass().getName().equals(NMGFB_NewConfig.class.getName())) {
+                    if (("http://113.140.1.138:8890/".equals(config.getString("ServerId")))) {
+                        config.put("ServerId", "http://113.140.1.138:8892/");
+                    }
+                    JSONObject jsonKey = new JSONObject();
+                    try {
+                        jsonKey.put("daid", config.getString("daid"));
+                        jsonKey.put("check", DESX.encrypt(config.getString("daid")));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    config.put("key", DESX.encrypt(jsonKey.toString()));
+
                 }
                 ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
                 return;

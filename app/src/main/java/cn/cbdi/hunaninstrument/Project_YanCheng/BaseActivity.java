@@ -1,8 +1,10 @@
 package cn.cbdi.hunaninstrument.Project_YanCheng;
 
+import android.app.ProgressDialog;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.TextureView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -10,6 +12,7 @@ import android.widget.TextView;
 import com.baidu.idl.main.facesdk.camera.AutoTexturePreviewView;
 import com.blankj.utilcode.util.BarUtils;
 import com.blankj.utilcode.util.SPUtils;
+import com.blankj.utilcode.util.ToastUtils;
 import com.trello.rxlifecycle2.components.RxActivity;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -27,6 +30,7 @@ import cn.cbdi.hunaninstrument.EventBus.LockUpEvent;
 import cn.cbdi.hunaninstrument.EventBus.NetworkEvent;
 import cn.cbdi.hunaninstrument.EventBus.OpenDoorEvent;
 import cn.cbdi.hunaninstrument.EventBus.TemHumEvent;
+import cn.cbdi.hunaninstrument.EventBus.USBCopyEvent;
 import cn.cbdi.hunaninstrument.Project_XinWeiGuan.XinWeiGuanMainActivity;
 import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.State.OperationState.DoorOpenOperation;
@@ -196,6 +200,25 @@ public abstract class BaseActivity extends RxActivity implements IFaceView {
         cg_User1 = new SceneKeeper();
         cg_User2 = new SceneKeeper();
         DoorOpenOperation.getInstance().setmDoorOpenOperation(DoorOpenOperation.DoorOpenState.Locking);
+
+    }
+
+
+    private ProgressDialog progressDialog;
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGetUSBCopyEvent(USBCopyEvent event) {
+        if(event.getStatus()==1){
+            fp.FaceSetNoAction();
+            progressDialog = new ProgressDialog(BaseActivity.this);
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.getWindow().getAttributes().gravity = Gravity.CENTER;
+            progressDialog.setMessage("已找到相应数据，正在复制...");
+            progressDialog.show();
+        }else if(event.getStatus()==2){
+            progressDialog.dismiss();
+            fp.FaceIdentify_model();
+        }
 
     }
 

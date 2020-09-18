@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.HNMBYApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.HeBeiApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.NMGYZBApi;
+import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.NewNMGApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.XinWeiGuanApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.YZBApi;
 import okhttp3.Interceptor;
@@ -42,6 +43,10 @@ public class RetrofitGenerator {
     private static NMGYZBApi nmgyzbApi;
 
     private NMGYZBApi testNMGYZBApi;
+
+    private static NewNMGApi nmgApi;
+
+    private NewNMGApi testNewNMGApi;
 
     private YZBApi testYzbApi;
 
@@ -158,5 +163,20 @@ public class RetrofitGenerator {
             yzbApi = createService(YZBApi.class);
         }
         return yzbApi;
+    }
+
+    public NewNMGApi getTestNewNMGApi (String url){
+        if(testNewNMGApi==null){
+            testNewNMGApi = createService(NewNMGApi.class,url);
+        }
+        return testNewNMGApi;
+    }
+
+
+    public static NewNMGApi getNewNMGApi(){
+        if (nmgApi==null){
+            nmgApi = createService(NewNMGApi.class);
+        }
+        return nmgApi;
     }
 }

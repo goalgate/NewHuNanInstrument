@@ -27,6 +27,7 @@ import cn.cbdi.hunaninstrument.AppInit;
 import cn.cbdi.hunaninstrument.Config.BaseConfig;
 import cn.cbdi.hunaninstrument.Config.GZYZB_Config;
 import cn.cbdi.hunaninstrument.Config.HuNanConfig;
+import cn.cbdi.hunaninstrument.Config.NMGFB_NewConfig;
 import cn.cbdi.hunaninstrument.Config.NMGYZB_Config;
 import cn.cbdi.hunaninstrument.Config.XinWeiGuan_Config;
 import cn.cbdi.hunaninstrument.Config.YZBYPT_Config;
@@ -119,7 +120,8 @@ public class Alert_Server {
                                 }
                             });
                 } else if(AppInit.getInstrumentConfig().getClass().getName().equals(XinWeiGuan_Config.class.getName())||
-                        AppInit.getInstrumentConfig().getClass().getName().equals(YanChengConfig.class.getName())) {
+                        AppInit.getInstrumentConfig().getClass().getName().equals(YanChengConfig.class.getName())||
+                        AppInit.getInstrumentConfig().getClass().getName().equals(NMGFB_NewConfig.class.getName())) {
                     new RetrofitGenerator().getXinWeiGuanApi(url).noData("testNet", config.getString("key"))
                             .subscribeOn(Schedulers.io())
                             .unsubscribeOn(Schedulers.io())

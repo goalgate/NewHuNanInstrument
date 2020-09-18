@@ -11,14 +11,19 @@ import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cn.cbdi.hunaninstrument.Config.NMGFB_NewConfig;
 import cn.cbdi.hunaninstrument.Tool.AssetsUtils;
 import cn.cbsd.cjyfunctionlib.Func_FingerPrint.presenter.FingerPrintPresenter;
+import cn.cbsd.cjyfunctionlib.Tools.DESX;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 
@@ -46,12 +51,28 @@ public class StartActivity extends Activity {
     @OnClick(R.id.next)
     void next() {
         if (pattern.matcher(dev_suffix.getText().toString()).matches()) {
+
+
             config.put("firstStart", false);
             config.put("ServerId", AppInit.getInstrumentConfig().getServerId());
             config.put("daid", AppInit.getInstrumentConfig().getDev_prefix() + dev_suffix.getText().toString());
+
             ToastUtils.showLong("设备ID设置成功");
             AssetsUtils.getInstance(AppInit.getContext()).copyAssetsToSD("wltlib","wltlib");
+            if(AppInit.getInstrumentConfig().getClass().getName().equals(NMGFB_NewConfig.class.getName())){
 
+                if(("http://113.140.1.138:8890/".equals(config.getString("ServerId")))){
+                    config.put("ServerId","http://113.140.1.138:8892/");
+                }
+                JSONObject jsonKey = new JSONObject();
+                try {
+                    jsonKey.put("daid", config.getString("daid"));
+                    jsonKey.put("check", DESX.encrypt(config.getString("daid")));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                config.put("key", DESX.encrypt(jsonKey.toString()));
+            }
             if (AppInit.getInstrumentConfig().DoorMonitorChosen() && config.getBoolean("SetDoorMonitor", true)) {
                 new AlertView("选择门感应方式", null, null, new String[]{"门磁", "红外对射"}, null, StartActivity.this, AlertView.Style.Alert, (o, position) -> {
                     if (position == 0) {

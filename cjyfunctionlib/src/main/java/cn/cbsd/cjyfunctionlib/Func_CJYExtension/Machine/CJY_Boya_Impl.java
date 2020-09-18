@@ -94,4 +94,16 @@ public class CJY_Boya_Impl extends CJYHelper {
         manager.ethEnabled(status);
 
     }
+
+    @Override
+    public void turnOffBackLight() {
+        manager.turnOffBacklight();
+
+    }
+
+    @Override
+    public void turnOnBackLight() {
+    }
+
+
 }

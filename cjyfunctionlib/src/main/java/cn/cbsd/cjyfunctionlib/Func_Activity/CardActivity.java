@@ -17,6 +17,7 @@ import com.jakewharton.rxbinding2.widget.RxTextView;
 
 import java.util.concurrent.TimeUnit;
 
+import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Machine.CJYHelper;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardInfo;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 import cn.cbsd.cjyfunctionlib.Func_Card.view.IIDCardView;
@@ -142,7 +143,6 @@ public class CardActivity extends Activity implements IIDCardView {
     @Override
     public void onsetICCardInfo(ICardInfo cardInfo) {
         tv_info.setText(cardInfo.getUid());
-
     }
 
     @Override
