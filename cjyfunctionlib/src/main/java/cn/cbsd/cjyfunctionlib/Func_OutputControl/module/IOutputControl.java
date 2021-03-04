@@ -30,6 +30,10 @@ public interface IOutputControl {
 
     void onClose();
 
+    int getTem();
+
+    int getHum();
+
     interface IOutputControlListener{
 
         void onDoorState(Door.DoorState state);

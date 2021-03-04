@@ -42,9 +42,9 @@ public class OutputControlPresenter {
             }
 
             @Override
-            public void onTemHum(int temperature, int humidity,String THSwitchValue) {
+            public void onTemHum(int temperature, int humidity, String THSwitchValue) {
                 if (view != null) {
-                    view.onTemHum(temperature, humidity,THSwitchValue);
+                    view.onTemHum(temperature, humidity, THSwitchValue);
                 }
             }
 
@@ -57,8 +57,8 @@ public class OutputControlPresenter {
         });
     }
 
-    public void readHum(int CircleTime ,boolean status) {
-        switchingModule.onReadHum(CircleTime,status);
+    public void readHum(int CircleTime, boolean status) {
+        switchingModule.onReadHum(CircleTime, status);
     }
 
     public void on12V_Alarm(boolean isOn) {
@@ -81,13 +81,20 @@ public class OutputControlPresenter {
         switchingModule.onWhiteLight(status);
     }
 
-    public void onElectricLock(IOutputControl.Hex hex, boolean status){
-        switchingModule.onElectricLock(hex,status);
+    public void onElectricLock(IOutputControl.Hex hex, boolean status) {
+        switchingModule.onElectricLock(hex, status);
     }
 
-    public void Close(){
+    public void Close() {
         switchingModule.onClose();
     }
 
+    public int getTemperature() {
+        return switchingModule.getTem();
+    }
+
+    public int getHumidity() {
+        return switchingModule.getHum();
+    }
 
 }

@@ -3,6 +3,7 @@ package cn.cbdi.hunaninstrument;
 import android.app.Application;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.multidex.MultiDex;
 
 import com.blankj.utilcode.util.Utils;
 import com.squareup.leakcanary.LeakCanary;
@@ -15,6 +16,8 @@ import cn.cbdi.hunaninstrument.Config.HebeiConfig;
 import cn.cbdi.hunaninstrument.Config.HuNanConfig;
 import cn.cbdi.hunaninstrument.Config.NMGFB_NewConfig;
 import cn.cbdi.hunaninstrument.Config.NMGYZB_Config;
+import cn.cbdi.hunaninstrument.Config.XAJD_Config;
+import cn.cbdi.hunaninstrument.Config.XAYZB_Config;
 import cn.cbdi.hunaninstrument.Config.XinWeiGuan_Config;
 import cn.cbdi.hunaninstrument.Config.YZBYPT_Config;
 import cn.cbdi.hunaninstrument.Config.YanChengConfig;
@@ -57,7 +60,9 @@ public class AppInit extends Application {
 
         instance = this;
 
-        InstrumentConfig = new GZYZB_Config();
+        MultiDex.install(this);
+
+        InstrumentConfig = new HuNanConfig();
 
 //        Lg.setIsSave(true);
 

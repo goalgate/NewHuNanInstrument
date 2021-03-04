@@ -2,6 +2,7 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="headTextSize">18px</dimen>
     <dimen name="infoTextSize">22px</dimen>
     <drawable name="iv_wendu">@drawable/newui_wendu_1024x600</drawable>
     <drawable name="iv_shidu">@drawable/newui_shidu_1024x600</drawable>

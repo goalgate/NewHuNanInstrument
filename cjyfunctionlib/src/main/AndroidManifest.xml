@@ -1,27 +1,46 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="cn.cbsd.cjyfunctionlib" >
+    package="cn.cbsd.cjyfunctionlib">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <application android:allowBackup="true"
+
+    <application
+        android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Func_Activity.OutputControlActivity"
+        <activity
+            android:name=".Func_Activity.OutputControlActivity"
             android:theme="@style/ImageTranslucentTheme"></activity>
-        <activity android:name=".Func_Activity.CardActivity"
+        <activity
+            android:name=".Func_Activity.CardActivity"
             android:theme="@style/ImageTranslucentTheme"></activity>
-        <activity android:name=".Func_Activity.FingerPrintActivity"
+        <activity
+            android:name=".Func_Activity.FingerPrintActivity"
             android:theme="@style/ImageTranslucentTheme"></activity>
-        <activity android:name=".Func_Activity.CJYExtensionAndUpdateActivity"
+        <activity
+            android:name=".Func_Activity.CJYExtensionAndUpdateActivity"
             android:theme="@style/ImageTranslucentTheme"></activity>
-        <activity android:name=".Func_Activity.HttpAndCollectionBoxActivity"
+        <activity
+            android:name=".Func_Activity.HttpAndCollectionBoxActivity"
             android:theme="@style/ImageTranslucentTheme"></activity>
-        <activity android:name=".Func_Activity.FaceDetectActivity"
+        <activity
+            android:name=".Func_Activity.FaceDetectActivity"
             android:theme="@style/ImageTranslucentTheme"></activity>
-        <activity android:name=".Func_Activity.FaceInitActivity"
+        <activity
+            android:name=".Func_Activity.FaceInitActivity"
             android:theme="@style/ImageTranslucentTheme"></activity>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="cn.cbsd.cjyfunctionlib.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

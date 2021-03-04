@@ -36,11 +36,13 @@ import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.State.OperationState.DoorOpenOperation;
 import cn.cbdi.hunaninstrument.Tool.ActivityCollector;
 import cn.cbdi.hunaninstrument.Tool.MediaHelper;
+import cn.cbdi.hunaninstrument.Tool.MySocketHelper;
 import cn.cbdi.hunaninstrument.greendao.DaoSession;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.view.IFaceView;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
+import cn.cbsd.cjyfunctionlib.Func_WebSocket.ServerManager;
 import io.reactivex.disposables.Disposable;
 
 public abstract class BaseActivity extends RxActivity implements IFaceView {
@@ -103,6 +105,9 @@ public abstract class BaseActivity extends RxActivity implements IFaceView {
         ActivityCollector.addActivity(this);
         sp.Open();
         firstUse();
+        if(AppInit.getInstrumentConfig().Remote()){
+            ServerManager.getInstance().Start(4545, new MySocketHelper(this));
+        }
         Log.e(TAG, "onCreate");
     }
 
@@ -136,6 +141,9 @@ public abstract class BaseActivity extends RxActivity implements IFaceView {
         super.onDestroy();
         sp.WhiteLight(false);
         MediaHelper.mediaRealese();
+        if(AppInit.getInstrumentConfig().Remote()){
+            ServerManager.getInstance().Stop();
+        }
         ActivityCollector.removeActivity(this);
     }
 
@@ -208,14 +216,14 @@ public abstract class BaseActivity extends RxActivity implements IFaceView {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGetUSBCopyEvent(USBCopyEvent event) {
-        if(event.getStatus()==1){
+        if (event.getStatus() == 1) {
             fp.FaceSetNoAction();
             progressDialog = new ProgressDialog(BaseActivity.this);
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.getWindow().getAttributes().gravity = Gravity.CENTER;
             progressDialog.setMessage("已找到相应数据，正在复制...");
             progressDialog.show();
-        }else if(event.getStatus()==2){
+        } else if (event.getStatus() == 2) {
             progressDialog.dismiss();
             fp.FaceIdentify_model();
         }

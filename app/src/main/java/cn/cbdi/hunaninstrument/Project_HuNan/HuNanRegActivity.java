@@ -98,10 +98,6 @@ public class HuNanRegActivity extends RxActivity implements IFaceView, IIDCardVi
     @BindView(R.id.tv_timer)
     TextView tv_timer;
 
-//    @OnClick(R.id.preview_view)
-//    void change() {
-//        fp.PreviewCease(() -> HuNanRegActivity.this.finish());
-//    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -264,7 +260,6 @@ public class HuNanRegActivity extends RxActivity implements IFaceView, IIDCardVi
     public void onSetText(String Msg) {
 
     }
-
 
     boolean can_recentPic = true;
 

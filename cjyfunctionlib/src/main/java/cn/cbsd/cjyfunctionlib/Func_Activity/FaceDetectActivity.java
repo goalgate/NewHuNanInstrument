@@ -36,6 +36,8 @@ import java.util.concurrent.TimeUnit;
 
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.view.IFaceView;
+import cn.cbsd.cjyfunctionlib.Func_WebSocket.ServerManager;
+import cn.cbsd.cjyfunctionlib.Func_WebSocket.SocketHelperImpl;
 import cn.cbsd.cjyfunctionlib.R;
 import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
 import io.reactivex.Observable;
@@ -94,7 +96,7 @@ public class FaceDetectActivity extends Activity implements IFaceView {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.facedetect_activity);
-        userBmp = BitmapFactory.decodeResource(getResources(), R.drawable.user);
+        userBmp = BitmapFactory.decodeResource(getResources(), R.drawable.user1);
         songBmp = BitmapFactory.decodeResource(getResources(),R.drawable.song);
         btn_faceReg = (Button) findViewById(R.id.btn_faceReg);
         btn_faceReg.setOnClickListener(mOnClickListener);
@@ -123,6 +125,8 @@ public class FaceDetectActivity extends Activity implements IFaceView {
                 .switchMap(charSequence -> Observable.just("信息展示"))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe((s) -> tv_info.setText(s));
+        ServerManager.getInstance().Start(4545, new SocketHelperImpl(this));
+
     }
 
     @Override

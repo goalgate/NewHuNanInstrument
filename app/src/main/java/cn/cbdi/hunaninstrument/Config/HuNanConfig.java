@@ -30,12 +30,12 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public String getPersonInfoPrefix() {
-        return "";
+        return "cjy/s/updata";
     }
 
     @Override
     public String getUpDataPrefix() {
-        return "";
+        return "cjy/s/updata";
     }
 
 
@@ -86,7 +86,7 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public boolean noise() {
-        return false;
+        return true;
     }
 
     @Override
@@ -165,5 +165,10 @@ public class HuNanConfig extends BaseConfig {
     @Override
     public Class getUpdateService() {
         return HuNanUpdateService.class;
+    }
+
+    @Override
+    public boolean Remote() {
+        return true;
     }
 }

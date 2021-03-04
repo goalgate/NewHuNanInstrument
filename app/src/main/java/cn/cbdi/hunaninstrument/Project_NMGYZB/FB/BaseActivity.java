@@ -108,7 +108,7 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
         super.onCreate(savedInstanceState);
         BarUtils.hideStatusBar(this);
         ActivityCollector.addActivity(this);
-        idp.idCardOpen();
+        idp.idCardOpen(AppInit.getContext());
         sp.Open();
         firstUse();
         Log.e(TAG, "onCreate");

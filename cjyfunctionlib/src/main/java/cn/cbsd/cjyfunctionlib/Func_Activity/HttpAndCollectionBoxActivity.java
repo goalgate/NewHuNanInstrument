@@ -150,7 +150,7 @@ public class HttpAndCollectionBoxActivity extends Activity {
                 });
 
         //设置液位
-        daData.getAI(0)
+        daData.getAI(1)
                 .setBuilderEnable(true)
                 .setBuilderName("液位:")
                 .setBuilderUnit("米")
@@ -168,7 +168,7 @@ public class HttpAndCollectionBoxActivity extends Activity {
 
 
         //设置有害气体浓度
-        daData.getAI(1)
+        daData.getAI(0)
                 .setBuilderEnable(true)
                 .setBuilderName("有害气体浓度:")
                 .setBuilderUnit("%")
@@ -176,7 +176,7 @@ public class HttpAndCollectionBoxActivity extends Activity {
                 .setBuilderMaxVal(20)
                 .setBuilderMinRange(0)
                 .setBuilderMaxRange(100)
-                .setSensorAIBuilderPrecision(1)
+                .setSensorAIBuilderPrecision(0)
                 .setSensorAIBuilderAlarmMinVal(-1)
                 .setSensorAIBuilderAlarmMaxVal(20)
                 .setDataCallback((sensorAI) ->

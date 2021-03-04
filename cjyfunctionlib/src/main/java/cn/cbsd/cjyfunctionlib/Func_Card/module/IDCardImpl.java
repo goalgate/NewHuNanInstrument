@@ -1,12 +1,14 @@
 package cn.cbsd.cjyfunctionlib.Func_Card.module;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.util.Log;
 
-import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.BoyaCardAdapter;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardInfo;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardState;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ReadCard2;
+import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.UsbCardAdapter;
 
 
 /**
@@ -19,12 +21,17 @@ public class IDCardImpl implements IIDCard {
     private static ICardInfo cardInfo = null;
     IIdCardListener mylistener;
 
+
     @Override
-    public void onOpen(IIdCardListener listener) {
+    public void onOpen(IIdCardListener listener ,Context context) {
         mylistener = listener;
         try {
 //            cardInfo = new BoyaCardAdapter(115200, "/dev/ttyS0", m_onCardState);
-            cardInfo = new ReadCard2(115200, "/dev/ttyS1", m_onCardState);
+            if (Build.DEVICE.startsWith("Apollo7")) {
+                cardInfo = new UsbCardAdapter(context, 0, 0, m_onCardState);
+            } else {
+                cardInfo = new ReadCard2(115200, "/dev/ttyS1", m_onCardState);
+            }
             cdevfd = cardInfo.open();
             if (cdevfd >= 0) {
                 Log.e(TAG, "打开身份证读卡器成功");
@@ -78,7 +85,7 @@ public class IDCardImpl implements IIDCard {
                 }
             } else if (itype == 20) {
                 mylistener.onSetText("SAM:" + cardInfo.getSam());
-            }else if(itype==14) {
+            } else if (itype == 14) {
                 mylistener.onSetICInfo(cardInfo);
             }
 

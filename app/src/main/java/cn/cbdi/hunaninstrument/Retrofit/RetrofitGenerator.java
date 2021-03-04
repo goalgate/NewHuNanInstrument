@@ -7,10 +7,12 @@ import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.CommonApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.HNMBYApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.HeBeiApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.NMGYZBApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.NewNMGApi;
+import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.XAYZBApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.XinWeiGuanApi;
 import cn.cbdi.hunaninstrument.Retrofit.ConnectApi.YZBApi;
 import okhttp3.Interceptor;
@@ -40,6 +42,10 @@ public class RetrofitGenerator {
 
     private HeBeiApi testHeBeiApi;
 
+    private static XAYZBApi xayzbApi;
+
+    private XAYZBApi testXAYZBApi;
+
     private static NMGYZBApi nmgyzbApi;
 
     private NMGYZBApi testNMGYZBApi;
@@ -51,6 +57,8 @@ public class RetrofitGenerator {
     private YZBApi testYzbApi;
 
     private static YZBApi yzbApi;
+
+    private CommonApi testCommonApi;
 
     private static OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();
     private static Gson gson = new GsonBuilder()
@@ -150,33 +158,56 @@ public class RetrofitGenerator {
     }
 
 
-    public YZBApi getYzbApi(String url){
-        if(testYzbApi==null){
-            testYzbApi = createService(YZBApi.class,url);
+    public YZBApi getYzbApi(String url) {
+        if (testYzbApi == null) {
+            testYzbApi = createService(YZBApi.class, url);
         }
         return testYzbApi;
     }
 
 
-    public static YZBApi getYzbApi(){
-        if (yzbApi==null){
+    public static YZBApi getYzbApi() {
+        if (yzbApi == null) {
             yzbApi = createService(YZBApi.class);
         }
         return yzbApi;
     }
 
-    public NewNMGApi getTestNewNMGApi (String url){
-        if(testNewNMGApi==null){
-            testNewNMGApi = createService(NewNMGApi.class,url);
+    public NewNMGApi getTestNewNMGApi(String url) {
+        if (testNewNMGApi == null) {
+            testNewNMGApi = createService(NewNMGApi.class, url);
         }
         return testNewNMGApi;
     }
 
 
-    public static NewNMGApi getNewNMGApi(){
-        if (nmgApi==null){
+    public static NewNMGApi getNewNMGApi() {
+        if (nmgApi == null) {
             nmgApi = createService(NewNMGApi.class);
         }
         return nmgApi;
+    }
+
+
+    public XAYZBApi getXAYZBApi(String url) {
+        if (testXAYZBApi == null) {
+            testXAYZBApi = createService(XAYZBApi.class, url);
+        }
+        return testXAYZBApi;
+    }
+
+    public static XAYZBApi getXAYZBApi() {
+        if (xayzbApi == null) {
+            xayzbApi = createService(XAYZBApi.class);
+        }
+        return xayzbApi;
+    }
+
+
+    public CommonApi getCommonApi(String url) {
+        if (testCommonApi == null) {
+            testCommonApi = createService(CommonApi.class, url);
+        }
+        return testCommonApi;
     }
 }

@@ -60,7 +60,7 @@ public class Lock {
             case STATE_Lockup:
                 OutputControlPresenter.getInstance().on12V_Alarm(true);
                 if (AppInit.getInstrumentConfig().disAlarm()) {
-                    Observable.timer(60, TimeUnit.SECONDS)
+                    Observable.timer(5, TimeUnit.SECONDS)
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(new Observer<Long>() {
                                 @Override

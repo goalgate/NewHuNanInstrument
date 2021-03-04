@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
@@ -22,6 +23,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,6 +40,7 @@ import cn.cbdi.hunaninstrument.Bean.Employer;
 import cn.cbdi.hunaninstrument.Bean.Keeper;
 import cn.cbdi.hunaninstrument.Bean.ReUploadBean;
 import cn.cbdi.hunaninstrument.EventBus.AlarmEvent;
+import cn.cbdi.hunaninstrument.EventBus.FaceIdentityEvent;
 import cn.cbdi.hunaninstrument.EventBus.LockUpEvent;
 import cn.cbdi.hunaninstrument.EventBus.NetworkEvent;
 import cn.cbdi.hunaninstrument.EventBus.PassEvent;
@@ -61,7 +64,9 @@ import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.view.IOutputControlView;
+import cn.cbsd.cjyfunctionlib.Tools.DESX;
 import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
+import cn.cbsd.cjyfunctionlib.Tools.NetInfo;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -97,11 +102,14 @@ public class HuNanService extends Service implements IOutputControlView {
         Log.e("Md5", SignUtils.getSignMd5Str(AppInit.getInstance()));
         sp.SwitchPresenterSetView(this);
         EventBus.getDefault().register(this);
+        DaidUpdate();
         Observable.timer(10, TimeUnit.SECONDS).subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe((l) -> syncData());
-        reUpload();
+                .subscribe((l) -> {
+                    syncData();
+                    reUpload();
+                });
         sp.readHum(5, true);
         Observable.interval(40, 600, TimeUnit.SECONDS).observeOn(Schedulers.io())
                 .subscribe((l) -> testNet());
@@ -303,8 +311,8 @@ public class HuNanService extends Service implements IOutputControlView {
 
                     @Override
                     public void onError(Throwable e) {
-                        FacePresenter.getInstance().FaceIdentify_model();
-
+//                        FacePresenter.getInstance().FaceIdentify_model();
+                        EventBus.getDefault().post(new FaceIdentityEvent());
                     }
 
                     @Override
@@ -342,7 +350,8 @@ public class HuNanService extends Service implements IOutputControlView {
 
                                     @Override
                                     public void onError(Throwable e) {
-                                        FacePresenter.getInstance().FaceIdentify_model();
+//                                        FacePresenter.getInstance().FaceIdentify_model();
+                                        EventBus.getDefault().post(new FaceIdentityEvent());
 
                                     }
 
@@ -380,7 +389,9 @@ public class HuNanService extends Service implements IOutputControlView {
 
                                                     @Override
                                                     public void onError(Throwable e) {
-                                                        FacePresenter.getInstance().FaceIdentify_model();
+//                                                        FacePresenter.getInstance().FaceIdentify_model();
+                                                        EventBus.getDefault().post(new FaceIdentityEvent());
+
                                                     }
 
                                                     @Override
@@ -484,7 +495,8 @@ public class HuNanService extends Service implements IOutputControlView {
                                         }
                                     }
                                     if (count == employers.size()) {
-                                        FacePresenter.getInstance().FaceIdentify_model();
+//                                        FacePresenter.getInstance().FaceIdentify_model();
+                                        EventBus.getDefault().post(new FaceIdentityEvent());
                                         List<Keeper> keeperList = mdaoSession.loadAll(Keeper.class);
                                         if (keeperList.size() > 0) {
                                             Set<String> list = new HashSet<>();
@@ -508,7 +520,8 @@ public class HuNanService extends Service implements IOutputControlView {
                                 } catch (Exception e) {
                                     Log.e(TAG, e.toString());
                                     if (count == employers.size()) {
-                                        FacePresenter.getInstance().FaceIdentify_model();
+//                                        FacePresenter.getInstance().FaceIdentify_model();
+                                        EventBus.getDefault().post(new FaceIdentityEvent());
                                         List<Keeper> keeperList = mdaoSession.loadAll(Keeper.class);
                                         if (keeperList.size() > 0) {
                                             Set<String> list = new HashSet<>();
@@ -536,7 +549,8 @@ public class HuNanService extends Service implements IOutputControlView {
                             public void onError(Throwable e) {
                                 count++;
                                 if (count == employers.size()) {
-                                    FacePresenter.getInstance().FaceIdentify_model();
+//                                    FacePresenter.getInstance().FaceIdentify_model();
+                                    EventBus.getDefault().post(new FaceIdentityEvent());
                                     List<Keeper> keeperList = mdaoSession.loadAll(Keeper.class);
                                     if (keeperList.size() > 0) {
                                         Set<String> list = new HashSet<>();
@@ -566,7 +580,8 @@ public class HuNanService extends Service implements IOutputControlView {
                         });
             }
         } else {
-            FacePresenter.getInstance().FaceIdentify_model();
+//            FacePresenter.getInstance().FaceIdentify_model();
+            EventBus.getDefault().post(new FaceIdentityEvent());
             handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
         }
     }
@@ -639,7 +654,6 @@ public class HuNanService extends Service implements IOutputControlView {
                     }
                 });
     }
-
 
 
     private void CloseDoorRecord(String time) {
@@ -753,6 +767,56 @@ public class HuNanService extends Service implements IOutputControlView {
 
             }
         });
+    }
+
+    private void DaidUpdate() {
+        if (TextUtils.isEmpty(config.getString("daid"))) {
+            String daid = new NetInfo().getMacId();
+            JSONObject jsonKey = new JSONObject();
+            try {
+                jsonKey.put("daid", daid);
+                jsonKey.put("check", DESX.encrypt(daid));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            config.put("daid", daid);
+            config.put("key", DESX.encrypt(jsonKey.toString()));
+        } else {
+            if(config.getBoolean("daidUpdate", true)){
+                new ServerConnectionUtil().post("http://sbgl.wxhxp.cn:8050/daServer/da_idQuery.do?" +
+                                "queryType=ych&" +
+                                "daid=" + config.getString("daid"),
+                        config.getString("ServerId"),
+                        (s) -> {
+                            try {
+                                JSONObject jsonObject = new JSONObject(s);
+                                String result = jsonObject.getString("result");
+                                if (result.equals("true")) {
+                                    File key = new File(Environment.getExternalStorageDirectory() + File.separator + "key.txt");
+                                    String daid = FileUtils.readFile2String(key);
+//                                    String daid = "000224-076000-001234";
+                                    JSONObject jsonKey = new JSONObject();
+                                    try {
+                                        jsonKey.put("daid", daid);
+                                        jsonKey.put("check", DESX.encrypt(daid));
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    config.put("daidUpdate", false);
+                                    config.put("daid", daid);
+                                    config.put("key", DESX.encrypt(jsonKey.toString()));
+                                } else {
+                                    Log.e(TAG, "无需更换设备号");
+                                }
+                            } catch (Exception e) {
+                                Log.e("exception", e.toString());
+                            }
+                        });
+            }else{
+                Log.e("exception", "设备号已改");
+            }
+        }
+
     }
 
 }

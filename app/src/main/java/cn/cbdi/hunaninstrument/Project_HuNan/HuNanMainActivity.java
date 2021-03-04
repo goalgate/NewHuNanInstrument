@@ -1,5 +1,8 @@
 package cn.cbdi.hunaninstrument.Project_HuNan;
 
+import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.gesture.GestureLibraries;
 import android.gesture.GestureLibrary;
@@ -9,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.Button;
@@ -51,6 +55,7 @@ import cn.cbdi.hunaninstrument.Bean.Keeper;
 import cn.cbdi.hunaninstrument.Bean.ReUploadBean;
 import cn.cbdi.hunaninstrument.Bean.SceneKeeper;
 import cn.cbdi.hunaninstrument.EventBus.AlarmEvent;
+import cn.cbdi.hunaninstrument.EventBus.FaceIdentityEvent;
 import cn.cbdi.hunaninstrument.EventBus.LockUpEvent;
 import cn.cbdi.hunaninstrument.EventBus.NetworkEvent;
 import cn.cbdi.hunaninstrument.EventBus.OpenDoorEvent;
@@ -62,11 +67,13 @@ import cn.cbdi.hunaninstrument.State.DoorState.WarehouseDoor;
 import cn.cbdi.hunaninstrument.State.OperationState.DoorOpenOperation;
 import cn.cbdi.hunaninstrument.Tool.MediaHelper;
 import cn.cbdi.hunaninstrument.Tool.MyObserver;
-import cn.cbdi.hunaninstrument.Tool.UDPRun;
 import cn.cbdi.hunaninstrument.Tool.UDPState;
 import cn.cbdi.hunaninstrument.UI.NormalWindow;
 import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Machine.CJYHelper;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardInfo;
+import cn.cbsd.cjyfunctionlib.Func_CollectionBox.CollectionBoxHelper.INetDaSocketEvent;
+import cn.cbsd.cjyfunctionlib.Func_CollectionBox.DataBuilder;
+import cn.cbsd.cjyfunctionlib.Func_CollectionBox.SocketBuilder;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
@@ -81,6 +88,8 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 
+import static cn.cbdi.hunaninstrument.Tool.MediaHelper.Text.man_non;
+import static cn.cbdi.hunaninstrument.Tool.MediaHelper.Text.opertion_success;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceAction.Identify;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.IMG_MATCH_IMG_Score;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Identify_failed;
@@ -118,7 +127,6 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
     Bitmap Scene_Bitmap;
 
     Bitmap Scene_headphoto;
-
     Bitmap headphoto;
 
     String faceScore;
@@ -170,6 +178,8 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
             ToastUtils.showLong(e.toString());
         }
 
+        Log.e(TAG, "uploadSize:" + mdaosession.getReUploadBeanDao().loadAll().size());
+
     }
 
 
@@ -181,20 +191,26 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         EventBus.getDefault().register(this);
         UIReady();
         openService();
-        Log.e("key",config.getString("key"));
+        Log.e("key", config.getString("key"));
         Observable.interval(10, 300, TimeUnit.SECONDS)
                 .observeOn(Schedulers.io())
                 .subscribe((l) -> {
                     UDPState udp = new UDPState();
                     //设置通用参数：服务器地址，端口，设备ID，接口URL
                     udp.setPar("124.172.232.89", 8059, config.getString("daid"), "http://129.204.110.143:8031/");
+                    float cpu = CJYHelper.getInstance(this).readCPUTem(0);
+                    float gpu = CJYHelper.getInstance(this).readCPUTem(1);
                     if (WarehouseDoor.getInstance().getMdoorState().equals(Door.DoorState.State_Open)) {
-                        udp.setState(0, (float) last_mTemperature, (float) last_mHumidity);
+                        udp.setState(0, (float) last_mTemperature, (float) last_mHumidity, cpu, gpu);
                     } else {
-                        udp.setState(1, (float) last_mTemperature, (float) last_mHumidity);
+                        udp.setState(1, (float) last_mTemperature, (float) last_mHumidity, cpu, gpu);
                     }
                     udp.send();
                 });
+
+        if (AppInit.getInstrumentConfig().collectBox()) {
+            CollectionBoxOption();
+        }
     }
 
     private void UIReady() {
@@ -252,7 +268,6 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
     }
 
 
-    String old_time ="init";
     @Override
     public void onResume() {
         super.onResume();
@@ -267,14 +282,6 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                 .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
                 .subscribe((l) -> {
                     tv_time.setText(formatter.format(new Date(System.currentTimeMillis())));
-                    Log.e("now",tv_time.getText().toString());
-                    if(old_time.equals(tv_time.getText().toString())){
-                        Log.e("breakTime",tv_time.getText().toString());
-                        OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
-
-                    }else{
-                        old_time = tv_time.getText().toString();
-                    }
                 });
     }
 
@@ -327,7 +334,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                                     unknownUser.setKeeper(inside_keeper);
                                     unknownPeople(fp.getGlobalBitmap());
                                     tv_info.setText("系统查无此人");
-                                    MediaHelper.play(MediaHelper.Text.man_non);
+//                                    MediaHelper.play(MediaHelper.Text.man_non);
                                     sp.redLight();
                                 } else if (s.startsWith("true")) {
                                     String type = s.substring(5, s.length());
@@ -355,7 +362,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                             unknownUser.setKeeper(inside_keeper);
                             unknownPeople(fp.getGlobalBitmap());
                             tv_info.setText("系统查无此人");
-                            MediaHelper.play(MediaHelper.Text.man_non);
+//                            MediaHelper.play(MediaHelper.Text.man_non);
                             sp.redLight();
                         }
                     });
@@ -444,7 +451,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                             cg_User2.setFaceRecognition(Integer.parseInt(faceScore));
                             cg_User2.setFaceFeature(mFeatures);
                             tv_info.setText("仓管员" + cg_User2.getKeeper().getName() + "操作成功,请等待...");
-                            fp.Feature_to_Feature(cg_User1.getFaceFeature(),cg_User2.getFaceFeature());
+                            fp.Feature_to_Feature(cg_User1.getFaceFeature(), cg_User2.getFaceFeature());
 //                            fp.IMG_to_IMG(cg_User1.getSceneHeadPhoto(), cg_User2.getSceneHeadPhoto(), false, true);
                         } else {
                             sp.redLight();
@@ -468,7 +475,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                                 cg_User2.setFaceRecognition(Integer.parseInt(faceScore));
                                 cg_User2.setFaceFeature(mFeatures);
                                 tv_info.setText("巡检员" + cg_User2.getKeeper().getName() + "操作成功,请等待...");
-                                fp.Feature_to_Feature(cg_User1.getFaceFeature(),cg_User2.getFaceFeature());
+                                fp.Feature_to_Feature(cg_User1.getFaceFeature(), cg_User2.getFaceFeature());
 //                                fp.IMG_to_IMG(cg_User1.getSceneHeadPhoto(), cg_User2.getSceneHeadPhoto(), false, true);
                             } else {
                                 sp.redLight();
@@ -508,6 +515,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         if (resultType.equals(Identify_failed)) {
             tv_info.setText(text);
             sp.redLight();
+            MediaHelper.play(man_non);
 //            unknownPeopleNoCard(fp.getGlobalBitmap());
         } else if (resultType.equals(Identify_success)) {
             faceScore = text;
@@ -515,7 +523,11 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
             CompareScore = text;
             OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
             sp.greenLight();
-            runOnUiThread(() -> tv_info.setText("信息处理完毕,仓库门已解锁"));
+            runOnUiThread(() -> {
+                        tv_info.setText("信息处理完毕,仓库门已解锁");
+                        MediaHelper.play(opertion_success);
+                    }
+            );
             DoorOpenOperation.getInstance().doNext();
             EventBus.getDefault().post(new PassEvent());
             iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj1));
@@ -529,11 +541,11 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                 Keeper keeper = mdaosession.queryRaw(Keeper.class,
                         "where CARD_ID = '" + model.getUser().getUserInfo().toUpperCase() + "'").get(0);
                 mFeatures = model.getFeature();
-                if (keeper.getHeadphotoBW() == null) {
-                    keeper.setHeadphotoBW(FileUtils.bitmapToBase64(Scene_headphoto));
-                    mdaosession.insertOrReplace(keeper);
-                    fp.FaceRegOrUpdateByFeature(keeper.getName(), keeper.getCardID(), model.getFeature(), false);
-                }
+//                if (keeper.getHeadphotoBW() == null) {
+//                    keeper.setHeadphotoBW(FileUtils.bitmapToBase64(Scene_headphoto));
+//                    mdaosession.insertOrReplace(keeper);
+//                    fp.FaceRegOrUpdateByFeature(keeper.getName(), keeper.getCardID(), model.getFeature(), false);
+//                }
             } catch (Exception e) {
                 ToastUtils.showLong(e.toString());
             }
@@ -543,7 +555,6 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                 Log.e("model_IrScore", String.valueOf(model.getIrLivenessScore()));
             } else {
                 Log.e("model_IrScore", String.valueOf(model.getIrLivenessScore()));
-
             }
         }
     }
@@ -871,4 +882,109 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                     }
                 });
     }
+
+    boolean gas_alarming = false;
+
+    private void CollectionBoxOption() {
+        SocketBuilder netDa = new SocketBuilder()
+                .setBuilderNumber(1)
+                .setBuilderDATime(1000)
+                .builder_open("192.168.12.232", 10000)
+                .setBuilderEvent(new INetDaSocketEvent() {
+                    @Override
+                    public void onOpen(int num, int state) {
+
+                    }
+
+                    @Override
+                    public void onCmd(int num, int cmdType, byte value) {
+
+                    }
+
+                    @Override
+                    public void onAI(int num, int cmdType, int[] value) {
+
+                    }
+                });
+
+        //设置液位
+        DataBuilder daData = new DataBuilder();
+        daData.getAI(1)
+                .setBuilderEnable(true)
+                .setBuilderName("液位:")
+                .setBuilderUnit("米")
+                .setBuilderMinVal(4)
+                .setBuilderMaxVal(20)
+                .setBuilderMinRange(0)
+                .setBuilderMaxRange(5)
+                .setSensorAIBuilderPrecision(2)
+                .setSensorAIBuilderAlarmMinVal(-1)
+                .setSensorAIBuilderAlarmMaxVal(-1)
+                .setDataCallback((sensorAI) -> {
+                    Log.e(TAG, String.valueOf(sensorAI.getVal().doubleValue()));
+                    Log.e(TAG, String.valueOf(sensorAI.getVal().floatValue()));
+
+                    if (sensorAI.getVal().doubleValue() > 0.03) {
+                        tv_info.setText("当前" + sensorAI.getName() + sensorAI.getVal() + sensorAI.getUnit());
+                    }
+                });
+        //                    0,液位:,米,4,20,0,5,2,-1,-1,-1||1,气体浓度:,%,4,20,0,100,1,-1,20,-1
+
+        //设置有害气体浓度
+        daData.getAI(0)
+                .setBuilderEnable(true)
+                .setBuilderName("有害气体浓度:")
+                .setBuilderUnit("%")
+                .setBuilderMinVal(4)
+                .setBuilderMaxVal(20)
+                .setBuilderMinRange(0)
+                .setBuilderMaxRange(100)
+                .setSensorAIBuilderPrecision(0)
+                .setSensorAIBuilderAlarmMinVal(-1)
+                .setSensorAIBuilderAlarmMaxVal(20)
+                .setDataCallback((sensorAI) -> {
+                    tv_krq.setText(sensorAI.getVal() + sensorAI.getUnit());
+
+                    if (sensorAI.getVal().doubleValue() > 20.0) {
+                        if (!gas_alarming) {
+                            gas_alarming = true;
+                            OutputControlPresenter.getInstance().on12V_Alarm(gas_alarming);
+
+                        }
+                    } else if (sensorAI.getVal().doubleValue() < 10.0) {
+                        if (gas_alarming) {
+                            gas_alarming = false;
+                            OutputControlPresenter.getInstance().on12V_Alarm(gas_alarming);
+                        }
+                    }
+
+                });
+        netDa.bindNetDAM0888Data(daData);
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGetFaceIdentityEvent(FaceIdentityEvent event) {
+        if (isForeground(AppInit.getContext(), HuNanMainActivity.class.getName())) {
+            fp.FaceIdentify_model();
+            tv_daid.setText(config.getString("daid"));
+
+        }
+
+    }
+
+    public static boolean isForeground(Context context, String className) {
+        if (context == null || TextUtils.isEmpty(className))
+            return false;
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> list = am.getRunningTasks(1);
+        if (list != null && list.size() > 0) {
+            ComponentName cpn = list.get(0).topActivity;
+            if (className.equals(cpn.getClassName()))
+                return true;
+        }
+        return false;
+    }
+
+
 }

@@ -82,7 +82,7 @@ public class CardActivity extends Activity implements IIDCardView {
         }));
 
 
-        idp.idCardOpen();
+        idp.idCardOpen(this);
         disposableTips = RxTextView.textChanges(tv_info)
                 .debounce(3, TimeUnit.SECONDS)
                 .switchMap(charSequence -> Observable.just("等待刷卡信息"))

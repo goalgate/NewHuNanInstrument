@@ -5,6 +5,9 @@ import okhttp3.ResponseBody;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
+import retrofit2.http.Body;
+import okhttp3.RequestBody;
 
 public interface XinWeiGuanApi {
 
@@ -21,5 +24,8 @@ public interface XinWeiGuanApi {
     @POST("caijiyiDuijie/s/kaiguanmen")
     Observable<ResponseBody> queryPersonInfo(@Field("dataType") String dataType, @Field("key") String key, @Field("psonIdcard") String id);
 
+
+    @POST("caijiyiDuijie/s/kaiguanmenWithImage")
+    Observable<ResponseBody> upDatawithBody(@Query("dataType") String dataType, @Query("key") String key, @Body RequestBody jsonData);
 
 }

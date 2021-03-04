@@ -1,8 +1,11 @@
 package cn.cbdi.hunaninstrument;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+
+import com.blankj.utilcode.util.PermissionUtils;
 
 import cn.cbsd.cjyfunctionlib.Func_Activity.CJYExtensionAndUpdateActivity;
 import cn.cbsd.cjyfunctionlib.Func_Activity.CardActivity;
@@ -18,6 +21,18 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
+        PermissionUtils.requestPermissions(this, 200,
+                new String[]{Manifest.permission.CAMERA},
+                new PermissionUtils.OnPermissionListener() {
+                    @Override
+                    public void onPermissionGranted() {
+                    }
+
+                    @Override
+                    public void onPermissionDenied(String[] deniedPermissions) {
+                    }
+                });
+
         findViewById(R.id.func_identify).setOnClickListener(view -> {
             Intent intent = new Intent(MainActivity.this, CardActivity.class);
             startActivity(intent);

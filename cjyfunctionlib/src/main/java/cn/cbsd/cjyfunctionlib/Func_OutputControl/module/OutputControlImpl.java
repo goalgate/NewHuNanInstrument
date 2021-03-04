@@ -1,6 +1,7 @@
 package cn.cbsd.cjyfunctionlib.Func_OutputControl.module;
 
 import android.content.pm.ApplicationInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -12,6 +13,7 @@ import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 import android_serialport_api.SerialPort;
+import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Machine.CJYHelper;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -106,8 +108,14 @@ public class OutputControlImpl implements IOutputControl {
     @Override
     public void onOpen(IOutputControlListener listener) {
         this.listener = listener;
-        light_devOpen(115200, "/dev/ttyS2");
-        switch_devOpen(115200, "/dev/ttyS0");
+        if(Build.DEVICE.startsWith("rk3288")){
+            light_devOpen(115200, "/dev/ttyS2");
+            switch_devOpen(115200, "/dev/ttyS0");
+        }else if(Build.DEVICE.startsWith("Apollo7")){
+            light_devOpen(115200, "/dev/ttyS0");
+            switch_devOpen(115200, "/dev/ttyS3");
+        }
+
     }
 
     Disposable disposable;
@@ -123,8 +131,6 @@ public class OutputControlImpl implements IOutputControl {
                 disposable.dispose();
             }
         }
-
-
     }
 
     @Override
@@ -316,7 +322,7 @@ public class OutputControlImpl implements IOutputControl {
         public void handleMessage(Message msg) {
             if (msg.what == 0x123) {
                 try {
-                    Log.e("switch", testStr);
+//                    Log.e("switch", testStr);
                     listener.onSwitchValue(testStr);
                     if (testStr.equals("AAAAAA000001000000") || testStr.equals("AAAAAA000000000000")) {
                         if (testStr.substring(10, 12).equals("01")) {
@@ -376,4 +382,13 @@ public class OutputControlImpl implements IOutputControl {
         return order;
     }
 
+    @Override
+    public int getHum() {
+        return humidity;
+    }
+
+    @Override
+    public int getTem() {
+        return temperature;
+    }
 }

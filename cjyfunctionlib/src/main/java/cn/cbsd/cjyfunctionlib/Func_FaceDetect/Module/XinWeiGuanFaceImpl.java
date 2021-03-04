@@ -118,6 +118,11 @@ public class XinWeiGuanFaceImpl implements IFace {
     Context mContext;
 
     @Override
+    public boolean isReady() {
+        return false;
+    }
+
+    @Override
     public void FaceInit(Context context, SdkInitListener listener) {
 
         rs = RenderScript.create(context);

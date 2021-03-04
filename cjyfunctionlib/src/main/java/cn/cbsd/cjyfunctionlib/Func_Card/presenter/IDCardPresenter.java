@@ -34,7 +34,7 @@ public class IDCardPresenter {
 
     IIDCard idCardModule = new IDCardImpl();
 
-    public void idCardOpen() {
+    public void idCardOpen(Context mContext) {
         try {
             idCardModule.onOpen(new IIDCard.IIdCardListener() {
                 @Override
@@ -56,7 +56,7 @@ public class IDCardPresenter {
                 public void onSetText(String Msg) {
                     view.onSetText(Msg);
                 }
-            });
+            },mContext);
         }catch (Exception e){
             Log.e("idCardOpen",e.toString());
         }

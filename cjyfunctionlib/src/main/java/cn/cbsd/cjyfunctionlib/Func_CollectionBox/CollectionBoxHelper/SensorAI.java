@@ -194,7 +194,7 @@ public class SensorAI {
         {
             try {
                 time= Calendar.getInstance();
-                if(collectionVal<minVal*(scaleVal-scaleVal*0.05))
+                if(collectionVal<minVal*(scaleVal+scaleVal*0.05))
                 {
                     val=0;
                 }else {

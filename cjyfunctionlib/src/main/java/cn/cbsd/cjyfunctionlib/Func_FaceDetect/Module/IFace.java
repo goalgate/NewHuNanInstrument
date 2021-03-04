@@ -64,6 +64,8 @@ public interface IFace {
 
     void Feature_to_Feature(byte[] feature1, byte[] feature2);
 
+    boolean isReady();
+
     interface IFaceListener {
         void onText(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, String text);
 

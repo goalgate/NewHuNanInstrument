@@ -83,6 +83,8 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.IMG_MATCH_IMG_Score;
@@ -158,7 +160,7 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
                 Log.e(TAG, logMen.toString());
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             ToastUtils.showLong(e.toString());
         }
 //        OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.HA, true);
@@ -201,13 +203,11 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
             }
         });
         alert_message.messageInit();
-        alert_password.PasswordViewInit(new Alert_Password.Callback() {
-            @Override
-            public void normal_call() {
-                normalWindow = new NormalWindow(YanChengMainActivity.this);
-                normalWindow.setOptionTypeListener(YanChengMainActivity.this);
-                normalWindow.showAtLocation(getWindow().getDecorView().findViewById(android.R.id.content), Gravity.CENTER, 0, 0);
-            }
+        alert_password.PasswordViewInit(() -> {
+            normalWindow = new NormalWindow(YanChengMainActivity.this);
+            normalWindow.setOptionTypeListener(YanChengMainActivity.this);
+            normalWindow.showAtLocation(getWindow().getDecorView().findViewById(android.R.id.content), Gravity.CENTER, 0, 0);
+
         });
     }
 
@@ -325,7 +325,7 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
                 tv_info.setText("信息处理完毕,仓库门已解锁,20秒后才可重新上锁");
                 Door.getInstance().setMdoorState(State_Open);
                 Door.getInstance().doNext();
-                Observable.timer(20,TimeUnit.SECONDS)
+                Observable.timer(20, TimeUnit.SECONDS)
                         .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(new Consumer<Long>() {
@@ -335,7 +335,7 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
 
                             }
                         });
-            }else{
+            } else {
                 tv_info.setText("信息处理完毕,仓库门已解锁");
 
             }
@@ -453,11 +453,11 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
             try {
                 Keeper keeper = mdaosession.queryRaw(Keeper.class,
                         "where CARD_ID = '" + model.getUser().getUserInfo().toUpperCase() + "'").get(0);
-                if (keeper.getHeadphotoBW() == null) {
-                    keeper.setHeadphotoBW(FileUtils.bitmapToBase64(Scene_headphoto));
-                    mdaosession.insertOrReplace(keeper);
-                    fp.FaceRegOrUpdateByFeature(keeper.getName(), keeper.getCardID(), model.getFeature(), false);
-                }
+//                if (keeper.getHeadphotoBW() == null) {
+//                    keeper.setHeadphotoBW(FileUtils.bitmapToBase64(Scene_headphoto));
+//                    mdaosession.insertOrReplace(keeper);
+//                    fp.FaceRegOrUpdateByFeature(keeper.getName(), keeper.getCardID(), model.getFeature(), false);
+//                }
             } catch (Exception e) {
                 ToastUtils.showLong(e.toString());
             }
@@ -576,7 +576,8 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        RetrofitGenerator.getXinWeiGuanApi().withDataRr("saveVisit", config.getString("key"), unknownPeopleJson.toString())
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), unknownPeopleJson.toString());
+        RetrofitGenerator.getXinWeiGuanApi().upDatawithBody("saveVisit", config.getString("key"), body)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -601,7 +602,6 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
                             tv_info.setText("数据库操作有错");
                         }
                         unknownUser = new SceneKeeper();
-
                     }
 
                     @Override
@@ -622,7 +622,8 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        RetrofitGenerator.getXinWeiGuanApi().withDataRr("saveVisit", config.getString("key"), unknownPeopleJson.toString())
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), unknownPeopleJson.toString());
+        RetrofitGenerator.getXinWeiGuanApi().upDatawithBody("saveVisit", config.getString("key"),body )
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -692,7 +693,8 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
         } else {
             return;
         }
-        RetrofitGenerator.getXinWeiGuanApi().withDataRr("openDoorRecord", config.getString("key"), OpenDoorJson.toString())
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), OpenDoorJson.toString());
+        RetrofitGenerator.getXinWeiGuanApi().upDatawithBody("openDoorRecord", config.getString("key"), body)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

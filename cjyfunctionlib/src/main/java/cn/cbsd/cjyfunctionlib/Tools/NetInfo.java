@@ -1,6 +1,7 @@
 package cn.cbsd.cjyfunctionlib.Tools;
 
 import android.os.Build;
+import android.text.TextUtils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -48,10 +49,15 @@ public class NetInfo {
     //取macID
     public String getMacId() {
         if(Build.DEVICE.startsWith("rk3288")){
-            return macToId(getWifiMac());
+            if(TextUtils.isEmpty(macToId(getWifiMac()))){
+                return macToId(getMac());
+            }else {
+                return macToId(getWifiMac());
+            }
         }else{
             return macToId(getMac());
         }
+//        return macToId(getMac());
     }
 
 

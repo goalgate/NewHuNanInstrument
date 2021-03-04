@@ -1,0 +1,57 @@
+建立联系 {"code":10001,"data":{"user":"cjy","pwd":"888888"}};
+申请图像资源 {"code":10002,"data":{"playVideo":1}};
+停止申请图像资源 {"code":10002,"data":{"playVideo":0}};
+停止联系 {"code":10003,"data":{"Cease":1}};
+
+
+申请成功 {"code":10000,"data":{"errCode":0,"errMsg":""}}
+申请失败 {"code":10000,"data":{"errCode":1,"errMsg":""}}
+
+
+通信获取信息
+获取设备号 {"code":20011}
+返回 {"code":20011,"data":{"param":"xxxxxx-xxxxxx-xxxxxx"}}
+
+获取以太网Mac地址 {"code":20012}
+返回 {"code":20012,"data":{"param":"xx:xx:xx:xx:xx:xx"}}
+
+获取IP地址 {"code":20013}
+返回 {"code":20013,"data":{"param":"xx:xx:xx:xx:xx:xx"}}
+
+获取服务器地址 {"code":20014}
+返回 {"code":20014,"data":{"param":"http://................"}}
+
+获取温度{"code":20015}
+返回 {"code":20015,"data":{"Tem":"25.0"}}
+
+获取CPU温度{"code":20016}
+返回 {"code":20016,"data":{"CPUTem":"25.0"}}
+
+获取GPU温度{"code":20017}
+返回 {"code":20017,"data":{"GPUTem":"25.0"}}
+
+设置静态IP地址 {"code":20021,"data":{"ip":"","mask":"","gateway":"","dns1":"","dns2":""}}
+返回 {"code":10000,"data":{"errCode":0,"errMsg":""}}
+     {"code":10000,"data":{"errCode":1,"errMsg":""}}
+
+设置动态IP地址 {"code":20022}
+返回 {"code":10000,"data":{"errCode":0,"errMsg":""}}
+     {"code":10000,"data":{"errCode":1,"errMsg":""}}
+
+设置服务器地址 {"code":20023,"data":{"ServerId":""}}
+返回 {"code":10000,"data":{"errCode":0,"errMsg":""}}
+     {"code":10000,"data":{"errCode":1,"errMsg":""}}
+
+
+获取当前仓管员信息 {"code":20031}
+返回 {"code":20031,"data":""}
+
+获取当前巡检员信息 {"code":20032}
+返回 {"code":20031,"data":""}
+
+
+
+
+
+
+

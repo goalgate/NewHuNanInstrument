@@ -59,6 +59,7 @@ import java.util.concurrent.TimeUnit;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
+import cn.cbsd.cjyfunctionlib.Func_WebSocket.ServerManager;
 import cn.cbsd.cjyfunctionlib.Tools.BitmapTools;
 import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
 import io.reactivex.Observable;
@@ -120,11 +121,19 @@ public class HuNanFaceImpl implements IFace {
 
     Context mContext;
 
+    boolean isReady = false;
+
+    @Override
+    public boolean isReady() {
+        return isReady;
+    }
+
     @Override
     public void FaceInit(Context context, SdkInitListener listener) {
 
         rs = RenderScript.create(context);
-        yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+//        yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+        yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.RGBA_8888(rs));
         mContext = context;
         FaceSDKManager.getInstance().init(context, listener);
     }
@@ -138,6 +147,7 @@ public class HuNanFaceImpl implements IFace {
     @Override
     public void FaceIdentify() {
         action = FacePresenter.FaceAction.Identify;
+        isReady = true;
         IdentifyTimeOut = Observable.timer(10, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe((l) -> {
@@ -149,7 +159,7 @@ public class HuNanFaceImpl implements IFace {
     @Override
     public void FaceIdentify_model() {
         action = FacePresenter.FaceAction.Identify_Model;
-
+        isReady = true;
     }
 
     @Override
@@ -323,6 +333,11 @@ public class HuNanFaceImpl implements IFace {
         if (mDrawDetectFaceView != null) {
             mDrawDetectFaceView = null;
         }
+
+        if (dispos_remote != null) {
+            dispos_remote.dispose();
+        }
+
         System.gc();
         listener.CeaseCallBack();
     }
@@ -338,7 +353,7 @@ public class HuNanFaceImpl implements IFace {
         try {
             global_bitmap = byteToBitmap(global_BitmapBytes, mWidth, mHeight);
         } catch (NullPointerException e) {
-            global_bitmap =  byteToBitmap(global_BitmapBytes_backup, mWidth, mHeight);
+            global_bitmap = byteToBitmap(global_BitmapBytes_backup, mWidth, mHeight);
         }
         return global_bitmap;
     }
@@ -465,22 +480,7 @@ public class HuNanFaceImpl implements IFace {
         Camera2PreviewManager.getInstance().startPreview(context, mPreviewView, mWidth, mHeight,
                 (data, camera, width, height) -> {
                     global_BitmapBytes = data;
-//                    Observable.just(data)
-//                            .subscribeOn(Schedulers.computation())
-//                            .unsubscribeOn(Schedulers.computation())
-//                            .flatMap(new Function<byte[], ObservableSource<Bitmap>>() {
-//                                @Override
-//                                public ObservableSource<Bitmap> apply(byte[] bytes) throws Exception {
-//                                    Bitmap bmp = byteToBitmap(data, width, height);
-//                                    return Observable.just(bmp);
-//                                }
-//                            }).observeOn(AndroidSchedulers.mainThread())
-//                            .subscribe(new Consumer<Bitmap>() {
-//                                @Override
-//                                public void accept(Bitmap bitmap) throws Exception {
-//                                    global_bitmap = bitmap;
-//                                }
-//                            });
+                    SendVideoData();
                     if (useRGBCamera) {
                         faceDetect(data, width, height);
 
@@ -770,8 +770,6 @@ public class HuNanFaceImpl implements IFace {
     }
 
 
-
-
     private void identity(LivenessModel livenessModel, boolean isN) {
 
         if (!isN) {
@@ -789,9 +787,9 @@ public class HuNanFaceImpl implements IFace {
             BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
             headphotoIR = BitmapUtils.getInstaceBmp(image);
             try {
-                global_bitmap =  byteToBitmap(global_BitmapBytes, mWidth, mHeight);
+                global_bitmap = byteToBitmap(global_BitmapBytes, mWidth, mHeight);
             } catch (NullPointerException e) {
-                global_bitmap =  byteToBitmap(global_BitmapBytes_backup, mWidth, mHeight);
+                global_bitmap = byteToBitmap(global_BitmapBytes_backup, mWidth, mHeight);
             }
             handler.post(() -> {
                 listener.onBitmap(action, FacePresenter.FaceResultType.Identify_success, global_bitmap);
@@ -901,40 +899,6 @@ public class HuNanFaceImpl implements IFace {
     private Allocation in, out;
 
     public Bitmap byteToBitmap(byte[] imgByte, int width, int height) {
-
-
-//        YuvImage image = new YuvImage(imgByte, ImageFormat.NV21, width, height, null);
-//        ByteArrayOutputStream os = new ByteArrayOutputStream(imgByte.length);
-//        if (!image.compressToJpeg(new Rect(0, 0, width, height), 100, os)) {
-//            return null;
-//        }
-//        byte[] tmp = os.toByteArray();
-//
-//
-//        InputStream input = null;
-//        Bitmap bitmap = null;
-//        BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inSampleSize = 2;
-//        input = new ByteArrayInputStream(tmp);
-//        SoftReference softRef = new SoftReference(BitmapFactory.decodeStream(
-//                input, null, options));
-//        bitmap = (Bitmap) softRef.get();
-//        if (imgByte != null) {
-//            imgByte = null;
-//        }
-//        try {
-//            if (input != null) {
-//                input.close();
-//                os.close();
-//
-//            }
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//        return bitmap;
-
-
         if (yuvType == null) {
             yuvType = new Type.Builder(rs, Element.U8(rs)).setX(imgByte.length);
             in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
@@ -953,6 +917,40 @@ public class HuNanFaceImpl implements IFace {
 
         return bmpout;
 
+    }
+
+
+    boolean remote = false;
+    Disposable dispos_remote;
+
+    private void SendVideoData() {
+        if (ServerManager.getInstance().isReady() && !remote) {
+            remote = true;
+            dispos_remote = Observable.interval(0, 500, TimeUnit.MILLISECONDS)
+                    .subscribeOn(Schedulers.io())
+                    .unsubscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.single())
+                    .subscribe((l) -> {
+                        try {
+                            Bitmap pic = byteToBitmap(global_BitmapBytes,mWidth,mHeight);
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            pic.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                            byte[] datas = baos.toByteArray();
+                            ServerManager.getInstance().SendVideoData(datas);
+                            baos.close();
+                            pic.recycle();
+                            pic = null;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    });
+        } else {
+            if (dispos_remote != null) {
+                dispos_remote.dispose();
+            }
+            remote = false;
+        }
     }
 
 }

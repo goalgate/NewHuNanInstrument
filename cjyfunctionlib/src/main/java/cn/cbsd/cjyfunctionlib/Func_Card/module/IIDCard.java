@@ -1,5 +1,6 @@
 package cn.cbsd.cjyfunctionlib.Func_Card.module;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardInfo;
@@ -10,7 +11,7 @@ import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardInfo;
  */
 
 public interface IIDCard {
-    void onOpen(IIdCardListener mylistener);
+    void onOpen(IIdCardListener mylistener, Context context);
 
     void onReadID();
 

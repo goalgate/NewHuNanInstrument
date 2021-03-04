@@ -13,6 +13,8 @@ import com.baidu.idl.main.facesdk.model.LivenessModel;
 import com.baidu.idl.main.facesdk.model.User;
 
 
+import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.FaceImpl;
+import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.FaceImpl2;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.view.IFaceView;
@@ -21,8 +23,9 @@ import cn.cbsd.cjyfunctionlib.Func_FaceDetect.view.IFaceView;
 public class FacePresenter {
     private IFaceView view;
 
-    private IFace iFace = new HuNanFaceImpl();
+//    private IFace iFace = new HuNanFaceImpl();
 
+    private IFace iFace = new FaceImpl2();
     private static FacePresenter instance = null;
 
     public enum FaceAction {
@@ -121,6 +124,16 @@ public class FacePresenter {
             Log.e("FaceIdentify_model", e.toString());
 
         }
+    }
+
+    public boolean isReady(){
+        try {
+            return iFace.isReady();
+        } catch (Exception e) {
+            Log.e("isReady", e.toString());
+
+        }
+        return false;
     }
 
     public void FaceVerify(String userName, String userInfo, Bitmap bitmap) {

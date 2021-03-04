@@ -21,8 +21,9 @@ public class UDPState {
     }
 
     //状态信息：door:1为关门，其它为开门；t为温度，h为湿度
-    public String setState(int door, float t, float h) {
-        data_ = daid_ + "," + name_ + "," + door + "," + t + "," + h + "#";
+    public String setState(int door, float t, float h, float cpu, float gpu) {
+        data_ = daid_ + "," + name_ + "," + door + "," + t + "," + h + "," + cpu + "," + gpu + "#";
+//        data_ = daid_ + "," + name_ + "," + door + "," + t + "," + h + "#";
         return data_;
     }
 
@@ -33,8 +34,8 @@ public class UDPState {
     }
 
 
-    public void sendData(int door, float t, float h) {
-        String s = setState(door, t, h);
+    public void sendData(int door, float t, float h, float cpu, float gpu) {
+        String s = setState(door, t, h,cpu,gpu);
         send(ip_, port_, s);
     }
 

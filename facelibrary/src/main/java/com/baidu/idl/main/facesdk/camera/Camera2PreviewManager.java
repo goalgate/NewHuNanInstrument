@@ -204,15 +204,15 @@ public class Camera2PreviewManager implements TextureView.SurfaceTextureListener
             int cameraRotation = SingleBaseConfig.getBaseConfig().getVideoDirection();
             switch (cameraFacing) {
                 case CAMERA_FACING_FRONT: {
-//                    cameraRotation = ORIENTATIONS.get(displayOrientation);
-//                    cameraRotation = getCameraDisplayOrientation(cameraRotation, cameraId);
+                    cameraRotation = ORIENTATIONS.get(displayOrientation);
+                    cameraRotation = getCameraDisplayOrientation(cameraRotation, cameraId);
                     mCamera.setDisplayOrientation(cameraRotation);
                     break;
                 }
 
                 case CAMERA_FACING_BACK: {
-//                    cameraRotation = ORIENTATIONS.get(displayOrientation);
-//                    cameraRotation = getCameraDisplayOrientation(cameraRotation, cameraId);
+                    cameraRotation = ORIENTATIONS.get(displayOrientation);
+                    cameraRotation = getCameraDisplayOrientation(cameraRotation, cameraId);
                     mCamera.setDisplayOrientation(cameraRotation);
                     break;
                 }

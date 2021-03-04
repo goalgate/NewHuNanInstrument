@@ -52,7 +52,7 @@
                     android:layout_marginRight="24dp"
                     android:textColor="#fff"
                     android:text="设备号:"
-                    android:textSize="16px"/>
+                    android:textSize="@dimen/headTextSize"/>
 
                 <TextView
                     android:id="@+id/tv_daid"
@@ -61,7 +61,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginRight="200dp"
                     android:textColor="#fff"
-                    android:textSize="16px"/>
+                    android:textSize="@dimen/headTextSize"/>
 
                 <TextView
                     android:id="@+id/tv_time"
@@ -70,7 +70,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginRight="@dimen/y14"
                     android:textColor="#fff"
-                    android:textSize="16px" />
+                    android:textSize="@dimen/headTextSize" />
 
                 <LinearLayout
                     android:id="@+id/lay_lock"

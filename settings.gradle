@@ -1,2 +1,3 @@
+include ':mvpHelper'
 include ':app', ':cjyfunctionlib', ':facelibrary'
 rootProject.name='NewHuNanInstrument'

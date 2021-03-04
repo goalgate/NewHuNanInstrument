@@ -161,13 +161,13 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent">
 
-                            <com.baidu.aip.face.AutoTexturePreviewView
+                            <com.baidu.idl.main.facesdk.camera.AutoTexturePreviewView
                                 android:id="@+id/preview_view1"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:layout_margin="4dp" />
 
-                            <com.baidu.aip.face.AutoTexturePreviewView
+                            <com.baidu.idl.main.facesdk.camera.AutoTexturePreviewView
                                 android:id="@+id/preview_view"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"

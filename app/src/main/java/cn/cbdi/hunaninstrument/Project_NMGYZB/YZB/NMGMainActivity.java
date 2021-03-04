@@ -408,11 +408,11 @@ public class NMGMainActivity extends BaseActivity implements SuperWindow2.Option
             try {
                 Keeper keeper = mdaosession.queryRaw(Keeper.class,
                         "where CARD_ID = '" + model.getUser().getUserInfo().toUpperCase() + "'").get(0);
-                if (keeper.getHeadphotoBW() == null) {
-                    keeper.setHeadphotoBW(FileUtils.bitmapToBase64(Scene_headphoto));
-                    mdaosession.insertOrReplace(keeper);
-                    fp.FaceRegOrUpdateByFeature(keeper.getName(), keeper.getCardID(), model.getFeature(), false);
-                }
+//                if (keeper.getHeadphotoBW() == null) {
+//                    keeper.setHeadphotoBW(FileUtils.bitmapToBase64(Scene_headphoto));
+//                    mdaosession.insertOrReplace(keeper);
+//                    fp.FaceRegOrUpdateByFeature(keeper.getName(), keeper.getCardID(), model.getFeature(), false);
+//                }
             } catch (Exception e) {
                 ToastUtils.showLong(e.toString());
             }

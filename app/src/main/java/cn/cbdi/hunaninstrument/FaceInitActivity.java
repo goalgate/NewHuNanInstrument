@@ -1,6 +1,7 @@
 package cn.cbdi.hunaninstrument;
 
 
+import android.Manifest;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -10,7 +11,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,6 +23,7 @@ import com.baidu.idl.main.facesdk.ui.Activation;
 import com.bigkoo.alertview.AlertView;
 import com.blankj.utilcode.util.ActivityUtils;
 import com.blankj.utilcode.util.NetworkUtils;
+import com.blankj.utilcode.util.PermissionUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.trello.rxlifecycle2.android.ActivityEvent;
@@ -36,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import cn.cbdi.hunaninstrument.Config.NMGFB_NewConfig;
 import cn.cbdi.hunaninstrument.Config.YanChengConfig;
 import cn.cbdi.hunaninstrument.Tool.AssetsUtils;
+import cn.cbdi.hunaninstrument.Tool.MediaHelper;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_FingerPrint.presenter.FingerPrintPresenter;
 import cn.cbsd.cjyfunctionlib.R;
@@ -46,7 +51,6 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -62,29 +66,71 @@ public class FaceInitActivity extends RxActivity {
 
     private SPUtils config = SPUtils.getInstance("config");
 
-    String daid = new NetInfo().getMacId();
+//    String daid = new NetInfo().getMacId();
 
-//    String daid = "000224-076000-002180";
+    String daid = "000224-076000-003049";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.faceinit);
+        PermissionUtils.requestPermissions(this, 200,
+                new String[]{
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE},
+                new PermissionUtils.OnPermissionListener() {
+                    @Override
+                    public void onPermissionGranted() {
+                        try {
+                            MediaHelper.mediaOpen();
+                            MediaHelper.loudly();
+                            Intent intent = new Intent(FaceInitActivity.this, AppInit.getInstrumentConfig().getUpdateService());
+                            startService(intent);
+                            File key = new File(Environment.getExternalStorageDirectory() + File.separator + "key.txt");
+                            String txtForKey = FileUtils.readFile2String(key);
+                            copyToClipboard(FaceInitActivity.this, txtForKey);
+                            CheckLicenseKey("excel" + File.separator + "授权激活码替换列表.xls", txtForKey);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
 
-        Intent intent = new Intent(FaceInitActivity.this, AppInit.getInstrumentConfig().getUpdateService());
-        startService(intent);
-
-        try {
-            File key = new File(Environment.getExternalStorageDirectory() + File.separator + "key.txt");
-            String txtForKey = FileUtils.readFile2String(key);
-            copyToClipboard(this, txtForKey);
-            CheckLicenseKey("excel" + File.separator + "授权激活码替换列表.xls", txtForKey);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                    @Override
+                    public void onPermissionDenied(String[] deniedPermissions) {
+                        FaceInitActivity.this.finish();
+                    }
+                });
+//        try {
+//            File key = new File(Environment.getExternalStorageDirectory() + File.separator + "key.txt");
+//            String txtForKey = FileUtils.readFile2String(key);
+//            copyToClipboard(this, txtForKey);
+//            CheckLicenseKey("excel" + File.separator + "授权激活码替换列表.xls", txtForKey);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 200) {
+            try {
+                MediaHelper.mediaOpen();
+                MediaHelper.loudly();
+                Intent intent = new Intent(FaceInitActivity.this, AppInit.getInstrumentConfig().getUpdateService());
+                startService(intent);
+                File key = new File(Environment.getExternalStorageDirectory() + File.separator + "key.txt");
+                String txtForKey = FileUtils.readFile2String(key);
+                copyToClipboard(FaceInitActivity.this, txtForKey);
+                CheckLicenseKey("excel" + File.separator + "授权激活码替换列表.xls", txtForKey);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     private void dissDialog() {
         handler.post(new Runnable() {
@@ -95,14 +141,26 @@ public class FaceInitActivity extends RxActivity {
         });
     }
 
-    public static void SaveTxt(String str) {
+    public void SaveTxt(String str) {
+        config.put("activate_online_key", str);
+        Log.e("activate_online_key", str);
         try {
-            FileWriter fw = new FileWriter(Environment.getExternalStorageDirectory() + File.separator + "key.txt");//SD卡中的路径
-            fw.flush();
-            fw.write(str);
-            fw.close();
+            String path = Environment.getExternalStorageDirectory() + File.separator + "key.txt";
+            File txtLicense = new File(path);
+            if (txtLicense == null) {
+                return;
+            }
+            String txtForKey = FileUtils.readFile2String(txtLicense);
+            if (TextUtils.isEmpty(txtForKey)) {
+                FileWriter fw = new FileWriter(path);//SD卡中的路径
+                fw.flush();
+                fw.write(str);
+                fw.close();
+            }
+
+
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("SaveTxt", e.toString());
         }
     }
 
@@ -145,16 +203,9 @@ public class FaceInitActivity extends RxActivity {
             }
         } else {
             if (AppInit.getInstrumentConfig().getClass().getName().equals(YanChengConfig.class.getName())) {
-                JSONObject jsonKey = new JSONObject();
-                try {
-                    jsonKey.put("daid", daid);
-                    jsonKey.put("check", DESX.encrypt(daid));
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                if (("http://124.172.232.83:8007/".equals(config.getString("ServerId")))) {
+                    config.put("ServerId", "http://221.231.109.86:8007/");
                 }
-                config.put("daid", daid);
-                config.put("key", DESX.encrypt(jsonKey.toString()));
-                config.put("ServerId", AppInit.getInstrumentConfig().getServerId());
             }
             if (config.getBoolean("firstStart", true)) {
                 JSONObject jsonKey = new JSONObject();
@@ -220,7 +271,7 @@ public class FaceInitActivity extends RxActivity {
 
     }
 
-    private void CheckLicenseKey(String xlsName, String licenseKey) {
+    private void CheckLicenseKey(String xlsName, String checkKey) {
         Observable.just(xlsName).flatMap(new Function<String, ObservableSource<String>>() {
             @Override
             public ObservableSource<String> apply(String s) throws Exception {
@@ -230,7 +281,7 @@ public class FaceInitActivity extends RxActivity {
                     for (Sheet sheet : workbook.getSheets()) {
                         int sheetRows = sheet.getRows();
                         for (int i = 0; i < sheetRows; i++) {
-                            if (licenseKey.equals(sheet.getCell(1, i).getContents())) {
+                            if (checkKey.equals(sheet.getCell(1, i).getContents())) {
                                 workbook.close();
                                 return Observable.just(sheet.getCell(2, i).getContents());
                             }

@@ -31,7 +31,7 @@ public class XinWeiGuan_Config extends BaseConfig {
 
     @Override
     public String getPersonInfoPrefix() {
-        return "";
+        return "caijiyiDuijie/s/kaiguanmen";
     }
 
     @Override

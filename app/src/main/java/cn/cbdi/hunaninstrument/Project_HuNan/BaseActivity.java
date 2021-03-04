@@ -1,7 +1,9 @@
 package cn.cbdi.hunaninstrument.Project_HuNan;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.TextureView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -12,6 +14,9 @@ import com.blankj.utilcode.util.SPUtils;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.components.RxActivity;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -19,18 +24,20 @@ import cn.cbdi.hunaninstrument.AppInit;
 import cn.cbdi.hunaninstrument.Bean.Employer;
 import cn.cbdi.hunaninstrument.Bean.Keeper;
 import cn.cbdi.hunaninstrument.Bean.ReUploadBean;
+import cn.cbdi.hunaninstrument.EventBus.USBCopyEvent;
 import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Tool.ActivityCollector;
 import cn.cbdi.hunaninstrument.Tool.MediaHelper;
+import cn.cbdi.hunaninstrument.Tool.MySocketHelper;
 import cn.cbdi.hunaninstrument.greendao.DaoSession;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 import cn.cbsd.cjyfunctionlib.Func_Card.view.IIDCardView;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.view.IFaceView;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
+import cn.cbsd.cjyfunctionlib.Func_WebSocket.ServerManager;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-
 
 public abstract class BaseActivity extends RxActivity implements IFaceView, IIDCardView {
 
@@ -73,6 +80,9 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
     @BindView(R.id.tv_daid)
     public TextView tv_daid;
 
+    @BindView(R.id.tv_krq)
+    public TextView tv_krq;
+
     public OutputControlPresenter sp = OutputControlPresenter.getInstance();
 
     public FacePresenter fp = FacePresenter.getInstance();
@@ -87,8 +97,11 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
         BarUtils.hideStatusBar(this);
         ActivityCollector.addActivity(this);
         firstUse();
-        idp.idCardOpen();
+        idp.idCardOpen(AppInit.getContext());
         sp.Open();
+        if(AppInit.getInstrumentConfig().Remote()){
+            ServerManager.getInstance().Start(4545, new MySocketHelper(this));
+        }
         Log.e(TAG, "onCreate");
     }
 
@@ -106,7 +119,7 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
         Log.e(TAG, "onResume");
         idp.IDCardPresenterSetView(this);
         fp.useRGBCamera(false);
-        MediaHelper.play(MediaHelper.Text.normal_model);
+//        MediaHelper.play(MediaHelper.Text.normal_model);
         Observable.timer(1, TimeUnit.SECONDS)
                 .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
@@ -131,7 +144,7 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
     protected void onRestart() {
         super.onRestart();
         FacePresenter.getInstance().FaceIdentify_model();
-        Log.e("Activity","restart");
+        Log.e("Activity", "restart");
     }
 
     @Override
@@ -140,6 +153,9 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
         sp.WhiteLight(false);
         idp.idCardClose();
         MediaHelper.mediaRealese();
+        if(AppInit.getInstrumentConfig().Remote()){
+            ServerManager.getInstance().Stop();
+        }
         ActivityCollector.removeActivity(this);
     }
 
@@ -160,6 +176,24 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
                 e.printStackTrace();
             }
         }
+    }
+
+    private ProgressDialog progressDialog;
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onGetUSBCopyEvent(USBCopyEvent event) {
+        if (event.getStatus() == 1) {
+            fp.FaceSetNoAction();
+            progressDialog = new ProgressDialog(this);
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.getWindow().getAttributes().gravity = Gravity.CENTER;
+            progressDialog.setMessage("已找到相应数据，正在复制...");
+            progressDialog.show();
+        } else if (event.getStatus() == 2) {
+            progressDialog.dismiss();
+            fp.FaceIdentify_model();
+        }
+
     }
 
 }

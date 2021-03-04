@@ -66,6 +66,10 @@ public abstract class BaseConfig {
 
     public abstract boolean DoorMonitorChosen();
 
+    public boolean Remote(){
+        return false;
+    }; // 是否开启远程
+
     boolean hongWai = false;
 
     public abstract boolean isHongWai();

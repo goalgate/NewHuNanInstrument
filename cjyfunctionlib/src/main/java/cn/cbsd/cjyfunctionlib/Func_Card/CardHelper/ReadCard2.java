@@ -222,34 +222,34 @@ public class ReadCard2 implements ICardInfo {
             while (thread_continuous) {
                 if (mInputStream != null && mOutputStream != null) {
                     try {
-                        sendandread(dt_antenna_close, readBuffer, () -> {
-                            System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
-                            if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
-                                    + readBuffer[0]) + 2).equals("2000")) {
-//                                Log.e("card天线关闭", "天线关闭成功");
-                            } else {
-//                                Log.e("card天线关闭", "天线关闭失败");
-                            }
-                        }, 50);
-                        sendandread(dt_antenna_open, readBuffer, () -> {
-                            System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
-                            if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
-                                    + readBuffer[0]) + 2).equals("2000")) {
-//                                Log.e("card天线开启", "天线开启成功");
-                            } else {
-//                                Log.e("card天线开启", "天线开启失败");
-                            }
-                        }, 50);
-                        sendandread(dt_ica_set, readBuffer, () -> {
-                            System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
-                            if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
-                                    + readBuffer[0]) + 2).equals("2000")) {
-//                                Log.e("cardTYBEA设置", "TYBEA设置成功");
-                            } else {
-//                                Log.e("cardTYBEA设置", "TYBEA设置失败");
-                            }
-                        }, 50);
                         if (useIC) {
+                            sendandread(dt_antenna_close, readBuffer, () -> {
+                                System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
+                                if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
+                                        + readBuffer[0]) + 2).equals("2000")) {
+//                                Log.e("card天线关闭", "天线关闭成功");
+                                } else {
+//                                Log.e("card天线关闭", "天线关闭失败");
+                                }
+                            }, 50);
+                            sendandread(dt_antenna_open, readBuffer, () -> {
+                                System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
+                                if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
+                                        + readBuffer[0]) + 2).equals("2000")) {
+//                                Log.e("card天线开启", "天线开启成功");
+                                } else {
+//                                Log.e("card天线开启", "天线开启失败");
+                                }
+                            }, 50);
+                            sendandread(dt_ica_set, readBuffer, () -> {
+                                System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
+                                if (CRC16.getCRC3(readBuffer, ((readBuffer[1] << 8)
+                                        + readBuffer[0]) + 2).equals("2000")) {
+//                                Log.e("cardTYBEA设置", "TYBEA设置成功");
+                                } else {
+//                                Log.e("cardTYBEA设置", "TYBEA设置失败");
+                                }
+                            }, 50);
                             sendandread(dt_ica_read, readBuffer, () -> {
                                 System.arraycopy(readBuffer, 2, readBuffer, 0, readBuffer.length - 4);
                                 if (readBuffer[0] >= 0x08 && !ic_continuous) {

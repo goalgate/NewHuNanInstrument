@@ -28,12 +28,12 @@ public class YanChengConfig extends BaseConfig {
 
     @Override
     public String getPersonInfoPrefix() {
-        return "";
+        return "caijiyiDuijie/s/kaiguanmen";
     }
 
     @Override
     public String getUpDataPrefix() {
-        return "";
+        return "caijiyiDuijie/s/kaiguanmen";
     }
 
 
@@ -158,6 +158,11 @@ public class YanChengConfig extends BaseConfig {
     @Override
     public void setHongWai(boolean hongWai) {
         this.hongWai = hongWai;
+    }
+
+    @Override
+    public boolean Remote() {
+        return true;
     }
 }
 

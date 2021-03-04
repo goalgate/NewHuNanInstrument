@@ -27,39 +27,42 @@ public class MediaHelper {
     private static MediaPlayer mediaPlayer;
 
     public static void mediaOpen() {
-        mediaPlayer = new MediaPlayer();
-
-        try {
-            Class<?> cMediaTimeProvider = Class.forName("android.media.MediaTimeProvider");
-            Class<?> cSubtitleController = Class.forName("android.media.SubtitleController");
-            Class<?> iSubtitleControllerAnchor = Class.forName("android.media.SubtitleController$Anchor");
-            Class<?> iSubtitleControllerListener = Class.forName("android.media.SubtitleController$Listener");
-            Constructor constructor = cSubtitleController.getConstructor(
-                    new Class[]{Context.class, cMediaTimeProvider, iSubtitleControllerListener});
-            Object subtitleInstance = constructor.newInstance(AppInit.getContext(), null, null);
-            Field f = cSubtitleController.getDeclaredField("mHandler");
-            f.setAccessible(true);
+        if (AppInit.getInstrumentConfig().noise()) {
+            mediaPlayer = new MediaPlayer();
             try {
-                f.set(subtitleInstance, new Handler());
-            } catch (IllegalAccessException e) {
+                Class<?> cMediaTimeProvider = Class.forName("android.media.MediaTimeProvider");
+                Class<?> cSubtitleController = Class.forName("android.media.SubtitleController");
+                Class<?> iSubtitleControllerAnchor = Class.forName("android.media.SubtitleController$Anchor");
+                Class<?> iSubtitleControllerListener = Class.forName("android.media.SubtitleController$Listener");
+                Constructor constructor = cSubtitleController.getConstructor(
+                        new Class[]{Context.class, cMediaTimeProvider, iSubtitleControllerListener});
+                Object subtitleInstance = constructor.newInstance(AppInit.getContext(), null, null);
+                Field f = cSubtitleController.getDeclaredField("mHandler");
+                f.setAccessible(true);
+                try {
+                    f.set(subtitleInstance, new Handler());
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } finally {
+                    f.setAccessible(false);
+                }
+                Method setsubtitleanchor = mediaPlayer.getClass().getMethod("setSubtitleAnchor",
+                        cSubtitleController, iSubtitleControllerAnchor);
+                setsubtitleanchor.invoke(mediaPlayer, subtitleInstance, null);
+            } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
-                f.setAccessible(false);
             }
-            Method setsubtitleanchor = mediaPlayer.getClass().getMethod("setSubtitleAnchor",
-                    cSubtitleController, iSubtitleControllerAnchor);
-            setsubtitleanchor.invoke(mediaPlayer, subtitleInstance, null);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
 
     public static void loudly() {
-        AudioManager audioMgr = (AudioManager) AppInit.getContext().getSystemService(Context.AUDIO_SERVICE);
-        int maxVolume = audioMgr.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        audioMgr.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, AudioManager.FLAG_PLAY_SOUND);
-        Log.e("信息提示", "打开音量");
+        if (AppInit.getInstrumentConfig().noise()) {
+            AudioManager audioMgr = (AudioManager) AppInit.getContext().getSystemService(Context.AUDIO_SERVICE);
+            int maxVolume = audioMgr.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            audioMgr.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, AudioManager.FLAG_PLAY_SOUND);
+            Log.e("信息提示", "打开音量");
+        }
     }
 
     public static void play(Text text) {

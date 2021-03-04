@@ -31,6 +31,11 @@
             android:theme="@style/ImageTranslucentTheme"></activity>
 
         <activity
+            android:name=".Project_HuNan.MVPTest.Activity.HuNanMainActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+
+        <activity
             android:name=".Project_HuNan.HuNanRegActivity"
             android:launchMode="standard"
             android:theme="@style/ImageTranslucentTheme"></activity>
@@ -101,6 +106,16 @@
             android:theme="@style/ImageTranslucentTheme"></activity>
 
 
+        <activity
+            android:name=".Project_XAYZB.XAYZBMainActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+
+        <activity
+            android:name=".Project_XAYZB.XAYZBRegActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+
         <service android:name=".Project_YanCheng.YanChengService"></service>
         <service android:name=".Project_NMGYZB.FB.FBNMGService"></service>
         <service android:name=".Project_HuNan.HuNanService"></service>
@@ -109,7 +124,7 @@
         <service android:name=".Project_YZBYPT.YZBYPT_Service"></service>
         <service android:name=".Project_GZYZB.GZYZBService"></service>
         <service android:name=".Project_NMGYZB.New.NewNMGService"></service>
-
+        <service android:name=".Project_XAYZB.XAYZBService"></service>
         <service android:name=".Service.UpdateService"></service>
         <service android:name=".Service.HuNanUpdateService"></service>
         <service android:name=".Service.NewNMGUpdateService"></service>
