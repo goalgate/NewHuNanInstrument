@@ -140,11 +140,6 @@ public class HebeiConfig extends BaseConfig {
     }
 
     @Override
-    public IFace getFaceImpl() {
-        return new HuNanFaceImpl();
-    }
-
-    @Override
     public boolean XungengCanOpen() {
         return true;
     }

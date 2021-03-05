@@ -30,7 +30,7 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public String getPersonInfoPrefix() {
-        return "cjy/s/updata";
+        return "cjy/s/personInfo";
     }
 
     @Override
@@ -135,11 +135,6 @@ public class HuNanConfig extends BaseConfig {
     @Override
     public boolean MenKongSuo() {
         return false;
-    }
-
-    @Override
-    public IFace getFaceImpl() {
-        return new HuNanFaceImpl();
     }
 
     @Override

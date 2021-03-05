@@ -58,7 +58,7 @@ public class RetrofitGenerator {
 
     private static YZBApi yzbApi;
 
-    private CommonApi testCommonApi;
+    private static CommonApi commonApi;
 
     private static OkHttpClient.Builder okHttpClient = new OkHttpClient.Builder();
     private static Gson gson = new GsonBuilder()
@@ -204,10 +204,10 @@ public class RetrofitGenerator {
     }
 
 
-    public CommonApi getCommonApi(String url) {
-        if (testCommonApi == null) {
-            testCommonApi = createService(CommonApi.class, url);
+    public static CommonApi getCommonApi() {
+        if (commonApi == null) {
+            commonApi = createService(CommonApi.class);
         }
-        return testCommonApi;
+        return commonApi;
     }
 }

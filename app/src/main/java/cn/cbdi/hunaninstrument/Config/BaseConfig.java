@@ -60,7 +60,6 @@ public abstract class BaseConfig {
 
     public abstract boolean MenKongSuo();
 
-    public abstract IFace getFaceImpl();
 
     public abstract boolean XungengCanOpen();
 

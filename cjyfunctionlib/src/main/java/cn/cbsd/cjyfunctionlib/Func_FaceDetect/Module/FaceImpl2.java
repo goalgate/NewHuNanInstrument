@@ -905,14 +905,7 @@ public class FaceImpl2 implements IFace {
                     .observeOn(Schedulers.single())
                     .subscribe((l) -> {
                         try {
-                            Bitmap pic = getGlobalBitmap();
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            pic.compress(Bitmap.CompressFormat.JPEG, 70, baos);
-                            byte[] datas = baos.toByteArray();
-                            ServerManager.getInstance().SendVideoData(datas);
-                            baos.close();
-                            pic.recycle();
-                            pic = null;
+                            ServerManager.getInstance().SendVideoData(global_BitmapBytes,global_BitmapBytes_backup,mWidth,mHeight);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

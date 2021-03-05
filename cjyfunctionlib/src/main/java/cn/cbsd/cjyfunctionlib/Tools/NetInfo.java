@@ -28,11 +28,11 @@ public class NetInfo {
         String str = "";
         try {
             Process pp = Runtime.getRuntime().exec(
-                    "cat /sys/class/net/"+name+"/address ");
+                    "cat /sys/class/net/" + name + "/address ");
             InputStreamReader ir = new InputStreamReader(pp.getInputStream());
             LineNumberReader input = new LineNumberReader(ir);
 
-            for (; null != str;) {
+            for (; null != str; ) {
                 str = input.readLine();
                 if (str != null) {
                     macSerial = str.trim();// 去空格
@@ -40,7 +40,7 @@ public class NetInfo {
                 }
             }
         } catch (IOException ex) {
-            macSerial="";
+            macSerial = "";
             ex.printStackTrace();
         }
         return macSerial;
@@ -48,44 +48,44 @@ public class NetInfo {
 
     //取macID
     public String getMacId() {
-        if(Build.DEVICE.startsWith("rk3288")){
-            if(TextUtils.isEmpty(macToId(getWifiMac()))){
+        if (Build.DEVICE.startsWith("rk3288")) {
+            if (TextUtils.isEmpty(macToId(getWifiMac()))) {
                 return macToId(getMac());
-            }else {
+            } else {
                 return macToId(getWifiMac());
             }
-        }else{
+        } else {
             return macToId(getMac());
         }
 //        return macToId(getMac());
     }
 
 
-    public  String macToId(String mac)
-    {
-        String s="";
-        if(mac==null){return "";}
-        String[] ss=mac.split(":");
-        if(ss.length<6){return "";}
-        try
-        {
-            for(int i=0;i<6;i++)
-            {
+    public String macToId(String mac) {
+        String s = "";
+        if (mac == null) {
+            return "";
+        }
+        String[] ss = mac.split(":");
+        if (ss.length < 6) {
+            return "";
+        }
+        try {
+            for (int i = 0; i < 6; i++) {
                 int b = Integer.parseInt(ss[i].trim(), 16);
-                s+=formatStr(String.valueOf( b),3);
-                if(i==1||i==3)
-                {
-                    s+="-";
+                s += formatStr(String.valueOf(b), 3);
+                if (i == 1 || i == 3) {
+                    s += "-";
                 }
             }
 
-        }catch(Exception ex){
-            s="";
+        } catch (Exception ex) {
+            s = "";
         }
         return s;
     }
 
-    public  String formatStr(String str, int len) {
+    public String formatStr(String str, int len) {
         String s = "";
         if (str.length() == len) {
             s = str;

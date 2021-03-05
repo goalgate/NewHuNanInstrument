@@ -932,14 +932,7 @@ public class HuNanFaceImpl implements IFace {
                     .observeOn(Schedulers.single())
                     .subscribe((l) -> {
                         try {
-                            Bitmap pic = byteToBitmap(global_BitmapBytes,mWidth,mHeight);
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            pic.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                            byte[] datas = baos.toByteArray();
-                            ServerManager.getInstance().SendVideoData(datas);
-                            baos.close();
-                            pic.recycle();
-                            pic = null;
+                            ServerManager.getInstance().SendVideoData(global_BitmapBytes, global_BitmapBytes_backup, mWidth, mHeight);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

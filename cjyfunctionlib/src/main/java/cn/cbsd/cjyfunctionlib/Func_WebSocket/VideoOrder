@@ -42,8 +42,6 @@
 返回 {"code":10000,"data":{"errCode":0,"errMsg":""}}
      {"code":10000,"data":{"errCode":1,"errMsg":""}}
 
-
-
 获取当前仓管员信息 {"code":20031}
 返回 {"code":20031,"data":""}
 

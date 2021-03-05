@@ -1,5 +1,6 @@
 package cn.cbsd.cjyfunctionlib.Func_WebSocket;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import org.java_websocket.WebSocket;
@@ -8,8 +9,12 @@ import org.java_websocket.server.WebSocketServer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+
+import cn.cbsd.cjyfunctionlib.Tools.YuvTools;
 
 import static cn.cbsd.cjyfunctionlib.Func_WebSocket.SocketHelper.cnt_CommonBack;
 import static cn.cbsd.cjyfunctionlib.Func_WebSocket.SocketHelper.cnt_Connect;
@@ -38,16 +43,34 @@ public class ServerManager {
         return instance;
     }
 
-    public void SendVideoData(byte[] data) {
+    public void SendVideoData(byte[] global_BitmapBytes, byte[] global_BitmapBytes_backup, int mWidth, int mHeight) {
         if (videoSocket != null && playVideo) {
-            videoSocket.send(data);
+            try {
+                Bitmap global_bitmap;
+                try {
+                    global_bitmap = YuvTools.yuv2Bitmap(global_BitmapBytes, mWidth, mHeight);
+                } catch (NullPointerException e) {
+                    global_bitmap = YuvTools.yuv2Bitmap(global_BitmapBytes_backup, mWidth, mHeight);
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                global_bitmap.compress(Bitmap.CompressFormat.JPEG, 70, baos);
+                byte[] datas = baos.toByteArray();
+                baos.close();
+                global_bitmap.recycle();
+                global_bitmap = null;
+                videoSocket.send(datas);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
+
         }
     }
 
     public boolean isReady() {
         if (videoSocket == null) {
             return false;
-        }else {
+        } else {
             return true;
         }
     }

@@ -136,11 +136,6 @@ public class XinWeiGuan_Config extends BaseConfig {
     }
 
     @Override
-    public IFace getFaceImpl() {
-        return new XinWeiGuanFaceImpl();
-    }
-
-    @Override
     public boolean XungengCanOpen() {
         return true;
     }
