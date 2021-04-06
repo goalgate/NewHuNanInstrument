@@ -149,6 +149,11 @@ public class FaceImpl implements IFace {
     }
 
     @Override
+    public void FaceVerify(Bitmap bitmap) {
+
+    }
+
+    @Override
     public void FaceIdentify_model() {
         action = FacePresenter.FaceAction.Identify_Model;
         isReady = true;

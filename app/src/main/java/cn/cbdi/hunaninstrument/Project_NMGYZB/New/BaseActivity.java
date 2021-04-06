@@ -104,6 +104,9 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
 
     public IDCardPresenter idp = IDCardPresenter.getInstance();
 
+    public int last_mTemperature;
+
+    public int last_mHumidity;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -130,7 +133,6 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
         Log.e(TAG, "onResume");
         idp.IDCardPresenterSetView(this);
         fp.useRGBCamera(false);
-        MediaHelper.play(MediaHelper.Text.normal_model);
         Observable.timer(1, TimeUnit.SECONDS)
                 .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())
@@ -181,6 +183,8 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onGetTemHumEvent(TemHumEvent event) {
+        last_mTemperature = event.getTem();
+        last_mHumidity = event.getHum();
         tv_temperature.setText(event.getTem() + "℃");
         tv_humidity.setText(event.getHum() + "%");
     }
@@ -221,6 +225,7 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
         Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
         DoorOpenOperation.getInstance().setmDoorOpenOperation(DoorOpenOperation.DoorOpenState.Locking);
     }
+
 
 
     public abstract void OpenDoor();

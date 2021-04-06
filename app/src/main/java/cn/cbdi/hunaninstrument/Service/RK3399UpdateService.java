@@ -42,7 +42,11 @@ import static cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant.MAN
 import static cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant.NEW_APK_PATH;
 import static cn.cbsd.cjyfunctionlib.Func_CJYExtension.Update.UpdateConstant.SIGN_MD5;
 
-public class HuNanUpdateService extends Service {
+/**
+ * @author Created by WZW on 2021-03-29 10:08.
+ * @description
+ */
+public class RK3399UpdateService extends Service {
 
     private SPUtils config = SPUtils.getInstance("config");
 
@@ -75,11 +79,10 @@ public class HuNanUpdateService extends Service {
     }
 
     private void CopySourceFile() {
-        if (AppUtils.getAppVersionName().equals("2.4") && config.getBoolean("CopyFileVer_24", true)) {
-//            if (!new File(UpdateConstant.ORIGINAL_APK_PATH).exists()) {
+        if (AppUtils.getAppVersionName().equals("3.0") && config.getBoolean("CopyFileVer_30", true)) {
             Observable.create((emitter) -> {
                 emitter.onNext(ApkUtils.copyfile(
-                        new File(ApkUtils.getSourceApkPath(HuNanUpdateService.this, UpdateConstant.TEST_PACKAGENAME)),
+                        new File(ApkUtils.getSourceApkPath(RK3399UpdateService.this, UpdateConstant.TEST_PACKAGENAME)),
                         new File(UpdateConstant.ORIGINAL_APK_PATH),
                         true));
             })
@@ -90,7 +93,7 @@ public class HuNanUpdateService extends Service {
                         Boolean status = (boolean) l;
                         if (status) {
                             ToastUtils.showLong("源文件复制成功");
-                            config.put("CopyFileVer_24", false);
+                            config.put("CopyFileVer_30", false);
                             autoUpdate();
                         } else {
                             ToastUtils.showLong("源文件复制失败");
@@ -98,14 +101,14 @@ public class HuNanUpdateService extends Service {
                     });
 //            }
         } else {
-            config.put("CopyFileVer_24", false);
+            config.put("CopyFileVer_30", false);
         }
     }
 
 
     private void autoUpdate() {
         File key = new File(Environment.getExternalStorageDirectory() + File.separator + "key.txt");
-        if (config.getBoolean("CopyFileVer_24", true)) {
+        if (config.getBoolean("CopyFileVer_30", true)) {
 
         } else {
             File file = new File(NEW_APK_PATH);
@@ -133,9 +136,6 @@ public class HuNanUpdateService extends Service {
             } else {
                 connectionUtil.download("http://sbgl.wxhxp.cn:8050/daServer/updateRLCJQ.do?ver=bd40_" + AppUtils.getAppVersionName() + "&url=" + config.getString("ServerId") + "&daid=" + config.getString("daid") + "&updateType=apk&faceid=" + FileIOUtils.readFile2String(key),
                         config.getString("ServerId"),
-
-//                connectionUtil.download("http://sbgl.wxhxp.cn:8050/daServer/updateRLCJQ.do?ver=bd40_" + AppUtils.getAppVersionName() + "&url=" + config.getString("ServerId") + "&daid=" + config.getString("daid") + "&updateType=apk&faceid=" + config.getString("activate_online_key"),
-//                        config.getString("ServerId"),
                         (s) -> {
                             if (s != null) {
                                 if (s.equals("true")) {
@@ -148,7 +148,6 @@ public class HuNanUpdateService extends Service {
                                 }
                             } else {
                                 new ApkUtils().download("http://sbgl.wxhxp.cn:8050/daServer/updateRLCJQ.do?ver=bd40_" + AppUtils.getAppVersionName() + "&url=" + config.getString("ServerId") + "&daid=" + config.getString("daid") + "&updateType=patch&faceid=" + FileIOUtils.readFile2String(key),
-//                                new ApkUtils().download("http://sbgl.wxhxp.cn:8050/daServer/updateRLCJQ.do?ver=bd40_" + AppUtils.getAppVersionName() + "&url=" + config.getString("ServerId") + "&daid=" + config.getString("daid") + "&updateType=patch&faceid=" +  config.getString("activate_online_key"),
                                         (result) -> {
                                             if (result != null) {
                                                 if (result.equals("true")) {
@@ -204,7 +203,7 @@ public class HuNanUpdateService extends Service {
                 @Override
                 public void run() {
                     // 要执行的代码
-                    CJYHelper.getInstance(HuNanUpdateService.this).reboot();
+                    CJYHelper.getInstance(RK3399UpdateService.this).reboot();
                     Log.e("信息提示", "关机了");
                 }
             };

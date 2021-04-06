@@ -1,10 +1,13 @@
 package cn.cbdi.hunaninstrument.Config;
 
-import cn.cbdi.hunaninstrument.Project_YanCheng.YanChengService;
+import cn.cbdi.hunaninstrument.Project_HeNan.HNService;
+import cn.cbdi.hunaninstrument.Project_Hebei.HeBeiService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
+import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.FaceImpl3;
+import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
 
+public class HNYZB_Config extends BaseConfig {
 
-public class YanChengConfig extends BaseConfig {
     @Override
     public boolean isFace() {
         return true;
@@ -22,23 +25,22 @@ public class YanChengConfig extends BaseConfig {
 
     @Override
     public String getDev_prefix() {
-        return "";
+        return "800100";
     }
 
     @Override
     public String getPersonInfoPrefix() {
-        return "caijiyiDuijie/s/kaiguanmen";
+        return "cjy/s/fbcjy_updata?";
+    }
+
+    @Override
+    public String getServerId() {
+        return "http://hnyzb.wxhxp.cn:1093/";
     }
 
     @Override
     public String getUpDataPrefix() {
-        return "caijiyiDuijie/s/kaiguanmen";
-    }
-
-
-    @Override
-    public String getServerId() {
-        return "http://124.172.232.83:8007/";
+        return "cjy/s/fbcjy_updata?";
     }
 
     @Override
@@ -58,7 +60,7 @@ public class YanChengConfig extends BaseConfig {
 
     @Override
     public String getProject() {
-        return "YanChengMB";        //盐城
+        return "HeNanYZB";        //河南易制爆
     }
 
     @Override
@@ -95,7 +97,6 @@ public class YanChengConfig extends BaseConfig {
     public void readCard() {
         IDCardPresenter.getInstance().ReadID();
         IDCardPresenter.getInstance().ReadIC();
-
     }
 
     @Override
@@ -111,12 +112,12 @@ public class YanChengConfig extends BaseConfig {
 
     @Override
     public Class getServiceName() {
-        return YanChengService.class;
+        return HNService.class;
     }
 
     @Override
     public String getMainActivity() {
-        return ".Project_YanCheng.YanChengMainActivity";
+        return ".Project_HeNan.HNMainActivity";
     }
 
     @Override
@@ -131,13 +132,14 @@ public class YanChengConfig extends BaseConfig {
 
     @Override
     public boolean MenKongSuo() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean XungengCanOpen() {
         return true;
     }
+
 
     @Override
     public boolean DoorMonitorChosen() {
@@ -151,12 +153,11 @@ public class YanChengConfig extends BaseConfig {
 
     @Override
     public void setHongWai(boolean hongWai) {
-        this.hongWai = hongWai;
+        this.hongWai= hongWai;
     }
 
     @Override
-    public boolean Remote() {
-        return true;
+    public IFace getFaceImpl() {
+        return new FaceImpl3();
     }
 }
-

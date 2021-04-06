@@ -4,8 +4,7 @@ package cn.cbdi.hunaninstrument.Config;
 import cn.cbdi.hunaninstrument.Project_HuNan.HuNanService;
 import cn.cbdi.hunaninstrument.Service.HuNanUpdateService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
+
 
 public class HuNanConfig extends BaseConfig {
     @Override
@@ -86,7 +85,7 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public boolean noise() {
-        return true;
+        return false;
     }
 
     @Override

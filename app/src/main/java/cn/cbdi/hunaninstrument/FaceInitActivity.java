@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 import cn.cbdi.hunaninstrument.Config.NMGFB_NewConfig;
 import cn.cbdi.hunaninstrument.Config.YanChengConfig;
+import cn.cbdi.hunaninstrument.Tool.ActivityCollector;
 import cn.cbdi.hunaninstrument.Tool.AssetsUtils;
 import cn.cbdi.hunaninstrument.Tool.MediaHelper;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
@@ -66,14 +67,15 @@ public class FaceInitActivity extends RxActivity {
 
     private SPUtils config = SPUtils.getInstance("config");
 
-//    String daid = new NetInfo().getMacId();
+    String daid = new NetInfo().getMacId();
 
-    String daid = "000224-076000-003049";
+//    String daid = "000224-076000-003193";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.faceinit);
+        ActivityCollector.addActivity(this);
         PermissionUtils.requestPermissions(this, 200,
                 new String[]{
                         Manifest.permission.CAMERA,
@@ -110,6 +112,12 @@ public class FaceInitActivity extends RxActivity {
 //            e.printStackTrace();
 //        }
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ActivityCollector.removeActivity(this);
     }
 
     @Override
@@ -185,18 +193,18 @@ public class FaceInitActivity extends RxActivity {
                     }
                 }
                 if (AppInit.getInstrumentConfig().getClass().getName().equals(NMGFB_NewConfig.class.getName())) {
-                    if (("http://113.140.1.138:8890/".equals(config.getString("ServerId")))) {
-                        config.put("ServerId", "http://113.140.1.138:8892/");
+                    if (("http://113.140.1.138:8890/".equals(config.getString("ServerId")))
+                            || ("http://113.140.1.138:8892/".equals(config.getString("ServerId")))) {
+                        config.put("ServerId", "http://58.18.164.26:8162/");
+                        JSONObject jsonKey = new JSONObject();
+                        try {
+                            jsonKey.put("daid", config.getString("daid"));
+                            jsonKey.put("check", DESX.encrypt(config.getString("daid")));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        config.put("key", DESX.encrypt(jsonKey.toString()));
                     }
-                    JSONObject jsonKey = new JSONObject();
-                    try {
-                        jsonKey.put("daid", config.getString("daid"));
-                        jsonKey.put("check", DESX.encrypt(config.getString("daid")));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    config.put("key", DESX.encrypt(jsonKey.toString()));
-
                 }
                 ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getMainActivity());
                 return;
@@ -297,7 +305,7 @@ public class FaceInitActivity extends RxActivity {
                 .subscribe((s -> {
                     String result = (String) s;
                     if (s.startsWith("读写")) {
-                        FacePresenter.getInstance().FaceInit(this, new SdkInitListener() {
+                        FacePresenter.getInstance().FaceInit(AppInit.getInstrumentConfig().getFaceImpl(), this, new SdkInitListener() {
                             @Override
                             public void initStart() {
 
@@ -350,7 +358,7 @@ public class FaceInitActivity extends RxActivity {
 
                     } else {
                         if (!isNetworkOnline()) {
-                            FacePresenter.getInstance().FaceInit(this, new SdkInitListener() {
+                            FacePresenter.getInstance().FaceInit(AppInit.getInstrumentConfig().getFaceImpl(), this, new SdkInitListener() {
                                 @Override
                                 public void initStart() {
 

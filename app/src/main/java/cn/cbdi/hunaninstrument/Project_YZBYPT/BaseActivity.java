@@ -80,8 +80,6 @@ public abstract class BaseActivity extends RxActivity  {
     public void onResume() {
         super.onResume();
         Log.e(TAG, "onResume");
-        MediaHelper.play(MediaHelper.Text.normal_model);
-
     }
 
     @Override

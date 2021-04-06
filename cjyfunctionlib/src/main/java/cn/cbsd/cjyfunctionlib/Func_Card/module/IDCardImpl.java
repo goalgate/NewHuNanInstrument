@@ -79,6 +79,7 @@ public class IDCardImpl implements IIDCard {
                 Bitmap bmp = cardInfo.getBmp();
                 if (bmp != null) {
                     mylistener.onSetImg(bmp);
+                    mylistener.onSetInfoAndImg(cardInfo,bmp);
                 } else {
                     mylistener.onSetImg(null);
                     Log.e("信息提示", "没有照片");

@@ -38,7 +38,6 @@ import cn.cbdi.hunaninstrument.Project_HuNan.MVPTest.Activity.HuNanMainActivity;
 import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
 import cn.cbdi.hunaninstrument.State.OperationState.DoorOpenOperation;
-import cn.cbdi.hunaninstrument.Tool.MediaHelper;
 import cn.cbdi.hunaninstrument.Tool.MyObserver;
 import cn.cbdi.hunaninstrument.Tool.MySocketHelper;
 import cn.cbdi.hunaninstrument.greendao.DaoSession;
@@ -206,7 +205,6 @@ public class HuNanMainPresenter extends MVPBasePresenter<HuNanMainActivity> impl
                                     unknownUser.setKeeper(inside_keeper);
                                     unknownPeople(fp.getGlobalBitmap());
                                     getV().infoSet("系统查无此人");
-                                    MediaHelper.play(MediaHelper.Text.man_non);
                                     sp.redLight();
                                 } else if (s.startsWith("true")) {
                                     String type = s.substring(5, s.length());
@@ -234,7 +232,6 @@ public class HuNanMainPresenter extends MVPBasePresenter<HuNanMainActivity> impl
                             unknownUser.setKeeper(inside_keeper);
                             unknownPeople(fp.getGlobalBitmap());
                             getV().infoSet("系统查无此人");
-                            MediaHelper.play(MediaHelper.Text.man_non);
                             sp.redLight();
                         }
                     });
@@ -254,6 +251,11 @@ public class HuNanMainPresenter extends MVPBasePresenter<HuNanMainActivity> impl
             ToastUtils.showShort("非法IC卡");
             sp.redLight();
         }
+    }
+
+    @Override
+    public void onSetInfoAndImg(ICardInfo cardInfo, Bitmap bmp) {
+
     }
 
     @Override

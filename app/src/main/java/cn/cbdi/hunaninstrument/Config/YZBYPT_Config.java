@@ -3,8 +3,7 @@ package cn.cbdi.hunaninstrument.Config;
 
 import cn.cbdi.hunaninstrument.Project_YZBYPT.YZBYPT_Service;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
+
 
 public class YZBYPT_Config extends BaseConfig {
 

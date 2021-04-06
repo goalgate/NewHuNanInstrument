@@ -26,6 +26,8 @@ public interface IFace {
 
     void FaceVerify(String userName, String userInfo, Bitmap bitmap);
 
+    void FaceVerify(Bitmap bitmap);
+
     void FaceReg(String userName, String userInfo);
 
     boolean FaceRegByBase64(String userName, String userInfo, String base64);

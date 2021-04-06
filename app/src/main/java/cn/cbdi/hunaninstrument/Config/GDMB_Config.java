@@ -3,8 +3,7 @@ package cn.cbdi.hunaninstrument.Config;
 
 import cn.cbdi.hunaninstrument.Project_Hebei.HeBeiService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
+
 
 public class GDMB_Config extends BaseConfig {
 
@@ -154,7 +153,6 @@ public class GDMB_Config extends BaseConfig {
     @Override
     public void setHongWai(boolean hongWai) {
         this.hongWai= hongWai;
-
     }
 
 }

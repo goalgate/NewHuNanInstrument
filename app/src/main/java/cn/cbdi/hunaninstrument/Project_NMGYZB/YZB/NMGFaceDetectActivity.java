@@ -25,7 +25,7 @@ import cn.cbdi.hunaninstrument.AppInit;
 import cn.cbdi.hunaninstrument.EventBus.FaceDetectEvent;
 import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Tool.ActivityCollector;
-import cn.cbdi.hunaninstrument.Tool.MediaHelper;
+
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.CardInfoBean;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.view.IFaceView;
@@ -103,7 +103,6 @@ public class NMGFaceDetectActivity extends RxActivity implements IFaceView {
     public void onResume() {
         super.onResume();
         Log.e(TAG, "onResume");
-        MediaHelper.play(MediaHelper.Text.reg_model);
         fp.FacePresenterSetView(this);
         Observable.timer(2, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())

@@ -40,8 +40,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.security.auth.login.LoginException;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -84,13 +82,12 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 
-import static cn.cbdi.hunaninstrument.Tool.MediaHelper.Text.man_non;
-import static cn.cbdi.hunaninstrument.Tool.MediaHelper.Text.opertion_success;
-import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceAction.Identify;
+import static cn.cbdi.hunaninstrument.Tool.MediaHelper.Text.Door_Open;
+import static cn.cbdi.hunaninstrument.Tool.MediaHelper.Text.Door_Close;
+import static cn.cbdi.hunaninstrument.Tool.MediaHelper.Text.FacePast;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.IMG_MATCH_IMG_Score;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Identify_failed;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Identify_success;
@@ -127,6 +124,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
     Bitmap Scene_Bitmap;
 
     Bitmap Scene_headphoto;
+
     Bitmap headphoto;
 
     String faceScore;
@@ -207,7 +205,6 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                     }
                     udp.send();
                 });
-
         if (AppInit.getInstrumentConfig().collectBox()) {
             CollectionBoxOption();
         }
@@ -275,13 +272,19 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         tv_daid.setText(config.getString("daid"));
         DoorOpenOperation.getInstance().setmDoorOpenOperation(DoorOpenOperation.DoorOpenState.Locking);
         iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj));
-//        sp.relay(ISwitching.Relay.relay_D5, ISwitching.Hex.H0, true);
         tv_info.setText("等待用户操作...");
         Observable.interval(0, 1, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
                 .subscribe((l) -> {
                     tv_time.setText(formatter.format(new Date(System.currentTimeMillis())));
+                });
+        Observable.timer(10, TimeUnit.MINUTES)
+                .observeOn(AndroidSchedulers.mainThread())
+                .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
+                .subscribe((l) -> {
+                    ToastUtils.showLong("人脸比对功能已启动");
+                    fp.FaceIdentify_model();
                 });
     }
 
@@ -308,15 +311,6 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         }
         try {
             mdaosession.queryRaw(Employer.class, "where CARD_ID = '" + cardInfo.cardId().toUpperCase() + "'").get(0);
-//            try {
-//                mdaosession.queryRaw(Keeper.class, "where CARD_ID = '" + cardInfo.cardId().toUpperCase() + "'").get(0);
-//                tv_info.setText("等待人脸比对结果返回");
-//                MediaHelper.play(MediaHelper.Text.waiting);
-//                fp.FaceIdentify();
-//            } catch (IndexOutOfBoundsException e) {
-//                tv_info.setText("该人员尚未登记人脸信息");
-//                sp.redLight();
-//            }
         } catch (IndexOutOfBoundsException e) {
             RetrofitGenerator.getHnmbyApi().queryPersonInfo("queryPersion", config.getString("key"), cardInfo.cardId())
                     .subscribeOn(Schedulers.io())
@@ -385,6 +379,11 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
     }
 
     @Override
+    public void onSetInfoAndImg(ICardInfo cardInfo, Bitmap bmp) {
+
+    }
+
+    @Override
     public void onsetCardImg(Bitmap bmp) {
         headphoto = bmp;
     }
@@ -412,7 +411,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                         cg_User1.setFaceRecognition(Integer.parseInt(faceScore));
                         cg_User1.setSceneHeadPhoto(Scene_headphoto);
                         cg_User1.setFaceFeature(mFeatures);
-
+                        MediaHelper.play(FacePast);
                         tv_info.setText("仓管员" + cg_User1.getKeeper().getName() + "操作成功,请继续仓管员操作");
                         sp.greenLight();
                         DoorOpenOperation.getInstance().doNext();
@@ -450,6 +449,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                             cg_User2.setSceneHeadPhoto(Scene_headphoto);
                             cg_User2.setFaceRecognition(Integer.parseInt(faceScore));
                             cg_User2.setFaceFeature(mFeatures);
+                            MediaHelper.play(FacePast);
                             tv_info.setText("仓管员" + cg_User2.getKeeper().getName() + "操作成功,请等待...");
                             fp.Feature_to_Feature(cg_User1.getFaceFeature(), cg_User2.getFaceFeature());
 //                            fp.IMG_to_IMG(cg_User1.getSceneHeadPhoto(), cg_User2.getSceneHeadPhoto(), false, true);
@@ -474,6 +474,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                                 cg_User2.setSceneHeadPhoto(Scene_headphoto);
                                 cg_User2.setFaceRecognition(Integer.parseInt(faceScore));
                                 cg_User2.setFaceFeature(mFeatures);
+                                MediaHelper.play(FacePast);
                                 tv_info.setText("巡检员" + cg_User2.getKeeper().getName() + "操作成功,请等待...");
                                 fp.Feature_to_Feature(cg_User1.getFaceFeature(), cg_User2.getFaceFeature());
 //                                fp.IMG_to_IMG(cg_User1.getSceneHeadPhoto(), cg_User2.getSceneHeadPhoto(), false, true);
@@ -515,7 +516,6 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
         if (resultType.equals(Identify_failed)) {
             tv_info.setText(text);
             sp.redLight();
-            MediaHelper.play(man_non);
 //            unknownPeopleNoCard(fp.getGlobalBitmap());
         } else if (resultType.equals(Identify_success)) {
             faceScore = text;
@@ -525,7 +525,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
             sp.greenLight();
             runOnUiThread(() -> {
                         tv_info.setText("信息处理完毕,仓库门已解锁");
-                        MediaHelper.play(opertion_success);
+                        MediaHelper.play(Door_Open);
                     }
             );
             DoorOpenOperation.getInstance().doNext();
@@ -611,6 +611,7 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
     public void onGetLockUpEvent(LockUpEvent event) {
         tv_info.setText("仓库已重新上锁");
         iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj));
+        MediaHelper.play(Door_Close);
 //        sp.relay(ISwitching.Relay.relay_D5, ISwitching.Hex.H0, true);
         cg_User1 = new SceneKeeper();
         cg_User2 = new SceneKeeper();

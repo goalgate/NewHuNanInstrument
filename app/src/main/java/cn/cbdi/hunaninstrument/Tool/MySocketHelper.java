@@ -275,7 +275,8 @@ public class MySocketHelper extends SocketHelper {
 
     private void syncData() {
         RetrofitGenerator.getCommonApi()
-                .syncPersonInfo(AppInit.getInstrumentConfig().getPersonInfoPrefix(), "updatePersion", config.getString("key"), 3)
+                .syncPersonInfo(AppInit.getInstrumentConfig().getPersonInfoPrefix().substring(0,
+                        AppInit.getInstrumentConfig().getPersonInfoPrefix().length()-1), "updatePersion", config.getString("key"), 3)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -315,7 +316,8 @@ public class MySocketHelper extends SocketHelper {
                     @Override
                     public void onComplete() {
                         RetrofitGenerator.getCommonApi()
-                                .syncPersonInfo(AppInit.getInstrumentConfig().getPersonInfoPrefix(), "updatePersion", config.getString("key"), 2)
+                                .syncPersonInfo(AppInit.getInstrumentConfig().getPersonInfoPrefix().substring(0,
+                                        AppInit.getInstrumentConfig().getPersonInfoPrefix().length()-1), "updatePersion", config.getString("key"), 2)
                                 .subscribeOn(Schedulers.io())
                                 .unsubscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
@@ -355,7 +357,8 @@ public class MySocketHelper extends SocketHelper {
                                     @Override
                                     public void onComplete() {
                                         RetrofitGenerator.getCommonApi()
-                                                .syncPersonInfo(AppInit.getInstrumentConfig().getPersonInfoPrefix(), "updatePersion", config.getString("key"), 1)
+                                                .syncPersonInfo(AppInit.getInstrumentConfig().getPersonInfoPrefix().substring(0,
+                                                        AppInit.getInstrumentConfig().getPersonInfoPrefix().length()-1), "updatePersion", config.getString("key"), 1)
                                                 .subscribeOn(Schedulers.io())
                                                 .unsubscribeOn(Schedulers.io())
                                                 .observeOn(AndroidSchedulers.mainThread())
@@ -426,7 +429,8 @@ public class MySocketHelper extends SocketHelper {
         if (employers.size() > 0) {
             for (Employer employer : employers) {
                 RetrofitGenerator.getCommonApi()
-                        .recentPic(AppInit.getInstrumentConfig().getUpDataPrefix(), "recentPic", config.getString("key"), employer.getCardID())
+                        .recentPic(AppInit.getInstrumentConfig().getUpDataPrefix().substring(0,
+                                AppInit.getInstrumentConfig().getUpDataPrefix().length() - 1), "recentPic", config.getString("key"), employer.getCardID())
                         .subscribeOn(Schedulers.single())
                         .unsubscribeOn(Schedulers.single())
                         .observeOn(Schedulers.single())

@@ -11,11 +11,6 @@ import com.baidu.idl.main.facesdk.listener.SdkInitListener;
 import com.baidu.idl.main.facesdk.manager.UserInfoManager;
 import com.baidu.idl.main.facesdk.model.LivenessModel;
 import com.baidu.idl.main.facesdk.model.User;
-
-
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.FaceImpl;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.FaceImpl2;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.view.IFaceView;
 
@@ -23,13 +18,12 @@ import cn.cbsd.cjyfunctionlib.Func_FaceDetect.view.IFaceView;
 public class FacePresenter {
     private IFaceView view;
 
-//    private IFace iFace = new HuNanFaceImpl();
-
-    private IFace iFace = new FaceImpl2();
+    private IFace iFace ;
     private static FacePresenter instance = null;
 
     public enum FaceAction {
-        Normal, Reg, Identify, Verify, Identify_Model, VerifyAndReg_Verify
+        Normal, Reg, Identify, Verify, Identify_Model, VerifyAndReg_Verify,
+        VerifyWithImg,IMG_TO_IMG
     }
 
     public enum FaceResultType {
@@ -55,8 +49,9 @@ public class FacePresenter {
     }
 
 
-    public void FaceInit(Context context, SdkInitListener listener) {
+    public void FaceInit(IFace faceImpl,Context context, SdkInitListener listener) {
         try {
+            iFace = faceImpl;
             iFace.FaceInit(context, listener);
         } catch (Exception e) {
             Log.e("FaceInit", e.toString());
@@ -226,6 +221,14 @@ public class FacePresenter {
         }
     }
 
+    public void FaceVerify(Bitmap bitmap) {
+        try {
+            iFace.FaceVerify(bitmap);
+        } catch (Exception e) {
+            Log.e("FaceVerify", e.toString());
+
+        }
+    }
 
     public void useRGBCamera(boolean status) {
         try {

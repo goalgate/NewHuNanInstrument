@@ -56,6 +56,11 @@ public class IDCardPresenter {
                 public void onSetText(String Msg) {
                     view.onSetText(Msg);
                 }
+
+                @Override
+                public void onSetInfoAndImg(ICardInfo cardInfo, Bitmap bmp) {
+                    view.onSetInfoAndImg(cardInfo,bmp);
+                }
             },mContext);
         }catch (Exception e){
             Log.e("idCardOpen",e.toString());

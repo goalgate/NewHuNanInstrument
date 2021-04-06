@@ -129,7 +129,6 @@ public class HuNanRegActivity extends RxActivity implements IFaceView, IIDCardVi
     public void onResume() {
         super.onResume();
         Log.e(TAG, "onResume");
-        MediaHelper.play(MediaHelper.Text.reg_model);
         idp.IDCardPresenterSetView(this);
         fp.FaceSetNoAction();
         fp.useRGBCamera(true);
@@ -196,7 +195,6 @@ public class HuNanRegActivity extends RxActivity implements IFaceView, IIDCardVi
                 //            idp.stopReadCard();
                 tv_info.setText("等待人证比对结果返回");
                 tv_timer.setText("等待人证比对结果返回");
-                MediaHelper.play(MediaHelper.Text.waiting);
                 can_recentPic = true;
                 natural = true;
                 fp.FaceVerifyAndReg(global_cardInfo.name(),global_cardInfo.cardId(),bmp);
@@ -213,13 +211,11 @@ public class HuNanRegActivity extends RxActivity implements IFaceView, IIDCardVi
                                     if (s.equals("false")) {
                                         tv_info.setText("系统查无此人");
                                         tv_timer.setText("系统查无此人");
-                                        MediaHelper.play(MediaHelper.Text.man_non);
                                         sp.redLight();
                                     } else if (s.startsWith("true")) {
                                         mdaosession.insertOrReplace(new Employer(global_cardInfo.cardId(), Integer.valueOf(s.split("\\|")[1])));
                                         tv_info.setText("等待人证比对结果返回");
                                         tv_timer.setText("等待人证比对结果返回");
-                                        MediaHelper.play(MediaHelper.Text.waiting);
                                         can_recentPic = true;
                                         natural = true;
                                         fp.FaceVerifyAndReg(global_cardInfo.name(),global_cardInfo.cardId(),bmp);
@@ -255,6 +251,10 @@ public class HuNanRegActivity extends RxActivity implements IFaceView, IIDCardVi
 
     }
 
+    @Override
+    public void onSetInfoAndImg(ICardInfo cardInfo, Bitmap bmp) {
+
+    }
 
     @Override
     public void onSetText(String Msg) {

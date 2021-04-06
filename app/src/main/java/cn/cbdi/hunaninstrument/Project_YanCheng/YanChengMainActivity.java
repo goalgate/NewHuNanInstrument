@@ -311,12 +311,9 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
             faceScore = text;
         } else if (resultType.equals(IMG_MATCH_IMG_Score)) {
             CompareScore = text;
+            tv_info.setText("管理员" + cg_User2.getKeeper().getName() + "操作成功,仓库门已解锁");
             if (AppInit.getInstrumentConfig().MenKongSuo()) {
-                tv_info.setText("管理员" + cg_User2.getKeeper().getName() + "操作成功,仓库门已解锁");
                 OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.HA, true);
-            } else {
-                tv_info.setText("管理员" + cg_User2.getKeeper().getName() + "操作成功,仓库门已解锁");
-
             }
             DoorOpenOperation.getInstance().doNext();
             EventBus.getDefault().post(new PassEvent());
@@ -623,7 +620,7 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
             e.printStackTrace();
         }
         RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), unknownPeopleJson.toString());
-        RetrofitGenerator.getXinWeiGuanApi().upDatawithBody("saveVisit", config.getString("key"),body )
+        RetrofitGenerator.getXinWeiGuanApi().upDatawithBody("saveVisit", config.getString("key"), body)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

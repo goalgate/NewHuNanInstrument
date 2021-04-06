@@ -1,8 +1,5 @@
-package cn.cbdi.hunaninstrument.Project_Hebei;
+package cn.cbdi.hunaninstrument.Project_HeNan;
 
-import android.app.ActivityManager;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.gesture.GestureLibraries;
 import android.gesture.GestureLibrary;
@@ -12,21 +9,17 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.Button;
 
 import com.baidu.idl.main.facesdk.model.LivenessModel;
 import com.baidu.idl.main.facesdk.model.User;
-import com.blankj.utilcode.util.ActivityUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
@@ -53,7 +46,6 @@ import cn.cbdi.hunaninstrument.Bean.Employer;
 import cn.cbdi.hunaninstrument.Bean.Keeper;
 import cn.cbdi.hunaninstrument.Bean.ReUploadWithBsBean;
 import cn.cbdi.hunaninstrument.Bean.SceneKeeper;
-import cn.cbdi.hunaninstrument.EventBus.FaceIdentityEvent;
 import cn.cbdi.hunaninstrument.EventBus.LockUpEvent;
 import cn.cbdi.hunaninstrument.EventBus.PassEvent;
 import cn.cbdi.hunaninstrument.R;
@@ -69,21 +61,18 @@ import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
-import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
+import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.IMG_MATCH_IMG_False;
 import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.IMG_MATCH_IMG_Score;
-import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Identify_failed;
-import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.Identify_success;
+import static cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter.FaceResultType.IMG_MATCH_IMG_True;
 import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Close;
-import static cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door.DoorState.State_Open;
 
-public class HebeiMainActivity extends BaseActivity implements NormalWindow.OptionTypeListener {
+public class HNMainActivity extends BaseActivity implements NormalWindow.OptionTypeListener {
 
     private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -124,39 +113,14 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
 
     @OnClick(R.id.lay_lock)
     void ds() {
-        try {
-            StringBuffer logMen = new StringBuffer();
-            List<Keeper> keeperList = mdaosession.loadAll(Keeper.class);
-            if (keeperList.size() > 0) {
-                Set<String> list = new HashSet<>();
-                for (Keeper keeper : keeperList) {
-                    list.add(keeper.getName());
-                }
-                for (String name : list) {
-                    logMen.append(name + "、");
-                }
-                logMen.deleteCharAt(logMen.length() - 1);
-                ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕");
-                Log.e(TAG, logMen.toString());
-
-            } else {
-                ToastUtils.showLong("该设备没有可使用的人脸特征");
-                Log.e(TAG, logMen.toString());
-
-            }
-        } catch (Exception e) {
-            ToastUtils.showLong(e.toString());
-        }
+//        if (AppInit.getInstrumentConfig().MenKongSuo()) {
+//            OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.HA, true);
+//        }
 
     }
 
-    Bitmap Scene_Bitmap;
-
-    Bitmap Scene_headphoto;
 
     Bitmap headphoto;
-
-    String faceScore;
 
     String CompareScore;
 
@@ -190,12 +154,6 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
     }
 
     @Override
-    protected void onRestart() {
-        super.onRestart();
-        fp.FaceIdentify_model();
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (disposableTips != null) {
@@ -217,15 +175,15 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                 R.drawable.iv_wifi)));
         alert_message.messageInit();
         alert_password.PasswordViewInit(() -> {
-            normalWindow = new NormalWindow(HebeiMainActivity.this);
-            normalWindow.setOptionTypeListener(HebeiMainActivity.this);
+            normalWindow = new NormalWindow(HNMainActivity.this);
+            normalWindow.setOptionTypeListener(HNMainActivity.this);
             normalWindow.showAtLocation(getWindow().getDecorView().findViewById(android.R.id.content),
                     Gravity.CENTER, 0, 0);
         });
     }
 
     void openService() {
-        intent = new Intent(HebeiMainActivity.this, AppInit.getInstrumentConfig().getServiceName());
+        intent = new Intent(HNMainActivity.this, AppInit.getInstrumentConfig().getServiceName());
         startService(intent);
     }
 
@@ -282,35 +240,17 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
         headphoto = bmp;
     }
 
-
     @Override
-    public void onsetICCardInfo(ICardInfo cardInfo) {
-        if (alert_message.Showing()) {
-            alert_message.setICCardText(cardInfo.getUid());
-            return;
-        }
-        if (cardInfo.getUid().equals(AppInit.The_IC_UID)) {
-            fp.PreviewCease(() -> ActivityUtils.startActivity(getPackageName(), getPackageName() + AppInit.getInstrumentConfig().getAddActivity()));
-        } else {
-            ToastUtils.showShort("非法IC卡");
-            sp.redLight();
-        }
-    }
-
-    @Override
-    public void onsetCardInfo(ICardInfo cardInfo) {
-        if (alert_message.Showing()) {
-            alert_message.setICCardText(cardInfo.cardId());
-            return;
-        }
+    public void onSetInfoAndImg(ICardInfo cardInfo, Bitmap bmp) {
         try {
             mdaosession.queryRaw(Employer.class, "where CARD_ID = '" + cardInfo.cardId().toUpperCase() + "'").get(0);
-            cardOperation(cardInfo.cardId().toUpperCase());
+            cardOperation(cardInfo.cardId().toUpperCase(), cardInfo.name(), bmp);
         } catch (IndexOutOfBoundsException e) {
             HashMap<String, String> map = (HashMap<String, String>) paramsMap.clone();
             map.put("dataType", "queryPersion");
             map.put("id", cardInfo.cardId());
-            RetrofitGenerator.getHeBeiApi().GeneralPersionInfo(map)
+            RetrofitGenerator.getHeNanApi().GeneralPersionInfo(AppInit.getInstrumentConfig().getPersonInfoPrefix()
+                    .substring(0, AppInit.getInstrumentConfig().getPersonInfoPrefix().length() - 1), map)
                     .subscribeOn(Schedulers.io())
                     .unsubscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -330,10 +270,8 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                                     if (s.split("\\|").length > 1) {
                                         String type = s.split("\\|")[1];
                                         mdaosession.insertOrReplace(new Employer(cardInfo.cardId(), Integer.valueOf(type)));
-                                        cardOperation(cardInfo.cardId().toUpperCase());
+                                        cardOperation(cardInfo.cardId().toUpperCase(), cardInfo.name(), bmp);
                                     }
-//                                    tv_info.setText("该人员尚未登记人脸信息");
-//                                    sp.redLight();
                                 } else if (s.equals("noUnitId")) {
                                     sp.redLight();
                                     tv_info.setText("该设备还未在系统上备案");
@@ -359,56 +297,50 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                     });
         }
     }
-    private void cardOperation(String id){
+
+    @Override
+    public void onsetICCardInfo(ICardInfo cardInfo) {
+        if (alert_message.Showing()) {
+            alert_message.setICCardText(cardInfo.getUid());
+            return;
+        }
+    }
+
+    @Override
+    public void onsetCardInfo(ICardInfo cardInfo) {
+        if (alert_message.Showing()) {
+            alert_message.setICCardText(cardInfo.cardId());
+            return;
+        }
+
+    }
+
+    private void cardOperation(String id, String name, Bitmap bmp) {
         try {
-            Keeper keeper = mdaosession.queryRaw(Keeper.class,
-                    "where CARD_ID = '" + id + "'").get(0);
+            Keeper mKeeper = new Keeper();
             Employer employer = mdaosession.queryRaw(Employer.class,
                     "where CARD_ID = '" + id + "'").get(0);
+
+//            bmp = BitmapFactory.decodeResource(getResources(), cn.cbsd.cjyfunctionlib.R.drawable.user1);
             if (employer.getType() == 1) {
                 if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.Locking)) {
-                    cg_User1.setKeeper(keeper);
+                    mKeeper.setCardID(id);
+                    mKeeper.setName(name);
+                    cg_User1.setKeeper(mKeeper);
                     cg_User1.setScenePhoto(FacePresenter.getInstance().getGlobalBitmap());
-                    cg_User1.setFaceRecognition(0);
-                    cg_User1.setSceneHeadPhoto(headphoto);
-                    tv_info.setText("仓管员" + cg_User1.getKeeper().getName() + "操作成功,请继续仓管员操作");
-                    sp.greenLight();
-                    DoorOpenOperation.getInstance().doNext();
-                    Observable.timer(60, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
-                            .compose(HebeiMainActivity.this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(new Observer<Long>() {
-                                @Override
-                                public void onSubscribe(Disposable d) {
-                                    checkChange = d;
-                                }
-
-                                @Override
-                                public void onNext(Long aLong) {
-                                    checkRecord(2);
-                                }
-
-                                @Override
-                                public void onError(Throwable e) {
-
-                                }
-
-                                @Override
-                                public void onComplete() {
-
-                                }
-                            });
+                    tv_info.setText("仓管员" + cg_User1.getKeeper().getName() + "打卡,正在进行人脸认证");
+                    FacePresenter.getInstance().FaceVerify(bmp);
                 } else if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.OneUnlock)) {
-                    if (!keeper.getCardID().equals(cg_User1.getKeeper().getCardID())) {
+                    if (!id.equals(cg_User1.getKeeper().getCardID())) {
                         if (checkChange != null) {
                             checkChange.dispose();
                         }
-                        cg_User2.setKeeper(keeper);
+                        mKeeper.setCardID(id);
+                        mKeeper.setName(name);
+                        cg_User2.setKeeper(mKeeper);
                         cg_User2.setScenePhoto(FacePresenter.getInstance().getGlobalBitmap());
-                        cg_User2.setSceneHeadPhoto(headphoto);
-                        cg_User2.setFaceRecognition(0);
-                        tv_info.setText("仓管员" + cg_User2.getKeeper().getName() + "操作成功,请等待...");
-                        operation_succ();
+                        tv_info.setText("仓管员" + cg_User2.getKeeper().getName() + "打卡,正在进行人脸认证");
+                        FacePresenter.getInstance().FaceVerify(bmp);
                     } else {
                         sp.redLight();
                         tv_info.setText("请不要连续输入相同的管理员信息");
@@ -431,27 +363,30 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                 }
                 if (AppInit.getInstrumentConfig().XungengCanOpen()) {
                     if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.OneUnlock)) {
-                        if (!keeper.getCardID().equals(cg_User1.getKeeper().getCardID())) {
-                            sp.greenLight();
-                            cg_User2.setKeeper(keeper);
+                        if (!id.equals(cg_User1.getKeeper().getCardID())) {
+                            mKeeper.setCardID(id);
+                            mKeeper.setName(name);
+                            cg_User2.setKeeper(mKeeper);
                             cg_User2.setScenePhoto(FacePresenter.getInstance().getGlobalBitmap());
-                            cg_User2.setFaceRecognition(0);
-                            cg_User2.setSceneHeadPhoto(headphoto);
+                            tv_info.setText("巡检员" + cg_User2.getKeeper().getName() + "打卡,正在进行人脸认证");
+                            FacePresenter.getInstance().FaceVerify(bmp);
 
-                            tv_info.setText("巡检员" + cg_User2.getKeeper().getName() + "操作成功,请等待...");
-                            operation_succ();
                         } else {
                             sp.redLight();
                             tv_info.setText("请不要连续输入相同的管理员信息");
                             return;
                         }
                     } else {
-                        cg_User1.setKeeper(keeper);
+                        mKeeper.setCardID(id);
+                        mKeeper.setName(name);
+                        cg_User1.setKeeper(mKeeper);
                         cg_User1.setScenePhoto(FacePresenter.getInstance().getGlobalBitmap());
                         checkRecord(2);
                     }
                 } else {
-                    cg_User1.setKeeper(keeper);
+                    mKeeper.setCardID(id);
+                    mKeeper.setName(name);
+                    cg_User1.setKeeper(mKeeper);
                     cg_User1.setScenePhoto(FacePresenter.getInstance().getGlobalBitmap());
                     checkRecord(2);
                 }
@@ -459,7 +394,9 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
                 if (checkChange != null) {
                     checkChange.dispose();
                 }
-                cg_User1.setKeeper(keeper);
+                mKeeper.setCardID(id);
+                mKeeper.setName(name);
+                cg_User1.setKeeper(mKeeper);
                 cg_User1.setScenePhoto(FacePresenter.getInstance().getGlobalBitmap());
                 checkRecord(3);
             }
@@ -468,201 +405,87 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
         }
     }
 
-    private void operation_succ(){
-        CompareScore = "0";
-        OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
-        sp.greenLight();
-        DoorOpenOperation.getInstance().doNext();
-        EventBus.getDefault().post(new PassEvent());
-        tv_info.setText("信息处理完毕,仓库门已解锁");
-        iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj1));
-    }
 
     @Override
     public void onBitmap(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, Bitmap bitmap) {
-        if (resultType.equals(Identify_success)) {
-            Scene_Bitmap = bitmap;
-        } else if (resultType.equals(FacePresenter.FaceResultType.headphotoIR)) {
-            Scene_headphoto = bitmap;
+        if (resultType.equals(IMG_MATCH_IMG_True)) {
+            if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.Locking)) {
+                cg_User1.setSceneHeadPhoto(bitmap);
+            } else if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.OneUnlock)) {
+                cg_User2.setSceneHeadPhoto(bitmap);
+            }
         }
     }
 
     @Override
     public void onUser(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, User user) {
-        if (resultType.equals(FacePresenter.FaceResultType.Identify_success)) {
-            try {
-                Keeper keeper = mdaosession.queryRaw(Keeper.class,
-                        "where CARD_ID = '" + user.getUserInfo().toUpperCase() + "'").get(0);
-                Employer employer = mdaosession.queryRaw(Employer.class,
-                        "where CARD_ID = '" + user.getUserInfo().toUpperCase() + "'").get(0);
-                if (employer.getType() == 1) {
-                    if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.Locking)) {
-                        cg_User1.setKeeper(keeper);
-                        cg_User1.setScenePhoto(Scene_Bitmap);
-                        cg_User1.setFaceRecognition(Integer.parseInt(faceScore));
-                        cg_User1.setSceneHeadPhoto(Scene_headphoto);
-                        tv_info.setText("仓管员" + cg_User1.getKeeper().getName() + "操作成功,请继续仓管员操作");
-                        sp.greenLight();
-                        DoorOpenOperation.getInstance().doNext();
-                        Observable.timer(60, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
-                                .compose(HebeiMainActivity.this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(new Observer<Long>() {
-                                    @Override
-                                    public void onSubscribe(Disposable d) {
-                                        checkChange = d;
-                                    }
 
-                                    @Override
-                                    public void onNext(Long aLong) {
-                                        checkRecord(2);
-                                    }
-
-                                    @Override
-                                    public void onError(Throwable e) {
-
-                                    }
-
-                                    @Override
-                                    public void onComplete() {
-
-                                    }
-                                });
-                    } else if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.OneUnlock)) {
-                        if (!keeper.getCardID().equals(cg_User1.getKeeper().getCardID())) {
-//                        if (keeper.getCardID().equals(cg_User1.getKeeper().getCardID())) {
-                            if (checkChange != null) {
-                                checkChange.dispose();
-                            }
-                            cg_User2.setKeeper(keeper);
-                            cg_User2.setScenePhoto(Scene_Bitmap);
-                            cg_User2.setSceneHeadPhoto(Scene_headphoto);
-                            cg_User2.setFaceRecognition(Integer.parseInt(faceScore));
-                            tv_info.setText("仓管员" + cg_User2.getKeeper().getName() + "操作成功,请等待...");
-                            fp.IMG_to_IMG(cg_User1.getSceneHeadPhoto(), cg_User2.getSceneHeadPhoto(), false, true);
-                        } else {
-                            sp.redLight();
-                            tv_info.setText("请不要连续输入相同的管理员信息");
-                            return;
-                        }
-                    } else if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.TwoUnlock)) {
-                        if (AppInit.getInstrumentConfig().isHongWai()) {
-                            Lock.getInstance().setState(Lock.LockState.STATE_Lockup);
-                            String closeDoorTime = formatter.format(new Date(System.currentTimeMillis()));
-                            CloseDoorRecord(closeDoorTime);
-                            EventBus.getDefault().post(new LockUpEvent());
-                            Door.getInstance().setMdoorState(State_Close);
-                        } else {
-                            tv_info.setText("仓库门已解锁");
-                        }
-                    }
-                } else if (employer.getType() == 2) {
-                    if (checkChange != null) {
-                        checkChange.dispose();
-                    }
-                    if (AppInit.getInstrumentConfig().XungengCanOpen()) {
-                        if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.OneUnlock)) {
-                            if (!keeper.getCardID().equals(cg_User1.getKeeper().getCardID())) {
-                                sp.greenLight();
-                                cg_User2.setKeeper(keeper);
-                                cg_User2.setScenePhoto(Scene_Bitmap);
-                                cg_User2.setSceneHeadPhoto(Scene_headphoto);
-                                cg_User2.setFaceRecognition(Integer.parseInt(faceScore));
-                                tv_info.setText("巡检员" + cg_User2.getKeeper().getName() + "操作成功,请等待...");
-                                fp.IMG_to_IMG(cg_User1.getSceneHeadPhoto(), cg_User2.getSceneHeadPhoto(), false, true);
-                            } else {
-                                sp.redLight();
-                                tv_info.setText("请不要连续输入相同的管理员信息");
-                                return;
-                            }
-                        } else {
-                            cg_User1.setKeeper(keeper);
-                            cg_User1.setScenePhoto(Scene_Bitmap);
-                            checkRecord(2);
-                        }
-                    } else {
-                        cg_User1.setKeeper(keeper);
-                        cg_User1.setScenePhoto(Scene_Bitmap);
-                        checkRecord(2);
-                    }
-                } else if (employer.getType() == 3) {
-                    if (checkChange != null) {
-                        checkChange.dispose();
-                    }
-                    cg_User1.setKeeper(keeper);
-                    cg_User1.setScenePhoto(Scene_Bitmap);
-                    checkRecord(3);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     @Override
     public void onText(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, String text) {
-        if (resultType.equals(Identify_failed)) {
-            tv_info.setText(text);
-            sp.redLight();
-        } else if (resultType.equals(Identify_success)) {
-            faceScore = text;
-        } else if (resultType.equals(IMG_MATCH_IMG_Score)) {
-            CompareScore = text;
-            OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
-            sp.greenLight();
-            DoorOpenOperation.getInstance().doNext();
-            EventBus.getDefault().post(new PassEvent());
-            if (AppInit.getInstrumentConfig().isHongWai()) {
-                fp.FaceSetNoAction();
-                tv_info.setText("信息处理完毕,仓库门已解锁,20秒后才可重新上锁");
-                Door.getInstance().setMdoorState(State_Open);
-                Door.getInstance().doNext();
-                Observable.timer(20,TimeUnit.SECONDS)
-                        .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
+        if (resultType.equals(IMG_MATCH_IMG_True)) {
+            if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.Locking)) {
+                tv_info.setText(cg_User1.getKeeper().getName() + "人脸认证通过");
+                DoorOpenOperation.getInstance().doNext();
+                Observable.timer(60, TimeUnit.SECONDS).subscribeOn(Schedulers.newThread())
+                        .compose(HNMainActivity.this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new Consumer<Long>() {
+                        .subscribe(new Observer<Long>() {
                             @Override
-                            public void accept(Long aLong) throws Exception {
-                                fp.FaceIdentify_model();
+                            public void onSubscribe(Disposable d) {
+                                checkChange = d;
+                            }
+
+                            @Override
+                            public void onNext(Long aLong) {
+                                checkRecord(2);
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onComplete() {
 
                             }
                         });
-            }else{
-                tv_info.setText("信息处理完毕,仓库门已解锁");
-
+            } else if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.OneUnlock)) {
+                tv_info.setText(cg_User2.getKeeper().getName() + "人脸认证通过");
+                fp.IMG_to_IMG(cg_User1.getSceneHeadPhoto(), cg_User2.getSceneHeadPhoto(), true, true);
             }
-            iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj1));
+        } else if (resultType.equals(IMG_MATCH_IMG_False)) {
+            tv_info.setText(text);
+        } else if (resultType.equals(FacePresenter.FaceResultType.verify_failed)) {
+            tv_info.setText(text);
+
+        } else if (resultType.equals(IMG_MATCH_IMG_Score)) {
+            if (action.equals(FacePresenter.FaceAction.IMG_TO_IMG)) {
+                CompareScore = text;
+                if (AppInit.getInstrumentConfig().MenKongSuo()) {
+                    OutputControlPresenter.getInstance().onElectricLock(IOutputControl.Hex.HA, true);
+                }
+                OutputControlPresenter.getInstance().buzz(IOutputControl.Hex.H0);
+                sp.greenLight();
+                DoorOpenOperation.getInstance().doNext();
+                EventBus.getDefault().post(new PassEvent());
+                tv_info.setText("信息处理完毕,仓库门已解锁");
+                iv_lock.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.iv_mj1));
+            } else {
+                if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.Locking)) {
+                    cg_User1.setFaceRecognition(Integer.parseInt(text));
+                } else if (DoorOpenOperation.getInstance().getmDoorOpenOperation().equals(DoorOpenOperation.DoorOpenState.OneUnlock)) {
+                    cg_User2.setFaceRecognition(Integer.parseInt(text));
+                }
+            }
         }
-    }
-
-
-    @Override
-    public void onSetInfoAndImg(ICardInfo cardInfo, Bitmap bmp) {
-
     }
 
     @Override
     public void onLivenessModel(FacePresenter.FaceAction action, FacePresenter.FaceResultType resultType, LivenessModel model) {
-        if (resultType.equals(Identify_success)) {
-            try {
-                Keeper keeper = mdaosession.queryRaw(Keeper.class,
-                        "where CARD_ID = '" + model.getUser().getUserInfo().toUpperCase() + "'").get(0);
-//                if (keeper.getHeadphotoBW() == null) {
-//                    keeper.setHeadphotoBW(FileUtils.bitmapToBase64(Scene_headphoto));
-//                    mdaosession.insertOrReplace(keeper);
-//                    fp.FaceRegOrUpdateByFeature(keeper.getName(), keeper.getCardID(), model.getFeature(), false);
-//
-//                }
-//                else{
-//                    keeper.setHeadphotoBW(null);
-//                    mdaosession.getKeeperDao().insertOrReplace(keeper);
-//                }
 
-
-            } catch (Exception e) {
-                ToastUtils.showLong(e.toString());
-            }
-        }
     }
 
     private void checkRecord(int type) {
@@ -726,7 +549,6 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
 
     }
 
-
     @Override
     public void OpenDoor() {
         connectionUtil.post(config.getString("ServerId")
@@ -778,7 +600,8 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
         HashMap<String, String> map = (HashMap<String, String>) paramsMap.clone();
         map.put("dataType", "closeDoor");
         map.put("time", time);
-        RetrofitGenerator.getHeBeiApi().GeneralUpdata(map)
+        RetrofitGenerator.getHeNanApi().GeneralUpdata(AppInit.getInstrumentConfig().getUpDataPrefix()
+                .substring(0, AppInit.getInstrumentConfig().getUpDataPrefix().length() - 1), map)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -807,24 +630,4 @@ public class HebeiMainActivity extends BaseActivity implements NormalWindow.Opti
     }
 
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onGetFaceIdentityEvent(FaceIdentityEvent event) {
-        if (isForeground(AppInit.getContext(), HebeiMainActivity.class.getName())) {
-            fp.FaceIdentify_model();
-        }
-
-    }
-
-    public static boolean isForeground(Context context, String className) {
-        if (context == null || TextUtils.isEmpty(className))
-            return false;
-        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningTaskInfo> list = am.getRunningTasks(1);
-        if (list != null && list.size() > 0) {
-            ComponentName cpn = list.get(0).topActivity;
-            if (className.equals(cpn.getClassName()))
-                return true;
-        }
-        return false;
-    }
 }

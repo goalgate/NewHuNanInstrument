@@ -2,26 +2,16 @@ package cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ImageFormat;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
-import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.YuvImage;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicYuvToRGB;
-import android.renderscript.Type;
 import android.util.Log;
-import android.view.DragAndDropPermissions;
 import android.view.TextureView;
-import android.view.View;
 import android.widget.Toast;
 
 import com.baidu.idl.main.facesdk.FaceInfo;
@@ -31,7 +21,6 @@ import com.baidu.idl.main.facesdk.callback.FaceFeatureCallBack;
 import com.baidu.idl.main.facesdk.camera.AutoTexturePreviewView;
 import com.baidu.idl.main.facesdk.camera.Camera1PreviewManager;
 import com.baidu.idl.main.facesdk.camera.Camera2PreviewManager;
-import com.baidu.idl.main.facesdk.db.DBManager;
 import com.baidu.idl.main.facesdk.listener.SdkInitListener;
 import com.baidu.idl.main.facesdk.manager.FaceSDKManager;
 import com.baidu.idl.main.facesdk.manager.FaceTrackManager;
@@ -39,47 +28,39 @@ import com.baidu.idl.main.facesdk.manager.UserInfoManager;
 import com.baidu.idl.main.facesdk.model.BDFaceImageInstance;
 import com.baidu.idl.main.facesdk.model.BDFaceOcclusion;
 import com.baidu.idl.main.facesdk.model.BDFaceSDKCommon;
-import com.baidu.idl.main.facesdk.model.Feature;
 import com.baidu.idl.main.facesdk.model.LivenessModel;
 import com.baidu.idl.main.facesdk.model.SingleBaseConfig;
 import com.baidu.idl.main.facesdk.model.User;
 import com.baidu.idl.main.facesdk.utils.BitmapUtils;
 import com.baidu.idl.main.facesdk.utils.FaceOnDrawTexturViewUtil;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.SoftReference;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Machine.CJYHelper;
+import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
-import cn.cbsd.cjyfunctionlib.Func_OutputControl.module.IOutputControl;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
 import cn.cbsd.cjyfunctionlib.Func_WebSocket.ServerManager;
 import cn.cbsd.cjyfunctionlib.Tools.BitmapTools;
 import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
+import cn.cbsd.cjyfunctionlib.Tools.YuvTools;
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 import static com.baidu.idl.main.facesdk.model.BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_ID_PHOTO;
 import static com.baidu.idl.main.facesdk.model.BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_LIVE_PHOTO;
 
-public class HuNanFaceImpl implements IFace {
+public class FaceImpl3 implements IFace {
 
     private IFaceListener listener;
 
-    private static final int mWidth = SingleBaseConfig.getBaseConfig().getRgbAndNirWidth();
+    private static int mWidth = SingleBaseConfig.getBaseConfig().getRgbAndNirWidth();
 
-    private static final int mHeight = SingleBaseConfig.getBaseConfig().getRgbAndNirHeight();
+    private static int mHeight = SingleBaseConfig.getBaseConfig().getRgbAndNirHeight();
 
     private AutoTexturePreviewView mPreviewView;
 
@@ -93,7 +74,7 @@ public class HuNanFaceImpl implements IFace {
 
     private ExecutorService es = Executors.newSingleThreadExecutor();
 
-    private static FacePresenter.FaceAction action = FacePresenter.FaceAction.Normal;
+    private static volatile FacePresenter.FaceAction action = FacePresenter.FaceAction.Normal;
 
     Disposable VerifyTimeOut;
 
@@ -123,6 +104,12 @@ public class HuNanFaceImpl implements IFace {
 
     boolean isReady = false;
 
+    int rgbOrientation = 0;
+
+    int irOrientation = 0;
+
+    int facePast = 70;
+
     @Override
     public boolean isReady() {
         return isReady;
@@ -130,12 +117,12 @@ public class HuNanFaceImpl implements IFace {
 
     @Override
     public void FaceInit(Context context, SdkInitListener listener) {
-
-        rs = RenderScript.create(context);
-//        yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
-        yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.RGBA_8888(rs));
         mContext = context;
         FaceSDKManager.getInstance().init(context, listener);
+        if (CJYHelper.getInstance(mContext).getAndroidDisplay().startsWith("Apollo7")) {
+            rgbOrientation = 270;
+            irOrientation = 90;
+        }
     }
 
     @Override
@@ -160,6 +147,26 @@ public class HuNanFaceImpl implements IFace {
     public void FaceIdentify_model() {
         action = FacePresenter.FaceAction.Identify_Model;
         isReady = true;
+    }
+
+    @Override
+    public void FaceVerify(Bitmap bitmap) {
+        useRGBCamera(true);
+        IDCardPresenter.getInstance().StopReadID();
+        this.VerifyBitmap = bitmap;
+        Observable.timer(1, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((l) -> {
+                    action = FacePresenter.FaceAction.VerifyWithImg;
+                });
+        VerifyTimeOut = Observable.timer(20, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((l) -> {
+                    action = FacePresenter.FaceAction.Normal;
+                    listener.onText(action, FacePresenter.FaceResultType.verify_failed, "尝试获取人脸超时,请重试");
+                    IDCardPresenter.getInstance().ReadID();
+                    OutputControlPresenter.getInstance().redLight();
+                });
     }
 
     @Override
@@ -242,30 +249,31 @@ public class HuNanFaceImpl implements IFace {
                         if (IDCard_HeadPhoto) {
                             handler.post(() -> {
                                 float score = FaceSDKManager.getInstance().getFaceFeature().featureCompare(
-                                        BDFACE_FEATURE_TYPE_LIVE_PHOTO,
+                                        BDFACE_FEATURE_TYPE_ID_PHOTO,
                                         bytes1, bytes2, true);
-                                listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, String.valueOf((int) score));
-                                listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_True, "人证比对通过");
-                                listener.onBitmap(action, FacePresenter.FaceResultType.headphotoRGB, bmp1);
+                                listener.onText(FacePresenter.FaceAction.IMG_TO_IMG, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, String.valueOf((int) score));
+                                listener.onText(FacePresenter.FaceAction.IMG_TO_IMG, FacePresenter.FaceResultType.IMG_MATCH_IMG_True, "人证比对通过");
                             });
                         } else {
                             float score = FaceSDKManager.getInstance().getFaceFeature().featureCompare(
                                     BDFACE_FEATURE_TYPE_LIVE_PHOTO,
                                     bytes1, bytes2, true);
-                            listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, String.valueOf((int) score));
-                            listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_True, "比对通过");
+                            listener.onText(FacePresenter.FaceAction.IMG_TO_IMG, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, String.valueOf((int) score));
+                            listener.onText(FacePresenter.FaceAction.IMG_TO_IMG, FacePresenter.FaceResultType.IMG_MATCH_IMG_True, "比对通过");
                         }
 
                     } else {
                         handler.post(() -> {
-                            listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, "0");
-                            listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_False, "输入照片无法提取人脸特征,请更改照片");
+                            listener.onText(FacePresenter.FaceAction.IMG_TO_IMG, FacePresenter.FaceResultType.IMG_MATCH_IMG_False, "输入照片无法提取人脸特征,请更改照片");
+                            listener.onText(FacePresenter.FaceAction.IMG_TO_IMG, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, "0");
+
                         });
                     }
                 } else {
                     handler.post(() -> {
-                        listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, "0");
-                        listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_False, "输入照片无法提取人脸特征,请更改照片");
+                        listener.onText(FacePresenter.FaceAction.IMG_TO_IMG, FacePresenter.FaceResultType.IMG_MATCH_IMG_False, "输入照片无法提取人脸特征,请更改照片");
+                        listener.onText(FacePresenter.FaceAction.IMG_TO_IMG, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, "0");
+
                     });
                 }
             });
@@ -280,7 +288,7 @@ public class HuNanFaceImpl implements IFace {
                     float score = FaceSDKManager.getInstance().getFaceFeature().featureCompare(
                             BDFACE_FEATURE_TYPE_LIVE_PHOTO,
                             bytes1, bytes2, true);
-                    if (score > 70) {
+                    if (score > facePast) {
                         return true;
                     }
                     return false;
@@ -351,9 +359,9 @@ public class HuNanFaceImpl implements IFace {
     @Override
     public Bitmap getGlobalBitmap() {
         try {
-            global_bitmap = byteToBitmap(global_BitmapBytes, mWidth, mHeight);
+            global_bitmap = YuvTools.yuv2Bitmap(global_BitmapBytes, mWidth, mHeight);
         } catch (NullPointerException e) {
-            global_bitmap = byteToBitmap(global_BitmapBytes_backup, mWidth, mHeight);
+            global_bitmap = YuvTools.yuv2Bitmap(global_BitmapBytes_backup, mWidth, mHeight);
         }
         return global_bitmap;
     }
@@ -474,21 +482,32 @@ public class HuNanFaceImpl implements IFace {
         this.mDrawDetectFaceView.setOpaque(false);
         // 不需要屏幕自动变黑。
         this.mDrawDetectFaceView.setKeepScreenOn(true);
-        this.mPreviewView1.getTextureView().setScaleX(-1);
-//        this.textureView.setScaleX(-1);
+        if (Build.DEVICE.startsWith("rk3288")) {
+            this.mPreviewView1.getTextureView().setScaleX(-1);
+        }
+//        this.mDrawDetectFaceView.setScaleX(-1);
         Camera2PreviewManager.getInstance().setCameraFacing(Camera2PreviewManager.CAMERA_FACING_FRONT);//彩色
+        Camera2PreviewManager.getInstance().setDisplayOrientation(rgbOrientation);
         Camera2PreviewManager.getInstance().startPreview(context, mPreviewView, mWidth, mHeight,
                 (data, camera, width, height) -> {
-                    global_BitmapBytes = data;
-                    SendVideoData();
-                    if (useRGBCamera) {
-                        faceDetect(data, width, height);
-
+                    if (data != null) {
+                        if (Camera2PreviewManager.getInstance().getDisplayOrientation() > 0) {
+                            data = YuvTools.yuv_revert(data, mPreviewView, mWidth, mHeight, false);
+                        }
+                        global_BitmapBytes = data;
+                        SendVideoData();
+                        if (useRGBCamera) {
+                            faceDetect(data, width, height);
+                        }
                     }
                 });
         Camera1PreviewManager.getInstance().setCameraFacing(Camera1PreviewManager.CAMERA_FACING_BACK);//红外
+        Camera1PreviewManager.getInstance().setDisplayOrientation(irOrientation);
         Camera1PreviewManager.getInstance().startPreview(context, mPreviewView1, mWidth, mHeight,
                 (data, camera, width, height) -> {
+                    if (Camera1PreviewManager.getInstance().getDisplayOrientation() > 0) {
+                        data = YuvTools.yuv_revert(data, mPreviewView1, mWidth, mHeight, true);
+                    }
                     global_BitmapBytes_backup = data;
                     if (!useRGBCamera) {
                         if (action.equals(FacePresenter.FaceAction.Identify) || action.equals(FacePresenter.FaceAction.Identify_Model)) {
@@ -513,7 +532,7 @@ public class HuNanFaceImpl implements IFace {
                                                 OutputControlPresenter.getInstance().WhiteLight(false);
                                             }
                                             if (SingleBaseConfig.getBaseConfig().getDetectFrame().equals("wireframe")) {
-                                                showFrame(livenessModel);
+                                                showFrame(livenessModel, width, height);
                                             }
 
                                         }
@@ -561,7 +580,7 @@ public class HuNanFaceImpl implements IFace {
                 }
 
                 if (SingleBaseConfig.getBaseConfig().getDetectFrame().equals("wireframe")) {
-                    showFrame(livenessModel);
+                    showFrame(livenessModel, width, height);
                     checkResult(livenessModel);
                 }
 
@@ -593,7 +612,7 @@ public class HuNanFaceImpl implements IFace {
 
     private RectF rectF = new RectF();
 
-    private void showFrame(final LivenessModel model) {
+    private void showFrame(final LivenessModel model, int width, int height) {
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -631,7 +650,6 @@ public class HuNanFaceImpl implements IFace {
                 // 绘制框
                 canvas.drawRect(rectF, paint);
                 OutputControlPresenter.getInstance().WhiteLight(true);
-
                 mDrawDetectFaceView.unlockCanvasAndPost(canvas);
 
             }
@@ -688,6 +706,54 @@ public class HuNanFaceImpl implements IFace {
                     } else {
                         action = FacePresenter.FaceAction.Normal;
                         handler.post(() -> listener.onText(action, FacePresenter.FaceResultType.verify_failed, "人证比对分数过低"));
+                    }
+                    break;
+                case VerifyWithImg:
+                    headphotoRGB = BitmapUtils.getInstaceBmp(image);
+                    byte[] bytes1 = new byte[512];
+                    byte[] bytes2 = new byte[512];
+                    float ret1 = syncFeature(headphotoRGB, bytes1);
+                    if (ret1 == 128) {
+                        Bitmap theBmp;
+                        if (VerifyBitmap.getWidth() < 300) {
+                            theBmp = BitmapTools.scaleMatrix(VerifyBitmap, 300);
+                        } else if (VerifyBitmap.getWidth() > 500) {
+                            theBmp = BitmapTools.scaleMatrix(VerifyBitmap, 500);
+                        } else {
+                            theBmp = VerifyBitmap;
+                        }
+                        float ret2 = syncFeature(theBmp, bytes2);
+                        if (ret2 == 128) {
+                            handler.post(() -> {
+                                float score = FaceSDKManager.getInstance().getFaceFeature().featureCompare(
+                                        BDFACE_FEATURE_TYPE_LIVE_PHOTO,
+                                        bytes1, bytes2, true);
+                                if (score > facePast) {
+                                    if (VerifyTimeOut != null) {
+                                        VerifyTimeOut.dispose();
+                                    }
+                                    IDCardPresenter.getInstance().ReadID();
+                                    OutputControlPresenter.getInstance().greenLight();
+                                    listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, String.valueOf((int) score));
+                                    listener.onBitmap(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_True, headphotoRGB);
+                                    listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_True, "人证比对通过");
+
+                                    action = FacePresenter.FaceAction.Normal;
+                                } else {
+                                    listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_False, "人证比对不通过");
+                                }
+                            });
+                        } else {
+                            handler.post(() -> {
+                                listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, "0");
+                                listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_False, "输入身份证照片无法提取人脸特征");
+                            });
+                        }
+                    } else {
+                        handler.post(() -> {
+                            listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_Score, "0");
+                            listener.onText(action, FacePresenter.FaceResultType.IMG_MATCH_IMG_False, "人脸捕捉未能提取人脸特征");
+                        });
                     }
                     break;
                 case Normal:
@@ -771,7 +837,6 @@ public class HuNanFaceImpl implements IFace {
 
 
     private void identity(LivenessModel livenessModel, boolean isN) {
-
         if (!isN) {
             FaceSetNoAction();
             IdentifyTimeOut.dispose();
@@ -786,11 +851,12 @@ public class HuNanFaceImpl implements IFace {
         } else {
             BDFaceImageInstance image = livenessModel.getBdFaceImageInstance();
             headphotoIR = BitmapUtils.getInstaceBmp(image);
-            try {
-                global_bitmap = byteToBitmap(global_BitmapBytes, mWidth, mHeight);
-            } catch (NullPointerException e) {
-                global_bitmap = byteToBitmap(global_BitmapBytes_backup, mWidth, mHeight);
-            }
+            global_bitmap = getGlobalBitmap();
+//            try {
+//                global_bitmap = BitmapTools.yuv2Bitmap(global_BitmapBytes, mWidth, mHeight);
+//            } catch (NullPointerException e) {
+//                global_bitmap = BitmapTools.yuv2Bitmap(global_BitmapBytes_backup, mWidth, mHeight);
+//            }
             handler.post(() -> {
                 listener.onBitmap(action, FacePresenter.FaceResultType.Identify_success, global_bitmap);
                 listener.onBitmap(action, FacePresenter.FaceResultType.headphotoIR, headphotoIR);
@@ -892,34 +958,6 @@ public class HuNanFaceImpl implements IFace {
         return false;
     }
 
-
-    private RenderScript rs;
-    private ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic;
-    private Type.Builder yuvType, rgbaType;
-    private Allocation in, out;
-
-    public Bitmap byteToBitmap(byte[] imgByte, int width, int height) {
-        if (yuvType == null) {
-            yuvType = new Type.Builder(rs, Element.U8(rs)).setX(imgByte.length);
-            in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
-
-            rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
-            out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
-        }
-
-        in.copyFrom(imgByte);
-
-        yuvToRgbIntrinsic.setInput(in);
-        yuvToRgbIntrinsic.forEach(out);
-
-        Bitmap bmpout = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        out.copyTo(bmpout);
-
-        return bmpout;
-
-    }
-
-
     boolean remote = false;
     Disposable dispos_remote;
 
@@ -936,7 +974,6 @@ public class HuNanFaceImpl implements IFace {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-
                     });
         } else {
             if (dispos_remote != null) {
@@ -945,5 +982,6 @@ public class HuNanFaceImpl implements IFace {
             remote = false;
         }
     }
+
 
 }

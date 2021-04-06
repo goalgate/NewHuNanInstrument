@@ -89,6 +89,7 @@
             android:name=".Project_NMGYZB.FB.FBNMGMainActivity"
             android:launchMode="standard"
             android:theme="@style/ImageTranslucentTheme"></activity>
+
         <activity
             android:name=".Project_NMGYZB.FB.FBNMGRegActivity"
             android:launchMode="standard"
@@ -105,6 +106,10 @@
             android:launchMode="standard"
             android:theme="@style/ImageTranslucentTheme"></activity>
 
+        <activity
+            android:name=".Project_HeNan.HNMainActivity"
+            android:launchMode="standard"
+            android:theme="@style/ImageTranslucentTheme"></activity>
 
         <activity
             android:name=".Project_XAYZB.XAYZBMainActivity"
@@ -125,9 +130,11 @@
         <service android:name=".Project_GZYZB.GZYZBService"></service>
         <service android:name=".Project_NMGYZB.New.NewNMGService"></service>
         <service android:name=".Project_XAYZB.XAYZBService"></service>
+        <service android:name=".Project_HeNan.HNService"></service>
         <service android:name=".Service.UpdateService"></service>
         <service android:name=".Service.HuNanUpdateService"></service>
         <service android:name=".Service.NewNMGUpdateService"></service>
+        <service android:name=".Service.RK3399UpdateService"></service>
 
         <receiver android:name=".BroadcastReceiver.BootBroadcastReceiver">
             <intent-filter>

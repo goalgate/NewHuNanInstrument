@@ -1,4 +1,4 @@
-package cn.cbdi.hunaninstrument.Project_Hebei;
+package cn.cbdi.hunaninstrument.Project_HeNan;
 
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -47,7 +47,7 @@ import io.reactivex.disposables.Disposable;
 
 public abstract class BaseActivity extends RxActivity implements IFaceView, IIDCardView {
 
-    protected String TAG = HebeiMainActivity.class.getSimpleName();
+    protected String TAG = HNMainActivity.class.getSimpleName();
 
     DaoSession mdaosession = AppInit.getInstance().getDaoSession();
 
@@ -124,7 +124,7 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
         super.onResume();
         Log.e(TAG, "onResume");
         idp.IDCardPresenterSetView(this);
-        fp.useRGBCamera(false);
+        fp.useRGBCamera(true);
         Observable.timer(1, TimeUnit.SECONDS)
                 .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())

@@ -91,6 +91,8 @@ public class FaceImpl2 implements IFace {
 
     private byte[] global_BitmapBytes_backup;
 
+    private byte[] detectBytes;
+
     private Bitmap headphotoIR;
 
     private Bitmap headphotoRGB;
@@ -151,6 +153,12 @@ public class FaceImpl2 implements IFace {
     public void FaceIdentify_model() {
         action = FacePresenter.FaceAction.Identify_Model;
         isReady = true;
+    }
+
+
+    @Override
+    public void FaceVerify(Bitmap bitmap) {
+
     }
 
     @Override
@@ -495,7 +503,12 @@ public class FaceImpl2 implements IFace {
                     if (!useRGBCamera) {
                         if (action.equals(FacePresenter.FaceAction.Identify) || action.equals(FacePresenter.FaceAction.Identify_Model)) {
                             IDENTITYING = true;
-                            FaceSDKManager.getInstance().onDetectCheck(data, null, null,
+                            if (data != null) {
+                                detectBytes = data;
+                            } else {
+                                detectBytes = global_BitmapBytes;
+                            }
+                            FaceSDKManager.getInstance().onDetectCheck(detectBytes, null, null,
                                     height, width, SingleBaseConfig.getBaseConfig().getType(), new FaceDetectCallBack() {
                                         @Override
                                         public void onFaceDetectCallback(LivenessModel livenessModel) {
@@ -905,7 +918,7 @@ public class FaceImpl2 implements IFace {
                     .observeOn(Schedulers.single())
                     .subscribe((l) -> {
                         try {
-                            ServerManager.getInstance().SendVideoData(global_BitmapBytes,global_BitmapBytes_backup,mWidth,mHeight);
+                            ServerManager.getInstance().SendVideoData(global_BitmapBytes, global_BitmapBytes_backup, mWidth, mHeight);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

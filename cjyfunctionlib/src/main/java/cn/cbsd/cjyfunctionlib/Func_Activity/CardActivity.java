@@ -120,6 +120,11 @@ public class CardActivity extends Activity implements IIDCardView {
     }
 
     @Override
+    public void onSetInfoAndImg(ICardInfo cardInfo, Bitmap bmp) {
+
+    }
+
+    @Override
     public void onsetCardImg(Bitmap bmp) {
         if (bmp == null) {
             tv_info.setText("警告，没有身份证照片，可能获取身份证延时不足或者没有wltlib文件夹");

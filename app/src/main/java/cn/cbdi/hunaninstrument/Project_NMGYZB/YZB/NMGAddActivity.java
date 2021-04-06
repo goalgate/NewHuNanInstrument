@@ -45,14 +45,11 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cn.cbdi.hunaninstrument.Alert.Alarm;
 import cn.cbdi.hunaninstrument.AppInit;
-import cn.cbdi.hunaninstrument.Bean.Employer;
 import cn.cbdi.hunaninstrument.Bean.Keeper;
-import cn.cbdi.hunaninstrument.Bean.ReUploadBean;
 import cn.cbdi.hunaninstrument.EventBus.FaceDetectEvent;
 import cn.cbdi.hunaninstrument.EventBus.OpenDoorEvent;
 import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
-import cn.cbdi.hunaninstrument.Tool.MediaHelper;
 import cn.cbdi.hunaninstrument.Tool.MyObserver;
 import cn.cbdi.hunaninstrument.Tool.SafeCheck;
 import cn.cbdi.hunaninstrument.greendao.DaoSession;
@@ -62,13 +59,9 @@ import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_FingerPrint.presenter.FingerPrintPresenter;
 import cn.cbsd.cjyfunctionlib.Func_FingerPrint.view.IFingerPrintView;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresenter;
-import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import okhttp3.ResponseBody;
+
 
 public class NMGAddActivity extends Activity implements IFingerPrintView {
 

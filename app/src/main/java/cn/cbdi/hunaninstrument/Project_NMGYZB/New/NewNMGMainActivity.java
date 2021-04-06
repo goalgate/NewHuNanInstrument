@@ -10,6 +10,7 @@ import android.gesture.GestureOverlayView;
 import android.gesture.Prediction;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -57,10 +58,13 @@ import cn.cbdi.hunaninstrument.EventBus.OpenDoorEvent;
 import cn.cbdi.hunaninstrument.EventBus.PassEvent;
 import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
+import cn.cbdi.hunaninstrument.State.DoorState.WarehouseDoor;
 import cn.cbdi.hunaninstrument.State.LockState.Lock;
 import cn.cbdi.hunaninstrument.State.OperationState.DoorOpenOperation;
 import cn.cbdi.hunaninstrument.Tool.MyObserver;
+import cn.cbdi.hunaninstrument.Tool.UDPState;
 import cn.cbdi.hunaninstrument.UI.NormalWindow;
+import cn.cbsd.cjyfunctionlib.Func_CJYExtension.Machine.CJYHelper;
 import cn.cbsd.cjyfunctionlib.Func_Card.CardHelper.ICardInfo;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.Func_OutputControl.ControlHelper.Door;
@@ -166,6 +170,21 @@ public class NewNMGMainActivity extends BaseActivity implements NormalWindow.Opt
         EventBus.getDefault().register(this);
         UIReady();
         openService();
+        Observable.interval(10, 300, TimeUnit.SECONDS)
+                .observeOn(Schedulers.io())
+                .subscribe((l) -> {
+                    UDPState udp = new UDPState();
+                    //设置通用参数：服务器地址，端口，设备ID，接口URL
+                    udp.setPar("124.172.232.89", 8059, config.getString("daid"), "http://129.204.110.143:8031/");
+                    float cpu = CJYHelper.getInstance(this).readCPUTem(0);
+                    float gpu = CJYHelper.getInstance(this).readCPUTem(1);
+                    if (WarehouseDoor.getInstance().getMdoorState().equals(Door.DoorState.State_Open)) {
+                        udp.setState(0, (float) last_mTemperature, (float) last_mHumidity, cpu, gpu);
+                    } else {
+                        udp.setState(1, (float) last_mTemperature, (float) last_mHumidity, cpu, gpu);
+                    }
+                    udp.send();
+                });
     }
 
     @Override
@@ -257,7 +276,12 @@ public class NewNMGMainActivity extends BaseActivity implements NormalWindow.Opt
         if (type == 1) {
             alert_server.show();
         } else if (type == 2) {
-            alert_ip.show();
+            if(Build.DEVICE.startsWith("Apollo7")){
+                Intent intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+                startActivity(intent);
+            }else {
+                alert_ip.show();
+            }
         }
     }
 
@@ -267,6 +291,13 @@ public class NewNMGMainActivity extends BaseActivity implements NormalWindow.Opt
             ToastUtils.showLong(Msg);
         }
     }
+
+    @Override
+    public void onSetInfoAndImg(ICardInfo cardInfo, Bitmap bmp) {
+
+    }
+
+
 
     @Override
     public void onsetCardImg(Bitmap bmp) {

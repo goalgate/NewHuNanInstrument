@@ -128,7 +128,6 @@ public abstract class BaseActivity extends RxActivity implements IFaceView, IIDC
         Log.e(TAG, "onResume");
         idp.IDCardPresenterSetView(this);
         fp.useRGBCamera(false);
-        MediaHelper.play(MediaHelper.Text.normal_model);
         Observable.timer(1, TimeUnit.SECONDS)
                 .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
                 .observeOn(AndroidSchedulers.mainThread())

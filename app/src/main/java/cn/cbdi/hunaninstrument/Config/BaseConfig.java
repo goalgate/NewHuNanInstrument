@@ -2,6 +2,7 @@ package cn.cbdi.hunaninstrument.Config;
 
 
 import cn.cbdi.hunaninstrument.Service.UpdateService;
+import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.FaceImpl2;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
 
 /**
@@ -60,7 +61,6 @@ public abstract class BaseConfig {
 
     public abstract boolean MenKongSuo();
 
-
     public abstract boolean XungengCanOpen();
 
     public abstract boolean DoorMonitorChosen();
@@ -77,6 +77,10 @@ public abstract class BaseConfig {
 
     public Class getUpdateService(){
         return UpdateService.class;
+    }
+
+    public IFace getFaceImpl(){
+        return new FaceImpl2();
     }
 
 }

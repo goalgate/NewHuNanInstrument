@@ -60,7 +60,6 @@ import cn.cbdi.hunaninstrument.R;
 import cn.cbdi.hunaninstrument.Retrofit.RetrofitGenerator;
 import cn.cbdi.hunaninstrument.State.LockState.Lock;
 import cn.cbdi.hunaninstrument.State.OperationState.DoorOpenOperation;
-import cn.cbdi.hunaninstrument.Tool.MediaHelper;
 import cn.cbdi.hunaninstrument.Tool.MyObserver;
 import cn.cbdi.hunaninstrument.Tool.SafeCheck;
 import cn.cbdi.hunaninstrument.Tool.ServerConnectionUtil;
@@ -283,6 +282,10 @@ public class XAYZBMainActivity extends BaseActivity implements NormalWindow.Opti
         headphoto = bmp;
     }
 
+    @Override
+    public void onSetInfoAndImg(ICardInfo cardInfo, Bitmap bmp) {
+
+    }
 
     @Override
     public void onsetICCardInfo(ICardInfo cardInfo) {
@@ -325,7 +328,6 @@ public class XAYZBMainActivity extends BaseActivity implements NormalWindow.Opti
                                     unknownUser.setKeeper(inside_keeper);
                                     unknownPeople(fp.getGlobalBitmap());
                                     tv_info.setText("系统查无此人");
-                                    MediaHelper.play(MediaHelper.Text.man_non);
                                     sp.redLight();
                                 } else if (s.startsWith("true")) {
                                     if (s.split("\\|").length > 1) {
@@ -354,7 +356,6 @@ public class XAYZBMainActivity extends BaseActivity implements NormalWindow.Opti
                             unknownUser.setKeeper(inside_keeper);
                             unknownPeople(fp.getGlobalBitmap());
                             tv_info.setText("系统查无此人");
-                            MediaHelper.play(MediaHelper.Text.man_non);
                             sp.redLight();
                         }
                     });

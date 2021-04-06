@@ -2,9 +2,9 @@ package cn.cbdi.hunaninstrument.Config;
 
 import cn.cbdi.hunaninstrument.Project_NMGYZB.New.NewNMGService;
 import cn.cbdi.hunaninstrument.Service.NewNMGUpdateService;
+import cn.cbdi.hunaninstrument.Service.RK3399UpdateService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
+
 
 public class NMGFB_NewConfig extends BaseConfig {
 
@@ -40,7 +40,7 @@ public class NMGFB_NewConfig extends BaseConfig {
 
     @Override
     public String getServerId() {
-        return "http://113.140.1.138:8892/";
+        return "http://58.18.164.26:8162/";
     }
 
     @Override
@@ -161,6 +161,6 @@ public class NMGFB_NewConfig extends BaseConfig {
 
     @Override
     public Class getUpdateService() {
-        return NewNMGUpdateService.class;
+        return RK3399UpdateService.class;
     }
 }

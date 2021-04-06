@@ -15,4 +15,7 @@ public interface IIDCardView {
     void onSetText(String Msg);
 
     void onsetICCardInfo(ICardInfo cardInfo);
+
+    void onSetInfoAndImg(ICardInfo cardInfo,Bitmap bmp);
+
 }

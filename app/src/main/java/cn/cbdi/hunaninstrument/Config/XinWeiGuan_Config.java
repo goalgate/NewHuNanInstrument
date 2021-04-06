@@ -2,9 +2,7 @@ package cn.cbdi.hunaninstrument.Config;
 
 import cn.cbdi.hunaninstrument.Project_XinWeiGuan.XinWeiGuanService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.HuNanFaceImpl;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.IFace;
-import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.XinWeiGuanFaceImpl;
+
 
 
 public class XinWeiGuan_Config extends BaseConfig {

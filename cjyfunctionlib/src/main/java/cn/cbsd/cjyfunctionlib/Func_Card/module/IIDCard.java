@@ -32,6 +32,8 @@ public interface IIDCard {
 
         void onSetInfo(ICardInfo cardInfo);
 
+        void onSetInfoAndImg(ICardInfo cardInfo,Bitmap bmp);
+
         void onSetICInfo(ICardInfo cardInfo);
 
         void onSetText(String Msg);

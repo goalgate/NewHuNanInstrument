@@ -16,6 +16,8 @@ import com.baidu.idl.main.facesdk.ui.Activation;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.concurrent.TimeUnit;
+
+import cn.cbsd.cjyfunctionlib.Func_FaceDetect.Module.FaceImpl2;
 import cn.cbsd.cjyfunctionlib.Func_FaceDetect.presenter.FacePresenter;
 import cn.cbsd.cjyfunctionlib.R;
 import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
@@ -39,7 +41,7 @@ public class FaceInitActivity extends Activity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        FacePresenter.getInstance().FaceInit(this, new SdkInitListener() {
+        FacePresenter.getInstance().FaceInit(new FaceImpl2(),this, new SdkInitListener() {
             @Override
             public void initStart() {
 

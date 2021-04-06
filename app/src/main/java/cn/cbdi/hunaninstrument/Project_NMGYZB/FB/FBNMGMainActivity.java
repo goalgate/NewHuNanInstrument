@@ -262,6 +262,10 @@ public class FBNMGMainActivity extends BaseActivity implements NormalWindow.Opti
         headphoto = bmp;
     }
 
+    @Override
+    public void onSetInfoAndImg(ICardInfo cardInfo, Bitmap bmp) {
+
+    }
 
     @Override
     public void onsetICCardInfo(ICardInfo cardInfo) {
@@ -304,7 +308,6 @@ public class FBNMGMainActivity extends BaseActivity implements NormalWindow.Opti
                                     unknownUser.setKeeper(inside_keeper);
                                     unknownPeople(fp.getGlobalBitmap());
                                     tv_info.setText("系统查无此人");
-                                    MediaHelper.play(MediaHelper.Text.man_non);
                                     sp.redLight();
                                 } else if (s.startsWith("true")) {
                                     if (s.split("\\|").length > 1) {
@@ -333,7 +336,6 @@ public class FBNMGMainActivity extends BaseActivity implements NormalWindow.Opti
                             unknownUser.setKeeper(inside_keeper);
                             unknownPeople(fp.getGlobalBitmap());
                             tv_info.setText("系统查无此人");
-                            MediaHelper.play(MediaHelper.Text.man_non);
                             sp.redLight();
                         }
                     });
