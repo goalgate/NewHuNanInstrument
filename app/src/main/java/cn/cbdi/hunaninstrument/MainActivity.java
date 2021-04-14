@@ -13,6 +13,7 @@ import cn.cbsd.cjyfunctionlib.Func_Activity.FaceInitActivity;
 import cn.cbsd.cjyfunctionlib.Func_Activity.FingerPrintActivity;
 import cn.cbsd.cjyfunctionlib.Func_Activity.HttpAndCollectionBoxActivity;
 import cn.cbsd.cjyfunctionlib.Func_Activity.OutputControlActivity;
+import cn.cbsd.cjyfunctionlib.Func_Activity.ServerActivity;
 
 
 public class MainActivity extends Activity {
@@ -59,7 +60,9 @@ public class MainActivity extends Activity {
             startActivity(intent);
         });
 
-
+        findViewById(R.id.func_server).setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, ServerActivity.class);
+            startActivity(intent);
+        });
     }
-
 }

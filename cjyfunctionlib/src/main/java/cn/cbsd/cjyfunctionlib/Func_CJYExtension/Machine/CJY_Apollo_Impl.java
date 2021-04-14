@@ -32,8 +32,21 @@ public class CJY_Apollo_Impl extends CJYHelper {
         this.mContext = context;
     }
 
+    public static CJY_Apollo_Impl getInstance() {
+        if (wzwManager == null) {
+            wzwManager = new CJY_Apollo_Impl();
+        }
+        return wzwManager;
+    }
+
+    private CJY_Apollo_Impl() {
+
+    }
+
+
     @Override
-    public void HelperInit() {}
+    public void HelperInit() {
+    }
 
     @Override
     public void HelperRelease() {
@@ -94,7 +107,7 @@ public class CJY_Apollo_Impl extends CJYHelper {
     }
 
 
-    public  float readCPUTem(int i) {
+    public float readCPUTem(int i) {
         float result = -1;
         try {
             byte[] receive = new byte[5];

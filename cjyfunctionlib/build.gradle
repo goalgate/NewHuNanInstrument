@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.yanzhenjie.andserver'
 
 android {
     compileSdkVersion 28
@@ -52,5 +53,6 @@ dependencies {
     api "org.java-websocket:Java-WebSocket:1.4.0"
     implementation files('libs/rkapi.jar')
     implementation project(path: ':facelibrary')
-
+    api 'com.yanzhenjie.andserver:api:2.1.9'
+    annotationProcessor 'com.yanzhenjie.andserver:processor:2.1.9'
 }

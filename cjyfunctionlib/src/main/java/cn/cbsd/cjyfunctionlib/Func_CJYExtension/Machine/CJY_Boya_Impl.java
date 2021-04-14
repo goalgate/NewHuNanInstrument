@@ -35,7 +35,16 @@ public class CJY_Boya_Impl extends CJYHelper {
         manager.watchDogFeedTime();
     }
 
+    public static CJY_Boya_Impl getInstance() {
+        if (wzwManager == null) {
+            wzwManager = new CJY_Boya_Impl();
+        }
+        return wzwManager;
+    }
 
+    private CJY_Boya_Impl() {
+
+    }
 
     @Override
     public void HelperInit() {

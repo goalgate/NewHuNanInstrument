@@ -75,6 +75,10 @@ public abstract class BaseConfig {
 
     public abstract void setHongWai(boolean hongWai);
 
+    public boolean useServer(){
+        return false;
+    }
+
     public Class getUpdateService(){
         return UpdateService.class;
     }

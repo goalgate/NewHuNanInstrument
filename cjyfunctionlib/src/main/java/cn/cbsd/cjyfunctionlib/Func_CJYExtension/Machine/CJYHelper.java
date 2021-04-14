@@ -34,6 +34,15 @@ public abstract class CJYHelper {
         return null;
     }
 
+    public static CJYHelper getInstance() {
+        if (Build.DEVICE.startsWith("rk3288")) {
+            return CJY_Boya_Impl.getInstance();
+        } else if (Build.DEVICE.startsWith("Apollo7")) {
+            return CJY_Apollo_Impl.getInstance();
+        }
+        return null;
+    }
+
     public abstract void turnOffBackLight();
 
     public abstract void turnOnBackLight();

@@ -32,6 +32,14 @@
         <activity
             android:name=".Func_Activity.FaceInitActivity"
             android:theme="@style/ImageTranslucentTheme"></activity>
+        <activity
+            android:name=".Func_Activity.ServerActivity"
+            android:theme="@style/ImageTranslucentTheme"></activity>
+
+
+        <service
+            android:name=".func_server.CoreService"
+            android:exported="false" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -43,4 +51,5 @@
                 android:resource="@xml/file_paths" />
         </provider>
     </application>
+
 </manifest>

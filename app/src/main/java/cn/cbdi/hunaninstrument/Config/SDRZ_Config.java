@@ -1,12 +1,14 @@
 package cn.cbdi.hunaninstrument.Config;
 
-
-import cn.cbdi.hunaninstrument.Project_HuNan.HuNanService;
-import cn.cbdi.hunaninstrument.Service.HuNanUpdateService;
+import cn.cbdi.hunaninstrument.Project_Hebei.HeBeiService;
+import cn.cbdi.hunaninstrument.Service.RK3399UpdateService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 
-
-public class HuNanConfig extends BaseConfig {
+/**
+ * @author Created by WZW on 2021-04-08 16:52.
+ * @description
+ */
+public class SDRZ_Config extends BaseConfig{
     @Override
     public boolean isFace() {
         return true;
@@ -24,24 +26,28 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public String getDev_prefix() {
-        return "";
+        return "800100";
     }
 
     @Override
     public String getPersonInfoPrefix() {
-        return "cjy/s/personInfo";
+        return "da_gzmb_persionInfo?";
     }
 
     @Override
     public String getUpDataPrefix() {
-        return "cjy/s/updata";
+        return "da_gzmb_updata?";
     }
-
 
     @Override
     public String getServerId() {
-        return "http://129.204.110.143:8031/";
+        return "http://119.164.253.140:52020/";
     }
+
+//    @Override
+//    public String getServerId() {
+//        return "http://20.1.1.10:9090/";
+//    }
 
     @Override
     public int getCheckOnlineTime() {
@@ -60,7 +66,7 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public String getProject() {
-        return "HNMBY";        //湖南民爆云
+        return "SDRZ";        //山东日照
     }
 
     @Override
@@ -97,7 +103,6 @@ public class HuNanConfig extends BaseConfig {
     public void readCard() {
         IDCardPresenter.getInstance().ReadID();
         IDCardPresenter.getInstance().ReadIC();
-
     }
 
     @Override
@@ -113,17 +118,17 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public Class getServiceName() {
-        return HuNanService.class;
+        return HeBeiService.class;
     }
 
     @Override
     public String getMainActivity() {
-        return ".Project_HuNan.HuNanMainActivity";
+        return ".Project_Hebei.HebeiMainActivity";
     }
 
     @Override
     public String getAddActivity() {
-        return ".Project_HuNan.HuNanRegActivity";
+        return ".Project_Hebei.HeBeiRegActivity";
     }
 
     @Override
@@ -140,6 +145,7 @@ public class HuNanConfig extends BaseConfig {
     public boolean XungengCanOpen() {
         return true;
     }
+
 
     @Override
     public boolean DoorMonitorChosen() {
@@ -158,16 +164,6 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public Class getUpdateService() {
-        return HuNanUpdateService.class;
-    }
-
-    @Override
-    public boolean Remote() {
-        return true;
-    }
-
-    @Override
-    public boolean useServer() {
-        return true;
+         return RK3399UpdateService.class;
     }
 }

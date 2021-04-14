@@ -99,7 +99,6 @@ public class RK3399UpdateService extends Service {
                             ToastUtils.showLong("源文件复制失败");
                         }
                     });
-//            }
         } else {
             config.put("CopyFileVer_30", false);
         }

@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 import cn.cbdi.hunaninstrument.Config.NMGFB_NewConfig;
 import cn.cbdi.hunaninstrument.Config.YanChengConfig;
+import cn.cbdi.hunaninstrument.Service.ServerService;
 import cn.cbdi.hunaninstrument.Tool.ActivityCollector;
 import cn.cbdi.hunaninstrument.Tool.AssetsUtils;
 import cn.cbdi.hunaninstrument.Tool.MediaHelper;
@@ -89,6 +90,11 @@ public class FaceInitActivity extends RxActivity {
                             MediaHelper.loudly();
                             Intent intent = new Intent(FaceInitActivity.this, AppInit.getInstrumentConfig().getUpdateService());
                             startService(intent);
+                            if(AppInit.getInstrumentConfig().useServer()){
+                                Intent server = new Intent(FaceInitActivity.this, ServerService.class);
+                                startService(server);
+                            }
+
                             File key = new File(Environment.getExternalStorageDirectory() + File.separator + "key.txt");
                             String txtForKey = FileUtils.readFile2String(key);
                             copyToClipboard(FaceInitActivity.this, txtForKey);
@@ -129,6 +135,10 @@ public class FaceInitActivity extends RxActivity {
                 MediaHelper.loudly();
                 Intent intent = new Intent(FaceInitActivity.this, AppInit.getInstrumentConfig().getUpdateService());
                 startService(intent);
+                if(AppInit.getInstrumentConfig().useServer()){
+                    Intent server = new Intent(FaceInitActivity.this, ServerService.class);
+                    startService(server);
+                }
                 File key = new File(Environment.getExternalStorageDirectory() + File.separator + "key.txt");
                 String txtForKey = FileUtils.readFile2String(key);
                 copyToClipboard(FaceInitActivity.this, txtForKey);

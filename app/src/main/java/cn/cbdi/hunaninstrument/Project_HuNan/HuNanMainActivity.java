@@ -15,11 +15,14 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.baidu.idl.main.facesdk.model.LivenessModel;
 import com.baidu.idl.main.facesdk.model.User;
 import com.blankj.utilcode.util.ActivityUtils;
+import com.blankj.utilcode.util.NetworkUtils;
 import com.blankj.utilcode.util.TimeUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.jakewharton.rxbinding2.widget.RxTextView;
@@ -140,6 +143,9 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
 
     GestureLibrary mGestureLib;
 
+    @BindView(R.id.tv_ipaddr)
+    TextView tv_ipaddr;
+
     @OnClick(R.id.lay_setting)
     void setting() {
         alert_password.show();
@@ -205,6 +211,10 @@ public class HuNanMainActivity extends BaseActivity implements NormalWindow.Opti
                     }
                     udp.send();
                 });
+        if (AppInit.getInstrumentConfig().useServer()) {
+            tv_ipaddr.setVisibility(View.VISIBLE);
+            tv_ipaddr.setText(NetworkUtils.getIPAddress(true));
+        }
         if (AppInit.getInstrumentConfig().collectBox()) {
             CollectionBoxOption();
         }

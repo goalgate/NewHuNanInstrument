@@ -39,6 +39,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import cn.cbdi.hunaninstrument.AppInit;
 import cn.cbdi.hunaninstrument.Bean.Employer;
@@ -471,15 +472,13 @@ public class HeBeiService extends Service implements IOutputControlView {
                 });
     }
 
-    int count = 0;
-
     StringBuffer logMen;
 
     private void getPic() {
         logMen = new StringBuffer();
-        count = 0;
         List<Employer> employers = mdaoSession.loadAll(Employer.class);
         if (employers.size() > 0) {
+            CountDownLatch latch = new CountDownLatch(employers.size());
             for (Employer employer : employers) {
                 RetrofitGenerator.getHeBeiApi().recentPicNew("recentPic", paramsMap.get("daid"), paramsMap.get("pass"), employer.getCardID())
                         .subscribeOn(Schedulers.single())
@@ -494,9 +493,7 @@ public class HeBeiService extends Service implements IOutputControlView {
                             @Override
                             public void onNext(ResponseBody responseBody) {
                                 try {
-                                    count++;
                                     JSONObject jsonObject = new JSONObject(responseBody.string());
-
                                     String result = jsonObject.getString("result");
                                     if (result.equals("true")) {
                                         String ps = jsonObject.getString("returnPic");
@@ -533,80 +530,16 @@ public class HeBeiService extends Service implements IOutputControlView {
                                             }
                                         }
                                     }
-                                    if (count == employers.size()) {
-                                        EventBus.getDefault().post(new FaceIdentityEvent());
-                                        List<Keeper> keeperList = mdaoSession.loadAll(Keeper.class);
-                                        if (keeperList.size() > 0) {
-                                            Set<String> list = new HashSet<>();
-                                            for (Keeper keeper : keeperList) {
-                                                list.add(keeper.getName());
-                                            }
-                                            for (String name : list) {
-                                                logMen.append(name + "、");
-                                            }
-                                            logMen.deleteCharAt(logMen.length() - 1);
-
-                                            handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
-                                            Log.e(TAG, logMen.toString());
-
-                                        } else {
-                                            handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
-                                            Log.e(TAG, logMen.toString());
-
-                                        }
-                                    }
                                 } catch (Exception e) {
                                     Log.e(TAG, e.toString());
-                                    if (count == employers.size()) {
-                                        EventBus.getDefault().post(new FaceIdentityEvent());
-                                        List<Keeper> keeperList = mdaoSession.loadAll(Keeper.class);
-                                        if (keeperList.size() > 0) {
-                                            Set<String> list = new HashSet<>();
-                                            for (Keeper keeper : keeperList) {
-                                                list.add(keeper.getName());
-                                            }
-                                            for (String name : list) {
-                                                logMen.append(name + "、");
-                                            }
-                                            logMen.deleteCharAt(logMen.length() - 1);
-
-                                            handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
-                                            Log.e(TAG, logMen.toString());
-
-                                        } else {
-                                            handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
-                                            Log.e(TAG, logMen.toString());
-
-                                        }
-                                    }
+                                } finally {
+                                    latch.countDown();
                                 }
                             }
 
                             @Override
                             public void onError(Throwable e) {
-                                count++;
-                                if (count == employers.size()) {
-                                    EventBus.getDefault().post(new FaceIdentityEvent());
-                                    List<Keeper> keeperList = mdaoSession.loadAll(Keeper.class);
-                                    if (keeperList.size() > 0) {
-                                        Set<String> list = new HashSet<>();
-                                        for (Keeper keeper : keeperList) {
-                                            list.add(keeper.getName());
-                                        }
-                                        for (String name : list) {
-                                            logMen.append(name + "、");
-                                        }
-                                        logMen.deleteCharAt(logMen.length() - 1);
-
-                                        handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
-                                        Log.e(TAG, logMen.toString());
-
-                                    } else {
-                                        handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
-                                        Log.e(TAG, logMen.toString());
-
-                                    }
-                                }
+                                latch.countDown();
                             }
 
                             @Override
@@ -615,11 +548,179 @@ public class HeBeiService extends Service implements IOutputControlView {
                             }
                         });
             }
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            EventBus.getDefault().post(new FaceIdentityEvent());
+            List<Keeper> keeperList = mdaoSession.loadAll(Keeper.class);
+            if (keeperList.size() > 0) {
+                Set<String> list = new HashSet<>();
+                for (Keeper keeper : keeperList) {
+                    list.add(keeper.getName());
+                }
+                for (String name : list) {
+                    logMen.append(name + "、");
+                }
+                logMen.deleteCharAt(logMen.length() - 1);
+                handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
+                Log.e(TAG, logMen.toString());
+
+            } else {
+                handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
+                Log.e(TAG, logMen.toString());
+            }
         } else {
             EventBus.getDefault().post(new FaceIdentityEvent());
             handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
         }
     }
+//    private void getPic() {
+//        logMen = new StringBuffer();
+//        count = 0;
+//        List<Employer> employers = mdaoSession.loadAll(Employer.class);
+//        if (employers.size() > 0) {
+//            for (Employer employer : employers) {
+//                RetrofitGenerator.getHeBeiApi().recentPicNew("recentPic", paramsMap.get("daid"), paramsMap.get("pass"), employer.getCardID())
+//                        .subscribeOn(Schedulers.single())
+//                        .unsubscribeOn(Schedulers.single())
+//                        .observeOn(Schedulers.single())
+//                        .subscribe(new Observer<ResponseBody>() {
+//                            @Override
+//                            public void onSubscribe(Disposable d) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onNext(ResponseBody responseBody) {
+//                                try {
+//                                    count++;
+//                                    JSONObject jsonObject = new JSONObject(responseBody.string());
+//
+//                                    String result = jsonObject.getString("result");
+//                                    if (result.equals("true")) {
+//                                        String ps = jsonObject.getString("returnPic");
+//                                        String name = jsonObject.getString("personName");
+//                                        try {
+//                                            Keeper keeper = mdaoSession.queryRaw(Keeper.class, "where CARD_ID = '" + employer.getCardID().toUpperCase() + "'").get(0);
+//                                            if (!TextUtils.isEmpty(ps) && keeper.getHeadphoto().length() != ps.length()) {
+//                                                Log.e("ps_len", String.valueOf(ps.length()));
+//                                                Log.e("keeper_len", String.valueOf(keeper.getHeadphoto().replaceAll("\r|\n", "").length()));
+//                                                Bitmap bitmap = FileUtils.base64ToBitmap(ps);
+//                                                FacePresenter.getInstance().FaceUpdate(bitmap, name, new UserInfoManager.UserInfoListener() {
+//                                                    public void updateImageSuccess(Bitmap bitmap) {
+//                                                        keeper.setHeadphoto(ps);
+//                                                        keeper.setHeadphotoBW(null);
+//                                                        mdaoSession.getKeeperDao().insertOrReplace(keeper);
+//                                                    }
+//                                                    public void updateImageFailure(String message) {
+//                                                        Log.e(TAG, message);
+//                                                    }
+//                                                });
+//                                            }
+//                                        } catch (IndexOutOfBoundsException e) {
+//                                            if (!TextUtils.isEmpty(ps)) {
+//                                                Bitmap bitmap = FileUtils.base64ToBitmap(ps);
+//                                                if (FacePresenter.getInstance().FaceRegByBase64(name, employer.getCardID(), ps)) {
+//                                                    User user = FacePresenter.getInstance().GetUserByUserName(name);
+//                                                    Keeper keeper = new Keeper(employer.getCardID().toUpperCase(),
+//                                                            name, ps, null, null,
+//                                                            user.getUserId(), user.getFeature());
+//                                                    mdaoSession.getKeeperDao().insertOrReplace(keeper);
+//                                                    Log.e("myface", name + "人脸特征已存");
+//
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                    if (count == employers.size()) {
+//                                        EventBus.getDefault().post(new FaceIdentityEvent());
+//                                        List<Keeper> keeperList = mdaoSession.loadAll(Keeper.class);
+//                                        if (keeperList.size() > 0) {
+//                                            Set<String> list = new HashSet<>();
+//                                            for (Keeper keeper : keeperList) {
+//                                                list.add(keeper.getName());
+//                                            }
+//                                            for (String name : list) {
+//                                                logMen.append(name + "、");
+//                                            }
+//                                            logMen.deleteCharAt(logMen.length() - 1);
+//
+//                                            handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
+//                                            Log.e(TAG, logMen.toString());
+//
+//                                        } else {
+//                                            handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
+//                                            Log.e(TAG, logMen.toString());
+//
+//                                        }
+//                                    }
+//                                } catch (Exception e) {
+//                                    Log.e(TAG, e.toString());
+//                                    if (count == employers.size()) {
+//                                        EventBus.getDefault().post(new FaceIdentityEvent());
+//                                        List<Keeper> keeperList = mdaoSession.loadAll(Keeper.class);
+//                                        if (keeperList.size() > 0) {
+//                                            Set<String> list = new HashSet<>();
+//                                            for (Keeper keeper : keeperList) {
+//                                                list.add(keeper.getName());
+//                                            }
+//                                            for (String name : list) {
+//                                                logMen.append(name + "、");
+//                                            }
+//                                            logMen.deleteCharAt(logMen.length() - 1);
+//
+//                                            handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
+//                                            Log.e(TAG, logMen.toString());
+//
+//                                        } else {
+//                                            handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
+//                                            Log.e(TAG, logMen.toString());
+//
+//                                        }
+//                                    }
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void onError(Throwable e) {
+//                                count++;
+//                                if (count == employers.size()) {
+//                                    EventBus.getDefault().post(new FaceIdentityEvent());
+//                                    List<Keeper> keeperList = mdaoSession.loadAll(Keeper.class);
+//                                    if (keeperList.size() > 0) {
+//                                        Set<String> list = new HashSet<>();
+//                                        for (Keeper keeper : keeperList) {
+//                                            list.add(keeper.getName());
+//                                        }
+//                                        for (String name : list) {
+//                                            logMen.append(name + "、");
+//                                        }
+//                                        logMen.deleteCharAt(logMen.length() - 1);
+//
+//                                        handler.post(() -> ToastUtils.showLong(logMen.toString() + "人脸特征已准备完毕"));
+//                                        Log.e(TAG, logMen.toString());
+//
+//                                    } else {
+//                                        handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
+//                                        Log.e(TAG, logMen.toString());
+//
+//                                    }
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void onComplete() {
+//
+//                            }
+//                        });
+//            }
+//        } else {
+//            EventBus.getDefault().post(new FaceIdentityEvent());
+//            handler.post(() -> ToastUtils.showLong("该设备没有可使用的人脸特征"));
+//        }
+//    }
 
     private void mapInit() {
         SafeCheck safeCheck = new SafeCheck();

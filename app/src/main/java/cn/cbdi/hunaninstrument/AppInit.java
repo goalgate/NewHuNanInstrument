@@ -18,6 +18,7 @@ import cn.cbdi.hunaninstrument.Config.HebeiConfig;
 import cn.cbdi.hunaninstrument.Config.HuNanConfig;
 import cn.cbdi.hunaninstrument.Config.NMGFB_NewConfig;
 import cn.cbdi.hunaninstrument.Config.NMGYZB_Config;
+import cn.cbdi.hunaninstrument.Config.SDRZ_Config;
 import cn.cbdi.hunaninstrument.Config.SH_Config;
 import cn.cbdi.hunaninstrument.Config.XAJD_Config;
 import cn.cbdi.hunaninstrument.Config.XAYZB_Config;

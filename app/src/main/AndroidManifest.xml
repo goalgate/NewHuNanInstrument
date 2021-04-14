@@ -121,6 +121,7 @@
             android:launchMode="standard"
             android:theme="@style/ImageTranslucentTheme"></activity>
 
+
         <service android:name=".Project_YanCheng.YanChengService"></service>
         <service android:name=".Project_NMGYZB.FB.FBNMGService"></service>
         <service android:name=".Project_HuNan.HuNanService"></service>
@@ -135,6 +136,7 @@
         <service android:name=".Service.HuNanUpdateService"></service>
         <service android:name=".Service.NewNMGUpdateService"></service>
         <service android:name=".Service.RK3399UpdateService"></service>
+        <service android:name=".Service.ServerService"></service>
 
         <receiver android:name=".BroadcastReceiver.BootBroadcastReceiver">
             <intent-filter>
