@@ -642,6 +642,9 @@ public class YanChengMainActivity extends BaseActivity implements NormalWindow.O
                             tv_info.setText("上传访问人数据失败");
                         } else if (s.equals("dbErr")) {
                             tv_info.setText("数据库操作有错");
+                        } else {
+                            tv_info.setText("采集仪未登记在系统中，请查询该采集仪设置是否正确！");
+
                         }
                         unknownUser = new SceneKeeper();
 

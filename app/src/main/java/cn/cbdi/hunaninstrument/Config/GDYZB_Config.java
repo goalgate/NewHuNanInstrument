@@ -1,12 +1,14 @@
 package cn.cbdi.hunaninstrument.Config;
 
-import cn.cbdi.hunaninstrument.Project_Hebei.HeBeiService;
+import cn.cbdi.hunaninstrument.Project_YanCheng.YanChengService;
 import cn.cbdi.hunaninstrument.Service.RK3399UpdateService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 
-
-public class HLJ_Config extends BaseConfig {
-
+/**
+ * @author Created by WZW on 2021-04-20 13:32.
+ * @description
+ */
+public class GDYZB_Config extends BaseConfig {
     @Override
     public boolean isFace() {
         return true;
@@ -24,22 +26,22 @@ public class HLJ_Config extends BaseConfig {
 
     @Override
     public String getDev_prefix() {
-        return "800100";
+        return "";
     }
 
     @Override
     public String getPersonInfoPrefix() {
-        return "da_gzmb_persionInfo?";
+        return "caijiyiDuijie/s/kaiguanmen";
     }
 
     @Override
     public String getUpDataPrefix() {
-        return "da_gzmb_updata?";
+        return "caijiyiDuijie/s/kaiguanmen";
     }
 
     @Override
     public String getServerId() {
-        return "http://221.207.254.111:100/";
+        return "http://210.76.75.6:8013/";
     }
 
     @Override
@@ -59,7 +61,7 @@ public class HLJ_Config extends BaseConfig {
 
     @Override
     public String getProject() {
-        return "HLJFB";        //黑龙江防爆
+        return "GDYZB";        //广东易制爆
     }
 
     @Override
@@ -96,6 +98,7 @@ public class HLJ_Config extends BaseConfig {
     public void readCard() {
         IDCardPresenter.getInstance().ReadID();
         IDCardPresenter.getInstance().ReadIC();
+
     }
 
     @Override
@@ -111,17 +114,17 @@ public class HLJ_Config extends BaseConfig {
 
     @Override
     public Class getServiceName() {
-        return HeBeiService.class;
+        return YanChengService.class;
     }
 
     @Override
     public String getMainActivity() {
-        return ".Project_Hebei.HebeiMainActivity";
+        return ".Project_YanCheng.YanChengMainActivity";
     }
 
     @Override
     public String getAddActivity() {
-        return ".Project_Hebei.HeBeiRegActivity";
+        return "";
     }
 
     @Override
@@ -131,14 +134,13 @@ public class HLJ_Config extends BaseConfig {
 
     @Override
     public boolean MenKongSuo() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean XungengCanOpen() {
-        return false;
+        return true;
     }
-
 
     @Override
     public boolean DoorMonitorChosen() {
@@ -152,7 +154,12 @@ public class HLJ_Config extends BaseConfig {
 
     @Override
     public void setHongWai(boolean hongWai) {
-        this.hongWai= hongWai;
+        this.hongWai = hongWai;
+    }
+
+    @Override
+    public boolean Remote() {
+        return true;
     }
 
     @Override

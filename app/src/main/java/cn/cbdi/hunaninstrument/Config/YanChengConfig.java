@@ -1,6 +1,7 @@
 package cn.cbdi.hunaninstrument.Config;
 
 import cn.cbdi.hunaninstrument.Project_YanCheng.YanChengService;
+import cn.cbdi.hunaninstrument.Service.RK3399UpdateService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 
 
@@ -156,7 +157,12 @@ public class YanChengConfig extends BaseConfig {
 
     @Override
     public boolean Remote() {
-        return true;
+        return false;
+    }
+
+    @Override
+    public Class getUpdateService() {
+        return RK3399UpdateService.class;
     }
 }
 

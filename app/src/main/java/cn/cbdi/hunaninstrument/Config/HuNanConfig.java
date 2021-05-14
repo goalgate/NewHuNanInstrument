@@ -168,6 +168,6 @@ public class HuNanConfig extends BaseConfig {
 
     @Override
     public boolean useServer() {
-        return true;
+        return false;
     }
 }

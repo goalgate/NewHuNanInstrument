@@ -1,6 +1,12 @@
 package cn.cbsd.cjyfunctionlib.Tools;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
+import android.renderscript.Type;
 import android.util.Log;
 import android.view.View;
 
@@ -28,6 +34,7 @@ public class YuvTools {
      * @return
      */
     public static Bitmap yuv2Bitmap(byte[] data, int width, int height) {
+        long timeStart = System.currentTimeMillis();
         int frameSize = width * height;
         int[] rgba = new int[frameSize];
         for (int i = 0; i < height; i++) {
@@ -50,6 +57,8 @@ public class YuvTools {
         }
         Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bmp.setPixels(rgba, 0, width, 0, 0, width, height);
+        long timeStop = System.currentTimeMillis();
+        Log.d("timePast", (timeStop - timeStart) + " ms");
         return bmp;
     }
 

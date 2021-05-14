@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import cn.cbdi.hunaninstrument.AppInit;
 import cn.cbdi.hunaninstrument.Config.BaseConfig;
+import cn.cbdi.hunaninstrument.Config.GDYZB_Config;
 import cn.cbdi.hunaninstrument.Config.GZYZB_Config;
 import cn.cbdi.hunaninstrument.Config.HuNanConfig;
 import cn.cbdi.hunaninstrument.Config.NMGFB_NewConfig;
@@ -119,9 +120,10 @@ public class Alert_Server {
 
                                 }
                             });
-                } else if(AppInit.getInstrumentConfig().getClass().getName().equals(XinWeiGuan_Config.class.getName())||
-                        AppInit.getInstrumentConfig().getClass().getName().equals(YanChengConfig.class.getName())||
-                        AppInit.getInstrumentConfig().getClass().getName().equals(NMGFB_NewConfig.class.getName())) {
+                } else if (AppInit.getInstrumentConfig().getClass().getName().equals(XinWeiGuan_Config.class.getName()) ||
+                        AppInit.getInstrumentConfig().getClass().getName().equals(YanChengConfig.class.getName()) ||
+                        AppInit.getInstrumentConfig().getClass().getName().equals(NMGFB_NewConfig.class.getName()) ||
+                        AppInit.getInstrumentConfig().getClass().getName().equals(GDYZB_Config.class.getName())) {
                     new RetrofitGenerator().getXinWeiGuanApi(url).noData("testNet", config.getString("key"))
                             .subscribeOn(Schedulers.io())
                             .unsubscribeOn(Schedulers.io())
@@ -160,7 +162,7 @@ public class Alert_Server {
                                 }
                             });
 
-                }else if(AppInit.getInstrumentConfig().getClass().getName().equals(NMGYZB_Config.class.getName())) {
+                } else if (AppInit.getInstrumentConfig().getClass().getName().equals(NMGYZB_Config.class.getName())) {
                     HashMap<String, String> paramsMap = new HashMap<String, String>();
                     SafeCheck safeCheck = new SafeCheck();
                     safeCheck.setURL(config.getString("ServerId"));
@@ -200,8 +202,8 @@ public class Alert_Server {
                                 }
                             });
 
-                }else if(AppInit.getInstrumentConfig().getClass().getName().equals(YZBYPT_Config.class.getName())||
-                        (AppInit.getInstrumentConfig().getClass().getName().equals(GZYZB_Config.class.getName()))){
+                } else if (AppInit.getInstrumentConfig().getClass().getName().equals(YZBYPT_Config.class.getName()) ||
+                        (AppInit.getInstrumentConfig().getClass().getName().equals(GZYZB_Config.class.getName()))) {
                     new RetrofitGenerator().getYzbApi(url).withDataRs("testNet", config.getString("key"), null)
                             .subscribeOn(Schedulers.io())
                             .unsubscribeOn(Schedulers.io())
@@ -234,8 +236,7 @@ public class Alert_Server {
 
                                 }
                             });
-                }
-                else{
+                } else {
                     new ServerConnectionUtil().post(url + AppInit.getInstrumentConfig().getUpDataPrefix() + "daid=" + config.getString("daid") + "&dataType=test", url
                             , new ServerConnectionUtil.Callback() {
                                 @Override

@@ -82,6 +82,9 @@ public class USBReceiver extends BroadcastReceiver {
                 boolean mounted = isMounted(mountPath);
                 Log.d(TAG, "onReceive: " + "U盘挂载" + mounted);
 //                getUName();
+
+
+                //目前只有湖南和盐城有U盘插入人脸配套功能，如果想其他项目也可以使用，可以在此添加，也可以在
                 if (AppInit.getInstrumentConfig().getClass().getName().equals(YanChengConfig.class.getName())
                         ||AppInit.getInstrumentConfig().getClass().getName().equals(HuNanConfig.class.getName())) {
                     founded = false;

@@ -1,6 +1,5 @@
 package cn.cbdi.hunaninstrument;
 
-
 import android.Manifest;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -15,14 +14,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.baidu.idl.main.facesdk.listener.SdkInitListener;
 import com.baidu.idl.main.facesdk.ui.Activation;
-
 import com.bigkoo.alertview.AlertView;
 import com.blankj.utilcode.util.ActivityUtils;
-import com.blankj.utilcode.util.NetworkUtils;
 import com.blankj.utilcode.util.PermissionUtils;
 import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.ToastUtils;
@@ -51,14 +47,11 @@ import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
 import cn.cbsd.cjyfunctionlib.Tools.NetInfo;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import jxl.Sheet;
 import jxl.Workbook;
-
 
 public class FaceInitActivity extends RxActivity {
 
@@ -70,13 +63,24 @@ public class FaceInitActivity extends RxActivity {
 
     String daid = new NetInfo().getMacId();
 
-//    String daid = "000224-076000-003193";
+//    String daid = "000224-076000-001246";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.faceinit);
         ActivityCollector.addActivity(this);
+        if (TextUtils.isEmpty(config.getString("daid"))) {
+            config.put("daid", daid);
+            JSONObject jsonKey = new JSONObject();
+            try {
+                jsonKey.put("daid", config.getString("daid"));
+                jsonKey.put("check", DESX.encrypt(config.getString("daid")));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            config.put("key", DESX.encrypt(jsonKey.toString()));
+        }
         PermissionUtils.requestPermissions(this, 200,
                 new String[]{
                         Manifest.permission.CAMERA,
@@ -90,7 +94,7 @@ public class FaceInitActivity extends RxActivity {
                             MediaHelper.loudly();
                             Intent intent = new Intent(FaceInitActivity.this, AppInit.getInstrumentConfig().getUpdateService());
                             startService(intent);
-                            if(AppInit.getInstrumentConfig().useServer()){
+                            if (AppInit.getInstrumentConfig().useServer()) {
                                 Intent server = new Intent(FaceInitActivity.this, ServerService.class);
                                 startService(server);
                             }
@@ -135,7 +139,7 @@ public class FaceInitActivity extends RxActivity {
                 MediaHelper.loudly();
                 Intent intent = new Intent(FaceInitActivity.this, AppInit.getInstrumentConfig().getUpdateService());
                 startService(intent);
-                if(AppInit.getInstrumentConfig().useServer()){
+                if (AppInit.getInstrumentConfig().useServer()) {
                     Intent server = new Intent(FaceInitActivity.this, ServerService.class);
                     startService(server);
                 }

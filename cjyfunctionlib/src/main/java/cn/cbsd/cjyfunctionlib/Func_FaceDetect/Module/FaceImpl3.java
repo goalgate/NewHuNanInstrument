@@ -45,6 +45,7 @@ import cn.cbsd.cjyfunctionlib.Func_OutputControl.presenter.OutputControlPresente
 import cn.cbsd.cjyfunctionlib.Func_WebSocket.ServerManager;
 import cn.cbsd.cjyfunctionlib.Tools.BitmapTools;
 import cn.cbsd.cjyfunctionlib.Tools.FileUtils;
+import cn.cbsd.cjyfunctionlib.Tools.YUV2RGBForRK3288;
 import cn.cbsd.cjyfunctionlib.Tools.YuvTools;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -53,6 +54,9 @@ import io.reactivex.schedulers.Schedulers;
 
 import static com.baidu.idl.main.facesdk.model.BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_ID_PHOTO;
 import static com.baidu.idl.main.facesdk.model.BDFaceSDKCommon.FeatureType.BDFACE_FEATURE_TYPE_LIVE_PHOTO;
+
+
+//rk3399的摄像头预览是旋转的,此处已经做了适配
 
 public class FaceImpl3 implements IFace {
 
@@ -358,12 +362,27 @@ public class FaceImpl3 implements IFace {
 
     @Override
     public Bitmap getGlobalBitmap() {
-        try {
-            global_bitmap = YuvTools.yuv2Bitmap(global_BitmapBytes, mWidth, mHeight);
-        } catch (NullPointerException e) {
-            global_bitmap = YuvTools.yuv2Bitmap(global_BitmapBytes_backup, mWidth, mHeight);
+//        try {
+//            global_bitmap = YuvTools.yuv2Bitmap(global_BitmapBytes, mWidth, mHeight);
+//        } catch (NullPointerException e) {
+//            global_bitmap = YuvTools.yuv2Bitmap(global_BitmapBytes_backup, mWidth, mHeight);
+//        }
+//        return global_bitmap;
+        if (Build.DEVICE.startsWith("Apollo7")) {
+            try {
+                global_bitmap = YuvTools.yuv2Bitmap(global_BitmapBytes, mWidth, mHeight);
+            } catch (NullPointerException e) {
+                global_bitmap = YuvTools.yuv2Bitmap(global_BitmapBytes_backup, mWidth, mHeight);
+            }
+        } else {
+            try {
+                global_bitmap = YUV2RGBForRK3288.getInstance(mContext).convertYUVtoRGB(global_BitmapBytes, mWidth, mHeight);
+            } catch (NullPointerException e) {
+                global_bitmap = YUV2RGBForRK3288.getInstance(mContext).convertYUVtoRGB(global_BitmapBytes_backup, mWidth, mHeight);
+            }
         }
         return global_bitmap;
+
     }
 
     @Override

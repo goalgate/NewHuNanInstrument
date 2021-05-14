@@ -2,6 +2,7 @@ package cn.cbdi.hunaninstrument.Config;
 
 
 import cn.cbdi.hunaninstrument.Project_Hebei.HeBeiService;
+import cn.cbdi.hunaninstrument.Service.RK3399UpdateService;
 import cn.cbsd.cjyfunctionlib.Func_Card.presenter.IDCardPresenter;
 
 
@@ -152,7 +153,11 @@ public class GDMB_Config extends BaseConfig {
 
     @Override
     public void setHongWai(boolean hongWai) {
-        this.hongWai= hongWai;
+        this.hongWai = hongWai;
     }
 
+    @Override
+    public Class getUpdateService() {
+        return RK3399UpdateService.class;
+    }
 }
